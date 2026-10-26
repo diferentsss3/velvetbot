@@ -183,7 +183,15 @@ if ($('#acs')) {
     if (r.ok) { toast('Настройки сохранены', 'w'); syncMe(); } else toast('Ошибка', 'e');
   };
 }
-
+// --- ГЕНЕРАТОР ПОЛЕЙ ДЛЯ СТАВОК ---
+$$('.bet[data-id]').forEach(d => {
+  const i = d.dataset.id;
+  d.innerHTML = `<input id="${i}" type="number" inputmode="decimal" value="10"><button data-k="h">½</button><button data-k="d">×2</button><button data-k="m">Макс</button>`;
+  d.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const e = $('#' + i), v = +e.value || 0, k = b.dataset.k;
+    e.value = k == 'h' ? Math.max(1, Math.floor(v / 2)) : k == 'd' ? Math.min(Math.floor(S.bal), v * 2) : Math.floor(S.bal);
+  });
+});
 (async () => { render(); await syncMe(); })();
 
 // --- ОНЛАЙН СЧЕТЧИК ---

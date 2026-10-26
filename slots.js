@@ -110,10 +110,9 @@ function ovShow(t,v,pHTML,btn){
 async function slotSpin(free){
  if(SL.busy)return;const G=SL.G,bet=BETS[SL.bi],ctx=free?SL.fctx:SL.ctx,T=SL.turbo;
  if(!free){
-  const b=getBet('#sbt'); // Проверка баланса перед ставкой
-  if(!b){return}
-  S.bal-=bet; render();
- }
+  if (S.bal < bet) { toast('Недостаточно средств', 'e'); return; }
+  S.bal -= bet; render();
+}
  SL.busy=true;slotLock(true);hl([]);$('#swn').textContent='0';$('#smsg').textContent=free?'Фриспин':'Удачи!';
  const g0=spinGrid(G,!!free,free&&G.mech=='cat'?ctx.st:null);
  await slotAnim(g0,free,ctx);
