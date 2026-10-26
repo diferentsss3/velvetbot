@@ -6,7 +6,7 @@ const fmt = n => (+n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://trails-plasma-powerpoint-there.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ СЮДА!
+const API_URL = 'https://governance-tourism-sending-papers.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ СЮДА!
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000 };
 let S = { bal: 0, bets: 0, role: 'player', isAdmin: false, refCount: 0, cfg: CFG0 };
 
