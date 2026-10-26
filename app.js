@@ -6,7 +6,7 @@ const fmt = n => (+n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://liability-wait-radius-regulation.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ СЮДА!
+const API_URL = 'https://trails-plasma-powerpoint-there.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ СЮДА!
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000 };
 let S = { bal: 0, bets: 0, role: 'player', isAdmin: false, refCount: 0, cfg: CFG0 };
 
@@ -55,11 +55,31 @@ function render() {
     $('#urole').className = 'role ' + S.role;
   }
   if ($('#rn')) $('#rn').textContent = S.refCount;
+
+  // Вот эта часть отвечает за аватарку, ник и ID
+  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { first_name: 'Гость', id: 0, photo_url: null, username: '' };
+  if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ') || 'Игрок';
+  if ($('#uid')) $('#uid').textContent = (U.username ? '@' + U.username + ' · ' : '') + 'ID ' + U.id;
   
-  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { first_name: 'Гость', id: 0 };
-  if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ');
-  if ($('#rl')) $('#rl').value = 'https://t.me/YOUR_BOT/app?startapp=ref_' + U.id;
+  if ($('#av')) {
+    if (U.photo_url) {
+      $('#av').innerHTML = `<img src="${U.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      $('#av').textContent = (U.first_name || '?')[0].toUpperCase();
+    }
+  }
+
+  if ($('#rl')) $('#rl').value = 'https://t.me/velvetcasBot/app?startapp=ref_' + U.id;
 }
+
+// Запуск при старте
+(async () => { 
+  if (tg) {
+     // Сразу рисуем профиль из данных Telegram (чтобы не было пусто, пока грузится сервер)
+     render(); 
+  }
+  await syncMe(); 
+})();
 
 function tab(t) {
   $$('.tab').forEach(e => e.classList.toggle('on', e.id == 't-' + t));
@@ -120,4 +140,7 @@ window.createPromo = async () => {
   if (r.ok) { toast('Промокод создан', 'w'); syncMe(); } else toast('Нет денег', 'e');
 };
 
-(async () => { await syncMe(); })();
+(async () => { 
+  render(); // Сразу рисуем профиль из данных Telegram
+  await syncMe(); // Потом подтягиваем баланс с сервера
+})();
