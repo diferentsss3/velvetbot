@@ -6,21 +6,35 @@ const fmt = n => (+n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://editor-altered-belly-lyrics.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ СЮДА!
+const API_URL = 'https://earthquake-sql-commissioners-relate.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ СЮДА!
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000 };
 let S = { bal: 0, bets: 0, role: 'player', isAdmin: false, refCount: 0, cfg: CFG0 };
 
 async function api(path, data = {}) {
+  const url = API_URL + path;
+  const options = {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' }, // Пробуем обойти preflight
+    body: JSON.stringify({ ...data, initData: (tg && tg.initData) || '' })
+  };
+
+  console.log(`[API] Отправка запроса: ${options.method} ${url}`);
+  console.log('  Заголовки:', options.headers);
+
   try {
-    const r = await fetch(API_URL + path, {
-      method: 'POST',
-      // МЕНЯЕМ ЗАГОЛОВОК: text/plain не вызывает предварительный запрос OPTIONS
-      headers: { 'Content-Type': 'text/plain' }, 
-      body: JSON.stringify({ ...data, initData: (tg && tg.initData) || '' })
-    });
-    return await r.json();
+    const r = await fetch(url, options);
+    console.log(`[API] Получен ответ. Статус: ${r.status}`);
+    
+    const responseText = await r.text();
+    try {
+      return JSON.parse(responseText);
+    } catch (e) {
+      console.error('[API] Ответ не является JSON:', responseText);
+      toast('Ошибка формата ответа от сервера', 'e');
+      return { ok: false };
+    }
   } catch (e) {
-    console.error("Ошибка запроса:", e);
+    console.error('[API] Критическая ошибка сети:', e);
     toast('Нет связи с сервером', 'e');
     return { ok: false };
   }
