@@ -1,5 +1,5 @@
 // api.js - Вся серверная логика
-const API_URL = 'https://mild-universe-voluntary-deck.trycloudflare.com'; // ЗАМЕНИ НА СВОЮ ССЫЛКУ!
+const API_URL = 'https://moss-look-phil-consult.trycloudflare.com'; // ЗАМЕНИ НА СВОЮ ССЫЛКУ!
 
 async function api(path, data = {}) {
   try {
