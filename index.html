@@ -7,6 +7,32 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+.online-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #4ade80; /* Неоново-зеленый цвет */
+  margin-left: 4px;
+}
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #4ade80;
+  box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80; /* Эффект свечения */
+  animation: pulse-glow 1.5s infinite;
+}
+@keyframes pulse-glow {
+  0% { transform: scale(0.9); box-shadow: 0 0 5px #4ade80; }
+  50% { transform: scale(1.1); box-shadow: 0 0 15px #4ade80, 0 0 25px #4ade80; }
+  100% { transform: scale(0.9); box-shadow: 0 0 5px #4ade80; }
+}
 :root{--bg:#07051f;--c:rgba(255,255,255,.05);--c2:rgba(255,255,255,.07);--ln:rgba(255,255,255,.1);--t:#f5f2ff;--m:#9b93cf;--g:#c19bff;--ok:#4ade80;--bad:#ff5470;--sat:max(env(safe-area-inset-top,0px),calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)));--hd:'Unbounded',system-ui,sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg);color-scheme:dark;overscroll-behavior:none;-webkit-text-size-adjust:100%}
@@ -572,7 +598,17 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></symbol>
 <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
 <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></symbol></svg>
-<header><div style="display:flex;align-items:center;gap:8px"><i class="lg">V</i><h1>Velvet</h1></div><div class="chip"><span id="bal">0</span><b onclick="tab('p')">+</b></div></header>
+<header>
+  <div style="display:flex;align-items:center;gap:8px">
+    <i class="lg">V</i>
+    <h1>Velvet</h1>
+    <div class="online-badge">
+      <div class="pulse-dot"></div>
+      <span id="online-count">...</span>
+    </div>
+  </div>
+  <div class="chip"><span id="bal">0</span><b onclick="tab('p')">+</b></div>
+</header>
 <div id="toast"></div>
 <main>
 
