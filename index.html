@@ -7,140 +7,121 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#07051f;--c:rgba(255,255,255,.05);--c2:rgba(255,255,255,.07);--ln:rgba(255,255,255,.1);--t:#f5f2ff;--m:#9b93cf;--g:#c19bff;--ok:#4ade80;--bad:#ff5470;--sat:max(env(safe-area-inset-top,0px),calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px)));--hd:'Unbounded',system-ui,sans-serif}
+:root{--bg:#07051f;--ln:rgba(255,255,255,.1);--t:#f5f2ff;--m:#9b93cf;--g:#c19bff;--ok:#4ade80;--bad:#ff5470;--hd:'Unbounded',system-ui,sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg);color-scheme:dark;overscroll-behavior:none;-webkit-text-size-adjust:100%}
 body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(70% 38% at 90% -6%,rgba(139,61,255,.5),transparent 70%),radial-gradient(55% 32% at -5% 58%,rgba(214,70,255,.2),transparent 70%),radial-gradient(70% 40% at 100% 100%,rgba(60,90,255,.25),transparent 70%)}
-body{max-width:480px;margin:0 auto;color:var(--t);font:500 15px/1.4 Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px));user-select:none;-webkit-user-select:none;touch-action:manipulation;font-variant-numeric:tabular-nums}
-header{position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;align-items:center;padding:calc(var(--sat) + 10px) 14px 10px;background:rgba(7,5,31,.72);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--ln)}
-h1{font:700 17px var(--hd);margin:0;letter-spacing:.01em}
-.lg{font:700 15px var(--hd);font-style:normal;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#7b2ff7,#c04dff);display:grid;place-items:center;color:#fff;box-shadow:0 4px 16px rgba(139,61,255,.55),inset 0 1px 0 rgba(255,255,255,.4)}
+body{max-width:480px;margin:0 auto;color:var(--t);font:500 15px/1.4 Manrope,system-ui,-apple-system,sans-serif;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px));user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow-x:hidden}
+header{position:sticky;top:0;z-index:8;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(7,5,31,.72);backdrop-filter:blur(16px);border-bottom:1px solid var(--ln)}
+h1{font:700 17px var(--hd);margin:0}
+.lg{font:700 15px var(--hd);width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#7b2ff7,#c04dff);display:grid;place-items:center;color:#fff}
 .chip{background:linear-gradient(135deg,rgba(123,47,247,.38),rgba(176,77,255,.18));border:1px solid rgba(193,155,255,.35);border-radius:22px;padding:4px 4px 4px 10px;display:flex;gap:8px;align-items:center;font:700 14px var(--hd);color:#fff}
-.chip::before{content:"";width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 30% 28%,#fff6c4,#ffd24a 45%,#e09a12);box-shadow:0 0 10px rgba(255,200,60,.5)}
+.chip::before{content:"";width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 30% 28%,#fff6c4,#ffd24a 45%,#e09a12)}
 .chip b{background:linear-gradient(135deg,#8b3dff,#c04dff);color:#fff;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;cursor:pointer;font:700 18px system-ui}
-main{padding:14px 14px 0}
+main{padding:14px 14px 0;width:100%}
 .tab{display:none}.tab.on{display:block}
-.card{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border:1px solid var(--ln);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 12px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06)}
-button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
-.btn{width:100%;min-height:52px;padding:14px;border-radius:15px;font-weight:800;font-size:16px;color:#fff;background:linear-gradient(135deg,#7b2ff7,#b84dff);box-shadow:0 10px 26px rgba(123,47,247,.5),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .12s}
-.btn:active{transform:scale(.98)}.btn:disabled{opacity:.5;box-shadow:none}
-.bet{display:flex;gap:6px;margin-bottom:12px}
-input,select{flex:1;min-width:0;width:100%;height:46px;background:rgba(255,255,255,.06);border:1px solid var(--ln);border-radius:13px;color:var(--t);padding:0 12px;font:700 16px Manrope,system-ui,sans-serif;outline:0}
-.bet button{background:rgba(255,255,255,.07);border:1px solid var(--ln);border-radius:13px;padding:0 13px;font-weight:700;min-width:46px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border:1px solid var(--ln);border-radius:22px;padding:16px;margin-bottom:14px}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.btn{width:100%;min-height:52px;padding:14px;border-radius:15px;font-weight:800;font-size:16px;color:#fff;background:linear-gradient(135deg,#7b2ff7,#b84dff);box-shadow:0 10px 26px rgba(123,47,247,.5)}
+.opt{min-height:46px;padding:10px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid var(--ln);font-weight:700;font-size:13px;color:var(--t)}
+input{width:100%;height:46px;background:rgba(255,255,255,.06);border:1px solid var(--ln);border-radius:13px;color:var(--t);padding:0 12px;outline:0;margin-bottom:10px}
 label{display:block;color:var(--m);font-size:12px;font-weight:600;margin-bottom:6px}
-.sh{margin:8px 4px 10px;font:700 13px var(--hd);display:flex;align-items:center}
-nav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:456px;display:flex;gap:2px;padding:6px;border-radius:26px;background:rgba(18,12,56,.78);backdrop-filter:blur(18px);border:1px solid var(--ln);z-index:10}
-nav button{flex:1;min-height:52px;border-radius:20px;background:none;color:var(--m);font-size:10.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
+nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:456px;display:flex;gap:2px;padding:6px;border-radius:26px;background:rgba(18,12,56,.78);backdrop-filter:blur(18px);border:1px solid var(--ln);z-index:10}
+nav button{flex:1;min-height:52px;border-radius:20px;background:none;color:var(--m);font-size:10.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0}
 nav .on{color:#fff;background:linear-gradient(135deg,rgba(123,47,247,.6),rgba(176,77,255,.32))}
 .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.mc{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border:1px solid var(--ln);border-radius:20px;padding:7px 7px 12px;text-align:center;cursor:pointer}
-.mc .pn{height:clamp(74px,22vw,96px);border-radius:15px;display:grid;place-items:center;font-size:clamp(38px,11vw,48px)}
-.pn span{filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
-.m1{background:radial-gradient(120% 90% at 50% 130%,#d58bff,transparent 62%),linear-gradient(145deg,#4a14c2,#8b3dff)}
-.m2{background:radial-gradient(120% 90% at 50% 130%,#ffa0d6,transparent 62%),linear-gradient(145deg,#8e1aa8,#ec4899)}
-.m3{background:radial-gradient(120% 90% at 50% 130%,#7be0ff,transparent 62%),linear-gradient(145deg,#2a2fc9,#3b82f6)}
-.m4{background:radial-gradient(120% 90% at 50% 130%,#ffe08a,transparent 62%),linear-gradient(145deg,#b8620a,#f59e0b)}
-.m5{background:radial-gradient(120% 90% at 50% 130%,#7bf0c0,transparent 62%),linear-gradient(145deg,#0f766e,#22c55e)}
-.m6{background:radial-gradient(120% 90% at 50% 130%,#ffd08a,transparent 62%),linear-gradient(145deg,#c2410c,#f59e0b)}
-/* ... (остальные стили для игр я не трогаю, они подтянутся сами) ... */
+.mc{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border:1px solid var(--ln);border-radius:20px;padding:7px 7px 12px;text-align:center;cursor:pointer;overflow:hidden}
+.mc .pn{height:86px;border-radius:15px;display:grid;place-items:center;font-size:48px;margin-bottom:8px}
+.mc .pn svg{width:60px;height:60px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.m1{background:linear-gradient(145deg,#4a14c2,#8b3dff)}
+.m2{background:linear-gradient(145deg,#8e1aa8,#ec4899)}
+.m3{background:linear-gradient(145deg,#2a2fc9,#3b82f6)}
+.m4{background:linear-gradient(145deg,#b8620a,#f59e0b)}
+.m5{background:linear-gradient(145deg,#0f766e,#22c55e)}
+.m6{background:linear-gradient(145deg,#c2410c,#f59e0b)}
+.hero{position:relative;border-radius:24px;padding:18px;margin-bottom:14px;min-height:160px;overflow:hidden}
+.hero.p{background:linear-gradient(125deg,#5b17d8,#8e3dff)}
+.hero.o{background:linear-gradient(125deg,#ff9a2e,#ff5a36)}
+.hero h2{margin:0 0 6px;font:800 21px/1.2 Manrope,sans-serif;max-width:60%}
+.hero p{margin:0 0 14px;font-size:12px;opacity:.85;max-width:60%}
+.rw{display:inline-flex;align-items:center;gap:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.2);border-radius:15px;padding:6px 6px 6px 14px}
+.rw button{background:#fff;color:#5a1fd6;font-weight:800;padding:0 14px;min-height:42px;border-radius:11px;font-size:13px}
+.hero.o .rw button{color:#d9480f}
+.slg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sc{position:relative;border-radius:20px;padding:10px 8px 12px;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,#7ec8f5 0,#c9ecff 40%,#6fcf5a 41%,#3b9a3a);overflow:hidden}
+.scp{height:80px;display:grid;place-items:center}.scp svg{width:70px;height:70px}
+.sc b{display:block;color:#fff;font:700 13px var(--hd);text-shadow:0 1px 2px #000}
+.sc small{display:block;color:#fff;opacity:.9;font-size:11px;margin:2px 0 6px}
+.sc .rtp{background:rgba(0,0,0,.4);color:#ffe9a0;padding:2px 6px;border-radius:4px;font-size:10px}
+.slw{background:linear-gradient(180deg,#7ec8f5 0,#c9ecff 30%,#7fd36b 31%,#3b9a3a 100%);border-radius:20px;padding:10px;margin-bottom:20px;overflow:hidden}
+.sroof{height:60px;display:grid;place-items:end center;background:#8a2a1b;clip-path:polygon(0 100%,10% 0,90% 0,100% 100%);margin-bottom:10px}
+.ssign{font:700 20px var(--hd);color:#ffd24a;padding:4px 15px;background:#6a3a14;border-radius:8px}
+.sfr{background:#8a5222;padding:8px;border-radius:12px}
+.sreels{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:#35100f;padding:4px;border-radius:8px}
+.sreel{display:grid;grid-template-rows:repeat(3,1fr);gap:4px}
+.cell{aspect-ratio:1;background:rgba(255,255,255,.1);border-radius:6px;display:grid;place-items:center}
+.cell svg{width:80%;height:80%}
+.sbar{background:rgba(0,0,0,.6);border-radius:12px;padding:10px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;color:#fff}
 </style></head><body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<radialGradient id="gB" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#7a7a99"/><stop offset=".5" stop-color="#26263f"/><stop offset="1" stop-color="#090914"/></radialGradient>
-<radialGradient id="gG" cx=".32" cy=".28" r=".85"><stop offset="0" stop-color="#fff6c4"/><stop offset=".4" stop-color="#ffd24a"/><stop offset="1" stop-color="#d98a0a"/></radialGradient>
-<linearGradient id="gD" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6fbff"/><stop offset=".5" stop-color="#4cc9f0"/><stop offset="1" stop-color="#4338ca"/></linearGradient>
-<linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a9b"/><stop offset="1" stop-color="#b3132b"/></linearGradient>
-<linearGradient id="gF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffa62b"/><stop offset="1" stop-color="#ff3d2e"/></linearGradient>
-<linearGradient id="gM" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a8fd0"/><stop offset=".45" stop-color="#fff"/><stop offset="1" stop-color="#9aa0e0"/></linearGradient>
-<linearGradient id="gV" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9b3ff"/><stop offset="1" stop-color="#5a1fd6"/></linearGradient>
-<linearGradient id="gX" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf5a"/><stop offset="1" stop-color="#ff6a1a"/></linearGradient>
-<radialGradient id="gK" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#c4c8d4"/><stop offset=".55" stop-color="#6b7080"/><stop offset="1" stop-color="#2f3140"/></radialGradient>
-<linearGradient id="gW" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e3a95d"/><stop offset="1" stop-color="#8a5222"/></linearGradient>
-<!-- ВСТАВЬ ЭТО ВНУТРЬ <svg> ПЕРЕД ТЕГОМ </defs> -->
-<radialGradient id="gYarn" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffb3d6"/><stop offset=".6" stop-color="#ee3b8a"/><stop offset="1" stop-color="#a3145f"/></radialGradient>
-<symbol id="i-cat-c1" viewBox="0 0 100 100"><ellipse cx="50" cy="94" rx="30" ry="4" fill="#000" opacity=".25"/><polygon points="10,46 19,4 50,26" fill="#e3d3c0"/><polygon points="90,46 81,4 50,26" fill="#e3d3c0"/><ellipse cx="50" cy="58" rx="40" ry="35" fill="#fff" stroke="#e3d3c0"/><circle cx="14" cy="66" r="11" fill="#fff"/><circle cx="86" cy="66" r="11" fill="#fff"/><circle cx="26" cy="86" r="9" fill="#fff"/><circle cx="74" cy="86" r="9" fill="#fff"/><ellipse cx="34" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="66" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="34" cy="53" rx="7" ry="8" fill="#1f7fd0"/><ellipse cx="66" cy="53" rx="7" ry="8" fill="#1f7fd0"/><ellipse cx="34" cy="53" rx="2.6" ry="6" fill="#120d1a"/><ellipse cx="66" cy="53" rx="2.6" ry="6" fill="#120d1a"/><path d="M44.5 62h11l-5.5 7z" fill="#ff7f9c"/></symbol>
-<symbol id="i-cat-c2" viewBox="0 0 100 100"><ellipse cx="50" cy="94" rx="30" ry="4" fill="#000" opacity=".25"/><polygon points="10,46 19,4 50,26" fill="#df7618"/><polygon points="90,46 81,4 50,26" fill="#df7618"/><ellipse cx="50" cy="58" rx="40" ry="35" fill="#ffbf66" stroke="#df7618"/><ellipse cx="34" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="66" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="34" cy="53" rx="7" ry="8" fill="#2e9a2e"/><ellipse cx="66" cy="53" rx="7" ry="8" fill="#2e9a2e"/><ellipse cx="34" cy="53" rx="2.6" ry="6" fill="#120d1a"/><ellipse cx="66" cy="53" rx="2.6" ry="6" fill="#120d1a"/><path d="M44.5 62h11l-5.5 7z" fill="#ff7f9c"/></symbol>
-<symbol id="i-cat-c3" viewBox="0 0 100 100"><ellipse cx="50" cy="94" rx="30" ry="4" fill="#000" opacity=".25"/><polygon points="10,46 19,4 50,26" fill="#12131c"/><polygon points="90,46 81,4 50,26" fill="#12131c"/><ellipse cx="50" cy="58" rx="40" ry="35" fill="#4e5168" stroke="#12131c"/><ellipse cx="34" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="66" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="34" cy="53" rx="7" ry="8" fill="#d49a00"/><ellipse cx="66" cy="53" rx="7" ry="8" fill="#d49a00"/><ellipse cx="34" cy="53" rx="2.6" ry="6" fill="#120d1a"/><ellipse cx="66" cy="53" rx="2.6" ry="6" fill="#120d1a"/><path d="M44.5 62h11l-5.5 7z" fill="#ff7f9c"/></symbol>
-<symbol id="i-cat-c4" viewBox="0 0 100 100"><ellipse cx="50" cy="94" rx="30" ry="4" fill="#000" opacity=".25"/><polygon points="10,46 19,4 50,26" fill="#7a5f4c"/><polygon points="90,46 81,4 50,26" fill="#7a5f4c"/><ellipse cx="50" cy="58" rx="40" ry="35" fill="#f6ecde" stroke="#cbb79b"/><ellipse cx="34" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="66" cy="52" rx="9" ry="10" fill="#fff" stroke="#2a1a2e"/><ellipse cx="34" cy="53" rx="7" ry="8" fill="#1f6fd0"/><ellipse cx="66" cy="53" rx="7" ry="8" fill="#1f6fd0"/><ellipse cx="34" cy="53" rx="2.6" ry="6" fill="#120d1a"/><ellipse cx="66" cy="53" rx="2.6" ry="6" fill="#120d1a"/><path d="M44.5 62h11l-5.5 7z" fill="#ff7f9c"/></symbol>
-<symbol id="i-cat-fish" viewBox="0 0 100 100"><path d="M6 50Q34 14 68 40L94 20Q88 50 94 80L68 60Q34 86 6 50Z" fill="#f59e0b" stroke="#c97a08"/><circle cx="22" cy="46" r="5.5" fill="#fff"/><circle cx="21" cy="46" r="3" fill="#111"/></symbol>
-<symbol id="i-cat-collar" viewBox="0 0 100 100"><path d="M6 34Q50 72 94 34V54Q50 92 6 54Z" fill="#52e898" stroke="#0f6b3f"/><rect x="41" y="56" width="18" height="13" rx="3" fill="#ffd24a"/><circle cx="50" cy="80" r="11" fill="#ffd24a"/></symbol>
-<symbol id="i-cat-wild" viewBox="0 0 100 100"><circle cx="50" cy="48" r="38" fill="#ee3b8a"/><path d="M18 38Q50 18 82 38" stroke="#ffd0e4" stroke-width="3" fill="none"/><path d="M82 72Q98 86 88 98" stroke="#ff4f9a" stroke-width="4" fill="none"/></symbol>
-<symbol id="i-cat-scat" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#ffd24a" stroke-width="6"/><circle cx="50" cy="50" r="41" fill="#3a0a1a"/><ellipse cx="50" cy="62" rx="17" ry="14" fill="#e11d48"/><ellipse cx="29" cy="46" rx="7" ry="9" fill="#e11d48"/><ellipse cx="41" cy="33" rx="7" ry="10" fill="#e11d48"/><ellipse cx="59" cy="33" rx="7" ry="10" fill="#e11d48"/><ellipse cx="71" cy="46" rx="7" ry="9" fill="#e11d48"/></symbol>
 
-<linearGradient id="i-gold-h1a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0b0"/><stop offset="1" stop-color="#e69a10"/></linearGradient>
-<symbol id="i-gold-h1" viewBox="0 0 100 100"><ellipse cx="50" cy="93" rx="36" ry="4" fill="#000" opacity=".25"/><path d="M8 84L20 60H80L92 84Z" fill="url(#i-gold-h1a)"/><path d="M24 60L34 36H66L76 60Z" fill="url(#i-gold-h1a)"/></symbol>
-<symbol id="i-gold-wild" viewBox="0 0 100 100"><rect x="16" y="34" width="20" height="56" rx="6" fill="#d91e3a"/><rect x="40" y="30" width="20" height="60" rx="6" fill="#d91e3a"/><rect x="64" y="34" width="20" height="56" rx="6" fill="#d91e3a"/><rect x="12" y="52" width="76" height="10" rx="4" fill="#fbbf24"/></symbol>
-<symbol id="i-gold-scat" viewBox="0 0 100 100"><path d="M12 68L24 38L46 28L62 44L54 72L30 80Z" fill="#ffd24a"/><path d="M50 76L58 46L78 34L92 54L84 78L62 86Z" fill="#ffd24a"/></symbol>
+<!-- Сюда подгрузятся иконки -->
+<div id="svg-icons" style="display:none"></div>
+<script>
+  fetch('icons.html').then(r => r.text()).then(html => {
+    document.getElementById('svg-icons').innerHTML = html;
+  });
+</script>
 
-<symbol id="i-dra-h1" viewBox="0 0 100 100"><path d="M30 30L16 6L42 24M70 30L84 6L58 24" fill="#fbbf24"/><path d="M18 70Q8 40 32 28Q50 20 68 28Q92 40 82 70Q50 94 18 70Z" fill="#4ade80"/><circle cx="36" cy="48" r="7" fill="#fde047"/><circle cx="64" cy="48" r="7" fill="#fde047"/></symbol>
-<symbol id="i-dra-h2" viewBox="0 0 100 100"><path d="M8 50Q34 14 68 40L94 20Q88 50 94 80L68 60Q34 86 8 50Z" fill="#ffb060"/><circle cx="22" cy="46" r="5.5" fill="#fff"/><circle cx="21" cy="46" r="3" fill="#111"/></symbol>
-</defs>
-<symbol id="i-bomb" viewBox="0 0 100 100"><ellipse cx="48" cy="95" rx="28" ry="4" fill="#000" opacity=".3"/><circle cx="46" cy="58" r="33" fill="url(#gB)"/><rect x="37" y="19" width="18" height="13" rx="3" fill="#3a3a58"/><path d="M46 20C50 8 64 14 74 8" stroke="#e0b87a" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="78" cy="12" r="6" fill="url(#gF)"/></symbol>
-<symbol id="i-wheel" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="url(#gG)"/><circle cx="50" cy="50" r="41" fill="#14102e"/><circle cx="50" cy="50" r="27" fill="none" stroke="#e5384b" stroke-width="24" stroke-dasharray="10.6 10.6"/><circle cx="50" cy="50" r="14" fill="url(#gG)"/></symbol>
-<symbol id="i-rocket" viewBox="0 0 100 100"><g transform="rotate(35 50 50)"><path d="M40 70Q50 92 60 70Z" fill="url(#gF)"/><path d="M34 52L18 74L34 70Z" fill="url(#gR)"/><path d="M66 52L82 74L66 70Z" fill="url(#gR)"/><path d="M50 6C68 22 72 46 66 72H34C28 46 32 22 50 6Z" fill="url(#gM)"/><circle cx="50" cy="42" r="10" fill="url(#gV)" stroke="#fff" stroke-width="3"/></g></symbol>
-<symbol id="i-eagle" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="url(#gG)"/><path d="M50 28L56 38L80 32L68 50L88 56L64 64L58 82L50 73L42 82L36 64L12 56L32 50L20 32L44 38Z" fill="#9a6200"/></symbol>
-<symbol id="i-ladder" viewBox="0 0 100 100"><rect x="26" y="4" width="10" height="92" rx="4" fill="url(#gW)"/><rect x="64" y="4" width="10" height="92" rx="4" fill="url(#gW)"/><g fill="#f0c27a"><rect x="30" y="16" width="40" height="8" rx="3"/><rect x="30" y="38" width="40" height="8" rx="3"/><rect x="30" y="60" width="40" height="8" rx="3"/><rect x="30" y="82" width="40" height="8" rx="3"/></g></symbol>
-<symbol id="i-slotm" viewBox="0 0 100 100"><rect x="12" y="8" width="68" height="84" rx="11" fill="#d91e3a" stroke="#e09a10" stroke-width="3.5"/><rect x="18" y="36" width="56" height="32" rx="6" fill="#140a2a" stroke="#e09a10" stroke-width="3"/><rect x="22" y="40" width="14.5" height="24" rx="3" fill="#fff"/><rect x="38.8" y="40" width="14.5" height="24" rx="3" fill="#fff"/><rect x="55.5" y="40" width="14.5" height="24" rx="3" fill="#fff"/></symbol>
-<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></symbol>
-<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
-<symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></symbol>
-</svg>
 <header><div style="display:flex;align-items:center;gap:8px"><i class="lg">V</i><h1>Velvet</h1></div><div class="chip"><span id="bal">0</span><b onclick="tab('p')">+</b></div></header>
 <div id="toast"></div>
 <main>
 <section class="tab on" id="t-h">
- <div class="hero p"><h2>Получите 100 монет</h2><div class="rw"><div><small>Награда</small><br><b>100</b></div><button id="bw">Получить</button></div></div>
- <div class="hero o"><h2>Ежедневный бонус</h2><div class="rw"><div><small>Награда</small><br><b>1–50</b></div><button id="bd">Забрать</button></div></div>
+ <div class="hero p"><h2>Получите 100 монет за простую регистрацию</h2><p>Стартовый бонус зачисляется на счёт сразу.</p><div class="rw"><div><small>Награда</small><br><b>100</b></div><button id="bw">Получить бонус</button></div></div>
+ <div class="hero o"><h2>Ежедневный бонус</h2><p>Заходите каждый день и получайте монеты на счёт.</p><div class="rw"><div><small>Награда</small><br><b>1–50</b></div><button id="bd">Забрать</button></div></div>
  <h3 class="sh">Игры</h3>
  <div class="modes">
-  <div class="mc" data-t="m"><div class="pn m1"><span><svg class="ic"><use href="#i-bomb"/></svg></span></div><b>Мины</b></div>
-  <div class="mc" data-t="w"><div class="pn m2"><span><svg class="ic"><use href="#i-wheel"/></svg></span></div><b>Колесо</b></div>
-  <div class="mc" data-t="c"><div class="pn m3"><span><svg class="ic"><use href="#i-rocket"/></svg></span></div><b>Краш</b></div>
-  <div class="mc" data-t="f"><div class="pn m4"><span><svg class="ic"><use href="#i-eagle"/></svg></span></div><b>Монета</b></div>
-  <div class="mc" data-t="l"><div class="pn m5"><span><svg class="ic"><use href="#i-ladder"/></svg></span></div><b>Лесенка</b></div>
-  <div class="mc" data-t="s"><div class="pn m6"><span><svg class="ic"><use href="#i-slotm"/></svg></span></div><b>Слоты</b></div>
+  <div class="mc" data-t="m"><div class="pn m1"><span><svg><use href="#i-bomb"/></svg></span></div><b>Мины</b></div>
+  <div class="mc" data-t="w"><div class="pn m2"><span><svg><use href="#i-wheel"/></svg></span></div><b>Колесо</b></div>
+  <div class="mc" data-t="c"><div class="pn m3"><span><svg><use href="#i-rocket"/></svg></span></div><b>Краш</b></div>
+  <div class="mc" data-t="f"><div class="pn m4"><span><svg><use href="#i-eagle"/></svg></span></div><b>Монета</b></div>
+  <div class="mc" data-t="l"><div class="pn m5"><span><svg><use href="#i-ladder"/></svg></span></div><b>Лесенка</b></div>
+  <div class="mc" data-t="s"><div class="pn m6"><span><svg><use href="#i-slotm"/></svg></span></div><b>Слоты</b></div>
  </div>
 </section>
 
-<section class="tab" id="t-m"><div class="stage"><div class="shead"><div class="ttl">Мины</div></div><div id="grid"></div></div></section>
-<section class="tab" id="t-w"><div class="stage"><div class="shead"><div class="ttl">Колесо</div></div><div class="wheel"><canvas id="wc"></canvas></div></div></section>
-<section class="tab" id="t-c"><div class="stage"><div class="shead"><div class="ttl">Краш</div></div><div class="cwrap"><canvas id="cv"></canvas><div id="cm">x1.00</div></div></div></section>
-<section class="tab" id="t-f"><div class="stage"><div class="shead"><div class="ttl">Монета</div></div><div class="coinbox"><div id="coin3"></div></div></div></section>
-<section class="tab" id="t-l"><div class="stage"><div class="shead"><div class="ttl">Лесенка</div></div><div id="lad"></div></div></section>
+<section class="tab" id="t-m"><div class="card"><h2>Мины</h2><div id="grid"></div></div></section>
+<section class="tab" id="t-w"><div class="card"><h2>Колесо</h2><canvas id="wc"></canvas></div></section>
+<section class="tab" id="t-c"><div class="card"><h2>Краш</h2><canvas id="cv"></canvas><div id="cm">x1.00</div></div></section>
+<section class="tab" id="t-f"><div class="card"><h2>Монета</h2><div id="coin3"></div><button id="fbtn" class="btn">Подбросить</button></div></section>
+<section class="tab" id="t-l"><div class="card"><h2>Лесенка</h2><div id="lad"></div></div></section>
 
 <section class="tab" id="t-s">
  <div id="slobby"></div>
  <div id="sgame" style="display:none">
-   <button class="opt" id="sback" style="margin:0 0 10px;padding:0 18px;min-height:40px">← Все слоты</button>
-   <div class="slw" id="slw">
-    <div class="sdeco"><i class="sun"></i><i class="cld a"></i><i class="cld b"></i><i class="cld c"></i><i class="bush l"></i><i class="bush r"></i><i class="fence l"></i><i class="fence r"></i></div><div id="sfx"></div><div class="sbig" id="sbig"></div>
-    <div class="sroof"><div class="ssign"><span id="ssign">CAT HOUSE</span></div></div>
-    <div class="sfr"><div class="sfs" id="sfs"></div><div class="sreels" id="sreels"></div></div>
-    <div class="smsg" id="smsg">Удачи!</div>
-    <div class="sbar">
-     <div class="sstat"><div><small>КРЕДИТ</small><b id="scr">0</b></div><div><small>СТАВКА</small><b id="sbt">10</b></div><div><small>ВЫИГРЫШ</small><b id="swn">0</b></div></div>
-     <div class="sctl"><button id="sm1" aria-label="Меньше">−</button><button id="sspin" class="spin" aria-label="Крутить"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#3b1a8a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button><button id="sp1" aria-label="Больше">+</button></div>
-    </div>
-    <div class="sopt"><button class="opt" id="sturbo">Турбо</button><button class="opt" id="sinfo">Выплаты и правила</button></div>
-    <div class="ov" id="sov"><div class="ovc"><h3 id="ovt"></h3><b id="ovv"></b><div id="ovp"></div><button class="btn" id="ovb" style="margin-top:14px">Продолжить</button></div></div>
-   </div>
+  <button class="opt" id="sback" style="margin-bottom:10px">← Все слоты</button>
+  <div class="slw" id="slw">
+   <div class="sroof"><div class="ssign"><span id="ssign">CAT HOUSE</span></div></div>
+   <div class="sfr"><div class="sreels" id="sreels"></div></div>
+   <div class="sbar"><div><small>БАЛАНС</small><br><b id="sbal">0</b></div><div><small>СТАВКА</small><br><b id="sbt">10</b></div><button id="sspin" class="btn" style="width:80px;min-height:40px">Spin</button></div>
+  </div>
  </div>
 </section>
 
 <section class="tab" id="t-b">
- <div class="card"><div class="shead"><div class="ttl">Промокод</div></div><div class="bet"><input id="pc"><button id="pcb">Активировать</button></div></div>
- <div class="card"><div class="ttl">Реферальная ссылка</div><div class="bet"><input id="rl" readonly></div><div class="st"><div><b id="refc">0</b><small>рефералов</small></div></div></div>
+ <div class="card"><b>Промокод</b><div style="margin-top:10px"><input id="pc"><button id="pcb" class="opt" style="width:100%">Активировать</button></div></div>
+ <div class="card"><b>Реферальная ссылка</b><input id="rl" readonly style="margin-top:10px"><div class="st"><div><b id="refc">0</b><small>рефералов</small></div></div></div>
 </section>
 
 <section class="tab" id="t-p">
- <div class="card pf"><div class="av" id="av"></div><b id="un"></b><br><em class="role" id="urole"></em><div class="big" id="pbal">0</div></div>
- <button class="opt" style="width:100%;display:none" id="adm">Админ-панель</button>
+ <div class="card pf" style="text-align:center"><div class="big" id="pbal">0</div></div>
+ <button class="opt" style="width:100%;display:none;margin-bottom:10px" id="adm">Админ-панель</button>
 </section>
 
 <section class="tab" id="t-a">
- <button class="opt" onclick="tab('p')">← Назад</button>
+ <button class="opt" onclick="tab('p')" style="margin-bottom:12px">← Назад</button>
  <div class="card"><div class="st"><div><b id="aDep">0</b><small>Депозиты</small></div><div><b id="aBank">0</b><small>Банк</small></div></div></div>
- <div class="card"><b>Создать промокод</b><input id="pcode"><input id="pbonus"><input id="puses"><button onclick="createPromo()">Создать</button></div>
- <div class="card"><b>Пользователи</b><div id="ul"></div></div>
+ <div class="card"><b>Промокод</b><input id="pcode"><input id="pbonus"><input id="puses"><button onclick="createPromo()" class="btn">Создать</button></div>
+ <div class="card"><b>Юзеры</b><div id="ul"></div></div>
 </section>
 </main>
 <nav><button class="on" data-t="h">Главная</button><button data-t="s">Слоты</button><button data-t="b">Бонусы</button><button data-t="p">Профиль</button></nav>
