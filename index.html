@@ -136,7 +136,54 @@ nav button span{display:grid;place-items:center}nav button span .ic{width:1.15em
 #cs{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;font-weight:700;color:var(--m);pointer-events:none}
 .rk{position:absolute;left:10px;top:70%;width:46px;height:46px;margin:-23px 0 0 -23px;pointer-events:none;filter:drop-shadow(0 0 14px rgba(255,170,60,.85))}
 .rk .ic{width:46px;height:46px}
+input,select{-webkit-user-select:text;user-select:text}
 .role{font-style:normal;font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,.1);color:var(--m)}
+.role.blogger{background:linear-gradient(135deg,#ec4899,#8b3dff);color:#fff}
+.role.manager{background:linear-gradient(135deg,#ffd24a,#e09a12);color:#3a2500}
+.pr{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:13px}.pr:last-child{border:0}
+.pr b{flex:1;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis}.pr small{color:var(--m)}
+.pr button{background:rgba(255,84,112,.18);color:var(--bad);border-radius:9px;padding:6px 10px;font-weight:700}
+#rl{font-size:12px}
+@media(max-width:380px){nav button{font-size:10.5px}}
+.modes{grid-template-columns:repeat(6,1fr)}.mc{grid-column:span 2}.mc:nth-child(n+4){grid-column:span 3}
+.m4{background:radial-gradient(120% 90% at 50% 130%,#ffe08a,transparent 62%),linear-gradient(145deg,#b8620a,#f59e0b)}
+.m5{background:radial-gradient(120% 90% at 50% 130%,#7bf0c0,transparent 62%),linear-gradient(145deg,#0f766e,#22c55e)}
+#fp{gap:10px}
+#fp button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:76px;padding:10px 4px;border-radius:16px;border:2px solid transparent;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px rgba(0,0,0,.35)}
+#fp b{font-size:14px;font-weight:800}#fp small{font:700 17px var(--hd)}
+.coinbox{height:200px;display:grid;place-items:center}
+.toss{width:124px;height:124px;perspective:700px;transform-style:preserve-3d;filter:drop-shadow(0 18px 18px rgba(0,0,0,.45))}
+.toss.go{animation:toss 1.6s cubic-bezier(.3,.6,.4,1)}
+@keyframes toss{45%{transform:translateY(-74px) scale(1.25)}}
+.coin3{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 1.6s cubic-bezier(.2,.7,.2,1)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face .ic{width:100%;height:100%}.f2{transform:rotateY(180deg)}
+#lad{position:relative;height:420px;overflow:hidden;border-radius:18px;background:radial-gradient(80% 50% at 50% 0,rgba(139,61,255,.25),transparent 70%),linear-gradient(180deg,rgba(0,0,0,.4),rgba(40,20,90,.35));border:1px solid rgba(255,255,255,.06);box-shadow:inset 0 4px 16px rgba(0,0,0,.5)}
+#lad::before,#lad::after{content:"";position:absolute;top:0;bottom:0;width:9px;border-radius:5px;background:linear-gradient(90deg,#d9985a,#8a5222)}
+#lad::before{left:24%}#lad::after{right:24%}
+#lrows{position:absolute;left:0;right:0;top:68px;bottom:12px;display:flex;flex-direction:column}
+.lr{position:relative;flex:1}
+.lr::before{content:"";position:absolute;left:24%;right:24%;top:-4px;height:7px;border-radius:4px;background:linear-gradient(#f0c27a,#9a5f25);box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.lr span{position:absolute;right:2%;top:-10px;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:8px;background:rgba(255,255,255,.08);color:var(--m)}
+.lr.ps span{background:rgba(74,222,128,.22);color:var(--ok)}.lr.ps::before{box-shadow:0 0 14px rgba(74,222,128,.7)}
+.lr.nx span{background:rgba(255,210,74,.25);color:#ffd24a}
+#lad .gr{position:absolute;left:0;right:0;bottom:0;height:12px;background:linear-gradient(#3a2d7a,#1d1650)}
+#lman{position:absolute;left:50%;bottom:9px;width:48px;height:64px;margin-left:-24px;z-index:2;transform-origin:50% 100%;transition:bottom .35s ease,transform .15s}
+#lman .ic{width:100%;height:100%}#lman.sq{transform:scale(1.4,.16)}
+#lrock{position:absolute;left:50%;top:-100px;width:76px;height:76px;margin-left:-38px;z-index:3;pointer-events:none;filter:drop-shadow(0 12px 12px rgba(0,0,0,.5))}
+#lrock .ic{width:100%;height:100%}
+#ldust{position:absolute;left:50%;width:100px;height:30px;margin-left:-50px;border-radius:50%;background:radial-gradient(rgba(255,255,255,.6),transparent 70%);opacity:0;z-index:2;pointer-events:none}
+#ldust.dust{animation:dust .6s}
+@keyframes dust{0%{opacity:.9;transform:scale(.3)}100%{opacity:0;transform:scale(2.4)}}
+#lad.shake{animation:sk .4s}
+@keyframes sk{20%{transform:translate(-6px,3px)}40%{transform:translate(6px,-3px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-2px)}}
+.mc.wide{grid-column:1/-1;display:flex;align-items:center;gap:14px;text-align:left;padding:8px 14px 8px 8px}
+.mc.wide .pn{width:96px;height:78px;flex:none}.mc.wide b{margin:0 0 2px}
+.m6{background:radial-gradient(120% 90% at 50% 130%,#ffd08a,transparent 62%),linear-gradient(145deg,#c2410c,#f59e0b)}
+nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{width:1.05em;height:1.05em}
+.wr{padding:10px 0;border-bottom:1px solid var(--ln)}.wr:last-child{border:0}
+.wh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}.wh b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.wr small{display:block;color:var(--m);font-size:11.5px;margin-bottom:8px;line-height:1.45}
 .role.ok{background:linear-gradient(135deg,#22c55e,#16a34a);color:#04210f}.role.no{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -171,7 +218,6 @@ nav button span{display:grid;place-items:center}nav button span .ic{width:1.15em
 <header><div style="display:flex;align-items:center;gap:8px"><i class="lg">V</i><h1>Velvet</h1></div><div class="chip"><span id="bal">0</span><b onclick="tab('p')">+</b></div></header>
 <div id="toast"></div>
 <main>
-
 <section class="tab on" id="t-h">
  <div class="hero p"><h2>Получите 100 монет за простую регистрацию</h2><p>Стартовый бонус зачисляется на счёт сразу.</p>
   <div class="rw"><div><small>Награда</small><br><b>100</b></div><button id="bw">Получить бонус</button></div><div class="art"><svg class="ic"><use href="#i-coin"/></svg></div></div>
@@ -184,7 +230,7 @@ nav button span{display:grid;place-items:center}nav button span .ic{width:1.15em
   <div class="mc" data-t="c"><em class="bd">Новое</em><div class="pn m3"><span><svg class="ic"><use href="#i-rocket"/></svg></span></div><b>Краш</b><small>Новое</small></div>
    <div class="mc" data-t="f"><em class="bd">Новое</em><div class="pn m4"><span><svg class="ic"><use href="#i-eagle"/></svg></span></div><b>Монета</b><small>Орёл и решка</small></div>
   <div class="mc" data-t="l"><em class="bd">Новое</em><div class="pn m5"><span><svg class="ic"><use href="#i-ladder"/></svg></span></div><b>Лесенка</b><small>Осторожно, камни</small></div>
-   <div class="mc wide" data-t="s"><em class="bd">Хит</em><div class="pn m6"><span><svg class="ic"><use href="#i-slotm"/></svg></span></div><div><b>Слоты</b><small>Скоро!</small></div></div>
+   <div class="mc wide" data-t="s"><em class="bd">Хит</em><div class="pn m6"><span><svg class="ic"><use href="#i-slotm"/></svg></span></div><div><b>Слоты</b><small>7 игр · у каждой своя механика</small></div></div>
  </div>
  <h3 class="sh">Последние ставки<i class="live"></i></h3>
  <div class="card" style="padding:4px 10px"><div class="fh"><span>Режим</span><span>Игрок</span><span>Ставка</span><span>X</span><span>Итог</span></div><div id="feed"></div></div>
@@ -272,46 +318,54 @@ nav button span{display:grid;place-items:center}nav button span .ic{width:1.15em
   <button class="btn cash" id="lcash" style="display:none;margin-top:10px">Забрать</button>
  </div>
 </section>
-<!-- Бонусы -->
+
+<section class="tab" id="t-s">
+ <div id="slobby"></div>
+ <div id="sgame" style="display:none"><button class="opt" id="sback" style="margin:0 0 10px;padding:0 18px;min-height:40px">← Все слоты</button>
+ <div class="slw" id="slw">
+  <div class="sdeco"><i class="sun"></i><i class="cld a"></i><i class="cld b"></i><i class="cld c"></i><i class="bush l"></i><i class="bush r"></i><i class="fence l"></i><i class="fence r"></i></div><div id="sfx"></div><div class="sbig" id="sbig"></div>
+  <div class="sroof"><div class="ssign"><span id="ssign">CAT HOUSE</span></div></div>
+  <div class="sfr"><div class="sfs" id="sfs"></div><div class="sreels" id="sreels"></div></div>
+  <div class="smsg" id="smsg">Удачи!</div>
+  <div class="sbar">
+   <div class="sstat"><div><small>КРЕДИТ</small><b id="scr">0</b></div><div><small>СТАВКА</small><b id="sbt">10</b></div><div><small>ВЫИГРЫШ</small><b id="swn">0</b></div></div>
+   <div class="sctl"><button id="sm1" aria-label="Меньше">−</button><button id="sspin" class="spin" aria-label="Крутить"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#3b1a8a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button><button id="sp1" aria-label="Больше">+</button></div>
+  </div>
+  <div class="sopt"><button class="opt" id="sturbo">Турбо</button><button class="opt" id="sinfo">Выплаты и правила</button></div>
+  <div class="ov" id="sov"><div class="ovc"><h3 id="ovt"></h3><b id="ovv"></b><div id="ovp"></div><button class="btn" id="ovb" style="margin-top:14px">Продолжить</button></div></div>
+ </div></div>
+</section>
+
 <section class="tab" id="t-b">
  <div class="card">
   <div class="shead"><div class="ttl">Промокод</div><em class="role" id="brole"></em></div>
   <div class="bet"><input id="pc" placeholder="Введите промокод" autocapitalize="characters" style="text-transform:uppercase"><button id="pcb">Активировать</button></div>
  </div>
- <div class="card">
-  <div class="ttl">Реферальная ссылка</div>
-  <p class="note" style="text-align:left;margin:8px 0 10px">Приглашённый по вашей ссылке получит <b id="rbv">0</b> монет при первом входе.</p>
-  <div class="bet"><input id="rl" readonly></div>
-  <div class="g2"><button class="opt" id="rcp">Копировать</button><button class="opt" id="rsh">Поделиться</button></div>
-  <div class="st"><div><b id="rn">0</b><small>рефералов</small></div><div><b id="rd">0</b><small>депозиты</small></div><div><b id="re">0</b><small>заработок</small></div></div>
-  <p class="note" id="rby" style="margin:10px 0 0"></p>
- </div>
 </section>
 
-<!-- Профиль -->
 <section class="tab" id="t-p">
  <div class="card pf">
   <div class="av" id="av"></div><b id="un"></b><br><small id="uid"></small><br><em class="role" id="urole"></em>
   <div style="margin:10px 0 2px"><small>Баланс</small></div><div class="big" id="pbal">0</div>
  </div>
  <div class="card">
+  <div class="shead"><b>Пополнение</b><i class="rtp">CryptoBot</i></div>
+  <p class="note" style="text-align:left;margin:0 0 10px">Оплата любой криптовалютой через @CryptoBot. Курс: <b id="drate"></b>.</p>
+  <label>Сумма пополнения, $</label>
+  <input id="dam" type="text" inputmode="decimal" autocomplete="off" value="10" placeholder="Введите сумму" style="margin-bottom:6px">
+  <p class="note" style="text-align:left;margin:0 0 12px">От 1 до 1000 $</p>
+  <div class="st" style="margin-bottom:12px"><div style="grid-column:1/-1"><b id="dcoins">0</b><small>монет вы получите</small></div></div>
+  <button class="btn" id="dbtn">Пополнить через CryptoBot</button>
+ </div>
+ <div class="card">
   <div class="shead"><b>Вывод средств</b><i class="rtp">вручную</i></div>
-  <p class="note" style="text-align:left;margin:0 0 10px">Выплата приходит в @CryptoBot после проверки заявки администратором. Курс: <b id="wrate"></b>.</p>
+  <p class="note" style="text-align:left;margin:0 0 10px">Выплата приходит в @CryptoBot после проверки заявки. Курс: <b id="wrate"></b>.</p>
   <label>Сколько монет вывести</label>
   <input id="wam" type="text" inputmode="numeric" autocomplete="off" placeholder="Количество монет" style="margin-bottom:6px">
   <p class="note" id="wmin" style="text-align:left;margin:0 0 10px"></p>
   <div class="st" style="margin-bottom:12px"><div style="grid-column:1/-1"><b id="wusd">0.00</b><small>$ к получению</small></div></div>
   <button class="btn" id="wdb">Запросить вывод</button>
   <div id="wdl" style="margin-top:12px"></div>
- </div>
- <div class="card">
-  <div class="shead"><b>Пополнение</b><i class="rtp">CryptoBot</i></div>
-  <p class="note" style="text-align:left;margin:0 0 10px">Оплата любой криптовалютой через @CryptoBot: USDT, TON, BTC и другие. Курс: <b id="drate"></b>.</p>
-  <label>Сумма пополнения, $</label>
-  <input id="dam" type="text" inputmode="decimal" autocomplete="off" value="10" placeholder="Введите сумму" style="margin-bottom:6px">
-  <p class="note" style="text-align:left;margin:0 0 12px">От 1 до 1000 $</p>
-  <div class="st" style="margin-bottom:12px"><div style="grid-column:1/-1"><b id="dcoins">0</b><small>монет вы получите</small></div></div>
-  <button class="btn" id="dbtn">Пополнить через CryptoBot</button>
  </div>
  <div class="card">
   <div class="st"><div><b id="s1">0</b><small>ставок</small></div><div><b id="s2">0</b><small>побед</small></div><div><b id="s3">0</b><small>макс. выигрыш</small></div></div>
@@ -321,7 +375,6 @@ nav button span{display:grid;place-items:center}nav button span .ic{width:1.15em
  <button class="opt" style="width:100%" id="reset">Сбросить аккаунт</button>
 </section>
 
-<!-- Админка -->
 <section class="tab" id="t-a">
  <button class="opt" id="aback" style="margin-bottom:12px;padding:0 18px">← Назад</button>
  <div class="card"><div class="shead"><b>Заявки на вывод</b><button class="opt" id="walr" style="min-height:34px;padding:0 12px">Обновить</button></div>
@@ -346,7 +399,7 @@ const fmt=n=>(+n).toLocaleString('ru-RU',{maximumFractionDigits:2});
 const h=(t='light')=>{try{tg.HapticFeedback.impactOccurred(t)}catch(e){}};
 const ic=n=>`<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'ВСТАВЬ_ССЫЛКУ_ИЗ_WAIFLY'; // <--- СЮДА ВСТАВЬ СВОЮ ССЫЛКУ!
+const API_URL = 'https://looksmart-reef-joseph-mold.trycloudflare.com'; // <--- ВСТАВЬ ССЫЛКУ!
 const CFG0={rate:87,wdMin:5,flip:97,ladder:97,slot:96,mines:97,wheel:93.33,crash:97,maxBet:10000};
 let S={bal:0,bets:0,wins:0,best:0,hist:[],wd:[],ban:0,cfg:CFG0,role:'player',isAdmin:false,pendInv:null};
 
@@ -385,6 +438,7 @@ function render(){
  $('#urole').textContent=S.role==='player'?'Игрок':S.role==='blogger'?'Блогер':'Менеджер';$('#urole').className='role '+S.role;
  $('#s1').textContent=S.bets;$('#s2').textContent=S.wins;$('#s3').textContent=fmt(S.best);
  $('#hist').innerHTML=S.hist.length?S.hist.map(r=>`<div class="hr"><span>${r[0]}</span><b style="color:var(${r[1]>0?'--ok':'--bad'})">${r[1]>0?'+':''}${fmt(r[1])}</b></div>`).join(''):'<small style="color:var(--m)">Пока пусто</small>';
+ $('#rtpn').textContent='RTP: Мины '+S.cfg.mines+'% · Колесо '+S.cfg.wheel+'% · Краш '+S.cfg.crash+'%';
 }
 function getBet(id){
  const b=Math.floor(+$(id).value*100)/100;
@@ -400,13 +454,11 @@ function tab(t){$$('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+t));$$(
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 $$('.mc').forEach(c=>c.onclick=()=>tab(c.dataset.t));
 
-// ПРОФИЛЬ
 const U=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{first_name:'Гость',id:0};
 $('#un').textContent=[U.first_name,U.last_name].filter(Boolean).join(' ');
 $('#uid').textContent=(U.username?'@'+U.username+' · ':'')+'ID '+U.id;
 if(U.photo_url){const im=document.createElement('img');im.src=U.photo_url;$('#av').appendChild(im)}else $('#av').textContent=(U.first_name||'?')[0].toUpperCase();
 
-// ДЕПОЗИТ
 const dAmt=()=>{const v=Math.round(parseFloat(String($('#dam').value).replace(',','.'))*100)/100;return v>0?v:0};
 function dUI(){wUI();$('#dcoins').textContent=fmt(Math.floor(dAmt()*S.cfg.rate));$('#drate').textContent='1 $ = '+fmt(S.cfg.rate)+' монет';}
 $('#dam').oninput=()=>{const e=$('#dam'),v=e.value.replace(/[^0-9.,]/g,'');if(v!==e.value)e.value=v;dUI()};
@@ -423,7 +475,6 @@ $('#dbtn').onclick=async()=>{
  b.textContent='Пополнить через CryptoBot';b.disabled=false;
 };
 
-// ВЫВОД
 const ST={pending:'В обработке',paid:'Выплачено',rejected:'Отклонено'},stCls={pending:'role',paid:'role ok',rejected:'role no'};
 function wdMinCoins(){return Math.ceil(S.cfg.wdMin*S.cfg.rate)}
 function wUI(){const c=Math.floor(+($('#wam').value||0));$('#wrate').textContent='1 $ = '+fmt(S.cfg.rate)+' монет';
@@ -445,7 +496,6 @@ $('#wdb').onclick=async()=>{
  }catch(e){toast('Ошибка вывода','e')}
  b.disabled=false};
 
-// БОНУСЫ
 $('#pcb').onclick=async()=>{
  const c=$('#pc').value.trim().toUpperCase();
  if(!c){toast('Введите промокод','e');return}
@@ -453,11 +503,20 @@ $('#pcb').onclick=async()=>{
  if(!r.ok){toast(r.error==='used'?'Вы уже активировали':r.error==='limit'?'Лимит исчерпан':'Не найден','e');return}
  S.bal+=r.bonus;render();$('#pc').value='';toast('+'+fmt(r.bonus)+' по промокоду','w');h('medium');
 };
+$('#bw').onclick=async()=>{
+ const r=await api('/bonus/start');
+ if(r.ok){toast('+100 монет','w');syncMe();}
+ else toast('Бонус уже получен','e');
+};
+$('#bd').onclick=async()=>{
+ const r=await api('/bonus/daily');
+ if(r.ok){toast('+'+r.amount+' монет','w');syncMe();}
+ else toast('Приходите завтра','e');
+};
 $('#rl').value='https://t.me/YOUR_BOT/app?startapp=ref_'+U.id;
 $('#rcp').onclick=()=>{$('#rl').select();document.execCommand('copy');toast('Ссылка скопирована','w')};
 $('#rsh').onclick=()=>{const u='https://t.me/share/url?url='+encodeURIComponent($('#rl').value);if(tg)tg.openTelegramLink(u);else window.open(u)};
 
-// ИГРЫ (МИНЫ, КОЛЕСО, КРАШ, МОНЕТА, ЛЕСЕНКА)
 let M=null;const cells=[];
 const mm=(k,m)=>{let r=S.cfg.mines/100;for(let i=0;i<k;i++)r*=(25-i)/(25-m-i);return r};
 for(let i=0;i<25;i++){const c=document.createElement('button');c.textContent='?';c.onclick=()=>mClick(i);$('#grid').appendChild(c);cells.push(c)}
@@ -537,6 +596,7 @@ function fake(){const b=[10,25,50,100,250,500,1000][Math.random()*7|0];feed(['М
 for(let i=0;i<6;i++)fake();setInterval(fake,2800);
 
 $('#reset').onclick=()=>{if(confirm('Сбросить аккаунт?')){S.hist=[];S.bets=0;S.wins=0;S.best=0;render()}};
+
 (async()=>{await syncMe();render();})();
 </script>
 </body></html>
