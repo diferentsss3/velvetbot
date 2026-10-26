@@ -374,22 +374,3 @@ $$('#lds button').forEach(b => b.onclick = () => {
 lReset('e'); lUI();
 
 
-// --- ЛЕНТА СТАВОК (Фейк для видимости) ---
-const NM = ['Alex', 'Max', 'Kira', 'Dima', 'Neo', 'Sasha', 'Vlad', 'Lena', 'Tim', 'Zoe', 'Ivan', 'Mila'];
-function feed(g, p, b, w) {
-  const r = document.createElement('div'), pr = Math.round((w - b) * 100) / 100;
-  r.className = 'fr'; r.innerHTML = '<span></span><span></span><span></span><span></span><b></b>';
-  const c = r.children; 
-  c[0].textContent = g; c[1].textContent = p; c[2].textContent = fmt(b); c[3].textContent = 'x' + (w / b).toFixed(2);
-  c[4].textContent = (pr > 0 ? '+' : '') + fmt(pr); c[4].style.color = pr > 0 ? 'var(--ok)' : 'var(--bad)';
-  if ($('#feed')) {
-    $('#feed').prepend(r); 
-    while ($('#feed').children.length > 6) $('#feed').lastChild.remove();
-  }
-}
-function fake() {
-  const b = [10, 25, 50, 100, 250, 500, 1000][Math.random() * 7 | 0];
-  feed(['Мины', 'Колесо', 'Краш', 'Монета', 'Лесенка'][Math.random() * 5 | 0], NM[Math.random() * NM.length | 0], b, Math.random() < .45 ? b * (1.2 + Math.random() * 3) : 0);
-}
-for (let i = 0; i < 6; i++) fake();
-setInterval(fake, 2800);
