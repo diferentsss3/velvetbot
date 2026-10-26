@@ -1,20 +1,123 @@
-const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand()}
-const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
-const fmt=n=>(+n).toLocaleString('ru-RU',{maximumFractionDigits:2});
-const API_URL='https://asset-palmer-locally-neighbors.trycloudflare.com'; 
-const CFG0={rate:87,maxBet:10000};let S={bal:0,bets:0,role:'player',isAdmin:false,refCount:0,cfg:CFG0};
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); try { tg.disableVerticalSwipes() } catch (e) { } }
 
-async function api(p,d={}){try{const r=await fetch(API_URL+p,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...d,initData:tg?.initData||''})});return await r.json()}catch(e){toast('Нет связи','e');return{ok:false}}}
+const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+const fmt = n => (+n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
+const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-async function syncMe(){const r=await api('/me');if(!r.ok)return;S.bal=r.user.balance;S.role=r.user.role;S.isAdmin=!!r.admin;S.refCount=r.user.ref_count||0;render();if(S.isAdmin||S.role!=='player'){document.getElementById('adm').style.display='block';document.getElementById('adm').onclick=()=>S.isAdmin?openAdmin():tab('b')}}
-let tt;function toast(m,k){const e=$('#toast');if(!e)return;e.textContent=m;e.className='on '+(k||'');clearTimeout(tt);tt=setTimeout(()=>e.className='',2200)}
-function render(){$('#bal').textContent=fmt(S.bal);$('#pbal').textContent=fmt(S.bal);$('#urole').textContent=S.role;$('#refc').textContent=S.refCount;const U=tg?.initDataUnsafe?.user||{first_name:'Гость',id:0};$('#un').textContent=U.first_name;$('#rl').value='https://t.me/BOT?startapp=ref_'+U.id}
-function tab(t){$$('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+t));$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==('mwcfl'.includes(t)?'h':t)))}
-$$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));$$('.mc').forEach(c=>c.onclick=()=>tab(c.dataset.t));
-$('#bw').onclick=async()=>{const r=await api('/bonus/start');if(r.ok){toast('+100','w');syncMe()}else toast('Получен','e')};
-$('#bd').onclick=async()=>{const r=await api('/bonus/daily');if(r.ok){toast('+'+r.amount,'w');syncMe()}else toast('Завтра','e')};
-$('#pcb').onclick=async()=>{const r=await api('/promo/activate',{code:$('#pc').value});if(r.ok){toast('+'+r.bonus,'w');syncMe()}else toast('Ошибка','e')};
-async function openAdmin(){tab('a');const r=await api('/admin/stats');if(r.ok){$('#aDep').textContent=fmt(r.deposit);$('#aBank').textContent=fmt(r.bank)};const u=await api('/admin/users');if(u.ok){$('#ul').innerHTML=u.users.map(x=>`<div style="padding:5px;border-bottom:1px solid #333">${x.name}<br><button onclick="setRole('${x.id}','blogger')">Блогер</button><button onclick="setRole('${x.id}','manager')">Менеджер</button></div>`).join('')}}
-window.setRole=async(t,r)=>{await api('/admin/set-role',{target:t,role:r});openAdmin()};
-window.createPromo=async()=>{await api('/admin/create-promo',{code:$('#pcode').value,bonus:+$('#pbonus').value,uses:+$('#puses').value});toast('Создан')};
-(async()=>{await syncMe()})();
+const API_URL = 'ССЫЛКА_ИЗ_CLOUDFLARED'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ СЮДА!
+const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000 };
+let S = { bal: 0, bets: 0, role: 'player', isAdmin: false, refCount: 0, cfg: CFG0 };
+
+async function api(path, data = {}) {
+  try {
+    const r = await fetch(API_URL + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...data, initData: (tg && tg.initData) || '' })
+    });
+    return await r.json();
+  } catch (e) {
+    toast('Нет связи с сервером', 'e');
+    return { ok: false };
+  }
+}
+
+async function syncMe() {
+  const r = await api('/me');
+  if (!r.ok) return;
+  S.bal = r.user.balance; S.bets = r.user.bets; S.role = r.user.role;
+  S.refCount = r.user.ref_count || 0; S.isAdmin = !!r.admin;
+  if (r.cfg) S.cfg = { ...CFG0, ...r.cfg };
+  
+  render();
+  
+  if (S.isAdmin) {
+    const adm = $('#adm');
+    if (adm) { adm.style.display = 'block'; adm.onclick = () => openAdmin(); }
+  }
+}
+
+let tt;
+function toast(m, k) {
+  const e = $('#toast');
+  if (!e) return;
+  e.textContent = m; e.className = 'on ' + (k || '');
+  clearTimeout(tt); tt = setTimeout(() => e.className = '', 2200);
+}
+
+function render() {
+  if ($('#bal')) $('#bal').textContent = fmt(S.bal);
+  if ($('#pbal')) $('#pbal').textContent = fmt(S.bal);
+  if ($('#urole')) {
+    $('#urole').textContent = S.role === 'player' ? 'Игрок' : S.role === 'blogger' ? 'Блогер' : 'Менеджер';
+    $('#urole').className = 'role ' + S.role;
+  }
+  if ($('#rn')) $('#rn').textContent = S.refCount;
+  
+  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { first_name: 'Гость', id: 0 };
+  if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ');
+  if ($('#rl')) $('#rl').value = 'https://t.me/YOUR_BOT/app?startapp=ref_' + U.id;
+}
+
+function tab(t) {
+  $$('.tab').forEach(e => e.classList.toggle('on', e.id == 't-' + t));
+  $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.t == ('mwcfl'.includes(t) ? 'h' : t)));
+}
+$$('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
+$$('.mc').forEach(c => c.onclick = () => tab(c.dataset.t));
+
+// БОНУСЫ
+if ($('#bw')) $('#bw').onclick = async () => {
+  const r = await api('/bonus/start');
+  if (r.ok) { toast('+100 монет', 'w'); syncMe(); } else toast('Бонус уже получен', 'e');
+};
+if ($('#bd')) $('#bd').onclick = async () => {
+  const r = await api('/bonus/daily');
+  if (r.ok) { toast('+' + r.amount + ' монет', 'w'); syncMe(); } else toast('Приходите завтра', 'e');
+};
+
+if ($('#pcb')) $('#pcb').onclick = async () => {
+  const c = $('#pc').value.trim().toUpperCase();
+  if (!c) { toast('Введите промокод', 'e'); return; }
+  const r = await api('/promo/activate', { code: c });
+  if (!r.ok) { toast(r.error === 'used' ? 'Вы уже активировали' : r.error === 'limit' ? 'Лимит' : 'Не найден', 'e'); return; }
+  S.bal += r.bonus; render(); $('#pc').value = '';
+  toast('+' + fmt(r.bonus) + ' по промокоду', 'w'); h('medium');
+};
+
+if ($('#rcp')) $('#rcp').onclick = () => { $('#rl').select(); document.execCommand('copy'); toast('Ссылка скопирована', 'w') };
+if ($('#rsh')) $('#rsh').onclick = () => { const u = 'https://t.me/share/url?url=' + encodeURIComponent($('#rl').value); if (tg) tg.openTelegramLink(u); else window.open(u) };
+
+// АДМИНКА
+async function openAdmin() {
+  tab('a');
+  const r = await api('/admin/stats');
+  if (r.ok) {
+    if ($('#ah')) $('#ah').textContent = fmt(r.bank);
+    if ($('#at')) $('#at').textContent = fmt(r.deposit);
+  }
+  const u = await api('/admin/users');
+  if (u.ok && $('#ul')) {
+    $('#ul').innerHTML = u.users.map(x => `
+      <div style="border-bottom:1px solid rgba(255,255,255,.1); padding:8px 0;">
+        <b>${x.name}</b> (ID: ${x.id})<br>Баланс: ${fmt(x.balance)} | Роль: ${x.role}<br>
+        <div style="display:flex; gap:5px; margin-top:6px;">
+          <button class="opt" style="padding:2px 6px; min-height:28px; font-size:11px;" onclick="window.setRole('${x.id}','blogger')">Блогер</button>
+          <button class="opt" style="padding:2px 6px; min-height:28px; font-size:11px;" onclick="window.setRole('${x.id}','manager')">Менеджер</button>
+          <button class="opt" style="padding:2px 6px; min-height:28px; font-size:11px;" onclick="window.setRole('${x.id}','player')">Игрок</button>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+window.setRole = async (target, role) => { await api('/admin/set-role', { target, role }); toast('Роль изменена', 'w'); openAdmin(); };
+window.createPromo = async () => {
+  const code = $('#pcode')?.value, b = +$('#pbonus')?.value, u = +$('#puses')?.value;
+  if (!code || b <= 0 || u <= 0) return;
+  const r = await api('/admin/create-promo', { code, bonus: b, uses: u });
+  if (r.ok) { toast('Промокод создан', 'w'); syncMe(); } else toast('Нет денег', 'e');
+};
+
+(async () => { await syncMe(); })();
