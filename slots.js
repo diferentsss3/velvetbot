@@ -82,7 +82,11 @@ for(const id in SLOTS){const G=SLOTS[id],M=META[id];Object.assign(G,M);G.id=id;
  if(id!='cat'){G.lt=LT5;G.order=ORD;G.hero='h1';G.ico=k=>id+'-'+k}}
 const BETS=[1,2,5,10,20,50,100,200,500,1000];
 const SL={fs:0,fsTot:0,ctx:null,fctx:null,busy:false,bi:3,turbo:false,G:null},slp=ms=>new Promise(r=>setTimeout(r,ms));
-const cellEl=[],slotScale=()=>S.cfg.slot/100/SL.G.base;
+const cellEl=[],slotScale=()=>{
+  const rtp = Number(S.cfg && S.cfg.slot) || 96;
+  const base = Number(SL.G && SL.G.base) || 0.965;
+  return rtp / 100 / base;
+};
 const mkS=s=>mkc(SL.G,s,false);
 function symHTML(x){const G=SL.G,s=x.s;
  if(G.lt[s])return '<b class="lt t'+s+'">'+G.lt[s]+'</b>';
@@ -148,8 +152,14 @@ async function runFree(bet){const G=SL.G;
  $('#slw').classList.add('fsm');hud();slotLock(true);
  while(SL.fs>0){SL.fs--;hud();await slotSpin(true);slotLock(true);await slp(SL.turbo?500:1100)}
  $('#slw').classList.remove('fsm');
- const tot=Math.round(SL.fsTot*100)/100;
- if(tot>0){S.wins++;S.best=Math.max(S.best,tot)}
+const tot=Math.round(SL.fsTot*100)/100;
+if(tot>0){
+  S.wins++;
+  S.best=Math.max(S.best,tot);
+  // СИНХРОНИЗАЦИЯ ВЫИГРЫША БОНУСА С СЕРВЕРОМ
+  const res = await playGame('slot', 0, { win: tot });
+  if (res) { S.bal = res.balance; render(); }
+}
  S.hist.unshift([G.name+' · бонус',tot]);S.hist=S.hist.slice(0,15);render();feed(G.name,$('#un').textContent||'Вы',bet,tot);
  slotLock(false);SL.fctx=null;hud();if(tot>=bet*15)bigWin(tot,bet);
  await ovShow('Итого',(tot>0?'+':'')+fmt(tot),'<p class="rl" style="text-align:center">'+(tot>0?'за бонусную игру':'бонус без выигрыша')+'</p>','Продолжить');
