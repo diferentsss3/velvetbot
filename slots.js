@@ -114,16 +114,25 @@ function ovShow(t,v,pHTML,btn){
  return new Promise(res=>{$('#ovb').onclick=()=>{$('#sov').classList.remove('on');res()}})}
 
 async function slotSpin(free){
- if(SL.busy)return;const G=SL.G,bet=BETS[SL.bi],ctx=free?SL.fctx:SL.ctx,T=SL.turbo;
+ if(SL.busy)return; 
+ SL.busy = true;        // Блокируем кнопку моментально
+ slotLock(true);        // Визуально отключаем
+
+ const G=SL.G,bet=BETS[SL.bi],ctx=free?SL.fctx:SL.ctx,T=SL.turbo;
  
  // 1. СПИСЫВАЕМ СТАВКУ СРАЗУ (если это не фриспин)
  if(!free){
-  if (S.bal < bet) { toast('Недостаточно средств', 'e'); return; }
+  if (S.bal < bet) { 
+    toast('Недостаточно средств', 'e'); 
+    SL.busy = false; 
+    slotLock(false); 
+    return; 
+  }
   S.bal = Math.round((S.bal - bet) * 100) / 100; 
   render();
  }
 
- SL.busy=true;slotLock(true);hl([]);$('#swn').textContent='0';$('#smsg').textContent=free?'Фриспин':'Удачи!';
+ hl([]);$('#swn').textContent='0';$('#smsg').textContent=free?'Фриспин':'Удачи!';
  const g0=spinGrid(G,!!free,free&&G.mech=='cat'?ctx.st:null);
  await slotAnim(g0,free,ctx);
  const r=resolve(G,g0,!!free,ctx);
@@ -135,15 +144,15 @@ async function slotSpin(free){
   const w=Math.floor(st.win*sc*100)/100;
   if(w>0){win+=w;hl(st.ev.wins);countUp(win);$('#smsg').textContent='Выигрыш'+(st.m>1?' · x'+st.m:'');if(r.steps.length>1)await slp(T?350:700)}}
  if(free)win=Math.min(win,Math.max(0,6750*bet-SL.fsTot));
- win=Math.round(win*100)/100; // Оставляем копейки
-
+ win=Math.round(win*100)/100;
+ 
  if(win>0){if(r.steps.length==1)hl(r.steps[0].ev.wins);countUp(win);if(win>=bet*15)bigWin(win,bet);$('#smsg').textContent=(win>=bet*20?'Большой выигрыш! ':'Выигрыш ')+'x'+(win/bet).toFixed(2)}
  else{hl([]);$('#smsg').textContent=free?'Без выигрыша':'Попробуйте ещё'}
  
- // 2. ОБНОВЛЯЕМ БАЛАНС
  if(free){
    if(win>0){SL.fsTot+=win;}
  } else {
+   // СИНХРОНИЗАЦИЯ С СЕРВЕРОМ (в конце)
    const res = await playGame('slot', 0, { win: win, alreadyDeducted: true });
    if(res && res.newBalance !== undefined) {
       S.bal = res.newBalance; 
@@ -176,7 +185,7 @@ async function runFree(bet){const G=SL.G;
    S.wins++;
    S.best=Math.max(S.best||0,tot);
    
-   // Отправляем общий выигрыш бонуса на сервер
+   // СИНХРОНИЗАЦИЯ ОБЩЕГО ВЫИГРЫША БОНУСА
    const res = await playGame('slot', 0, { win: tot, alreadyDeducted: true });
    if(res && res.newBalance !== undefined) {
       S.bal = res.newBalance;

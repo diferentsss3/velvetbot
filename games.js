@@ -77,7 +77,6 @@ function mEnd() {
   $('#mbtn').textContent = 'Играть'; 
   $('#mbtn').disabled = false; 
   $('#mbtn').classList.remove('cash'); 
-  // Не вызываем mUI(), чтобы кнопка осталась "Играть"
 }
 
 if ($('#mbtn')) {
@@ -176,7 +175,7 @@ if ($('#wbtn')) {
   };
 }
 
-// --- КРАШ (РУЧНОЙ И АВТО) ---
+// --- КРАШ (ИСПРАВЛЕН) ---
 let C = null; 
 const cv = $('#cv'), cx = cv?.getContext('2d');
 function cDraw(m, t, bad) {
@@ -226,15 +225,19 @@ function cDraw(m, t, bad) {
 async function cCash(targetMult) {
   if (!C || C.cashed) return;
   C.cashed = true;
+  
+  if ($('#cbtn')) {
+      $('#cbtn').disabled = true; 
+      $('#cbtn').textContent = 'Ожидание краша...';
+      $('#cbtn').classList.remove('cash');
+  }
+
   const r = await api('/bet', { game: 'crash', bet: 0, params: { action: 'cashout', target: targetMult, cp: C.cp, originalBet: C.b } });
   if (r.ok) {
     S.bal = r.balance;
     render();
     toast('+' + fmt(targetMult * C.b) + ' (Прибыль: +' + fmt(targetMult * C.b - C.b) + ')', 'w');
   }
-  $('#cbtn').disabled = true; 
-  $('#cbtn').textContent = 'Ожидание краша...';
-  $('#cbtn').classList.remove('cash');
 }
 
 if ($('#cbtn')) {
@@ -263,10 +266,14 @@ if ($('#cbtn')) {
     $('#cbtn').disabled = false;
     
     const anim = () => {
-      if (C.cashed) return;
+      if (!C) return; 
+      
       m = Math.exp(.11 * ((performance.now() - t0) / 1000));
       C.mult = m;
-      $('#cbtn').textContent = 'Забрать (x' + m.toFixed(2) + ')';
+      
+      if (!C.cashed && $('#cbtn')) {
+         $('#cbtn').textContent = 'Забрать (x' + m.toFixed(2) + ')';
+      }
       
       if (m >= cp) {
         cDraw(cp, Math.log(cp)/.11, true);
@@ -278,13 +285,15 @@ if ($('#cbtn')) {
         }
         
         C = null;
-        $('#cbtn').disabled = false;
-        $('#cbtn').textContent = 'Сделать ставку';
-        $('#cbtn').classList.remove('cash');
+        if ($('#cbtn')) {
+            $('#cbtn').disabled = false;
+            $('#cbtn').textContent = 'Сделать ставку';
+            $('#cbtn').classList.remove('cash');
+        }
         return;
       }
       
-      if (C.auto > 1 && m >= C.auto) {
+      if (C.auto > 1 && m >= C.auto && !C.cashed) {
         cCash(C.auto);
       }
       
@@ -343,7 +352,7 @@ if ($('#fbtn')) {
   };
 }
 
-// --- ЛЕСЕНКА (С ПАДЕНИЕМ КАМНЯ) ---
+// --- ЛЕСЕНКА ---
 const LD = { e: { p: .8, n: 10 }, n: { p: .6, n: 8 }, h: { p: .4, n: 6 } }, RH = 340, LH = 420;
 let L = null, ldp = 'e';
 const lm = (k, d) => 0.97 / Math.pow(LD[d].p, k);
@@ -406,7 +415,6 @@ if ($('#lbtn')) {
         L.busy = false; lUI();
       }
     } else {
-      // АНИМАЦИЯ ПАДЕНИЯ КАМНЯ
       const manTop = LH - lBot(L.k + 1, L.d) - 64;
       rock.style.transition = 'top .5s cubic-bezier(.55,0,1,.7)';
       rock.style.top = Math.max(-60, manTop - 52) + 'px';
