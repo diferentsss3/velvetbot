@@ -10,7 +10,7 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://pic-sky-lid-nutrition.trycloudflare.com'; // <--- ВСТАВЬ ССЫЛКУ!
+const API_URL = 'https://attorneys-vacation-wolf-cast.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000, refDef: 50 };
 let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
 let selU = null;
@@ -26,7 +26,7 @@ async function api(path, data = {}) {
   } catch (e) { toast('Нет связи с сервером', 'e'); return { ok: false }; }
 }
 
-// --- НАСТОЯЩАЯ ЛЕНТА СТАВОК ---
+// --- РЕАЛЬНАЯ ЛЕНТА СТАВОК ---
 async function loadFeed() {
   const r = await api('/feed');
   if (!r.ok || !$('#feed')) return;
@@ -52,7 +52,7 @@ async function loadFeed() {
     `;
   }).join('');
 }
-setInterval(loadFeed, 10000); // Обновляем каждые 10 секунд
+setInterval(loadFeed, 10000);
 
 async function syncMe() {
   const r = await api('/me');
@@ -106,7 +106,11 @@ if ($('#dam')) {
       toast('Счёт создан. Ожидаем оплату...', 'w');
       const iv = setInterval(async () => {
         const chk = await api('/claim', { id: r.id });
-        if (chk.status === 'paid') { clearInterval(iv); syncMe(); toast('Успешно! +' + chk.coins + ' монет', 'w'); }
+        if (chk.status === 'paid') { 
+           clearInterval(iv); 
+           syncMe(); 
+           toast('Успешно! +' + chk.coins + ' монет' + (chk.msg || ''), 'w'); 
+        }
         else if (chk.status === 'expired') { clearInterval(iv); toast('Счёт истек', 'e'); }
       }, 5000);
     } else toast('Ошибка создания счёта', 'e');
@@ -162,9 +166,7 @@ async function playGame(game, bet, params) {
       S.hist.unshift([gn, Math.round((win - bet) * 100) / 100]); S.hist = S.hist.slice(0, 15);
   }
   
-  render(); 
-  loadFeed(); // Обновляем ленту сразу после ставки
-  
+  render(); loadFeed(); 
   return { ...r.result, newBalance: r.balance };
 }
 
@@ -179,10 +181,47 @@ function tab(t) { $$('.tab').forEach(e => e.classList.toggle('on', e.id == 't-' 
 $$('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
 $$('.mc').forEach(c => c.onclick = () => tab(c.dataset.t));
 
-// БОНУСЫ
+// БОНУСЫ И ПРОМО
 if ($('#bw')) $('#bw').onclick = async () => { const r = await api('/bonus/start'); if (r.ok) { toast('+100 монет', 'w'); syncMe(); } else toast('Бонус уже получен', 'e'); };
 if ($('#bd')) $('#bd').onclick = async () => { const r = await api('/bonus/daily'); if (r.ok) { toast('+' + r.amount + ' монет', 'w'); syncMe(); } else toast('Приходите завтра', 'e'); };
-if ($('#pcb')) $('#pcb').onclick = async () => { const c = $('#pc').value.trim().toUpperCase(); if (!c) return; const r = await api('/promo/activate', { code: c }); if (r.ok) { S.bal += r.bonus; render(); $('#pc').value = ''; toast('+' + fmt(r.bonus) + ' по промокоду', 'w'); } };
+
+if ($('#pcb')) $('#pcb').onclick = async () => { 
+  const c = $('#pc').value.trim().toUpperCase(); if (!c) return; 
+  const r = await api('/promo/activate', { code: c }); 
+  if (r.ok) { 
+    if (r.type === 'deposit') {
+      toast('Активирован бонус к депозиту: +' + r.bonus + '%', 'w'); 
+    } else {
+      S.bal += r.bonus; render(); 
+      toast('+' + fmt(r.bonus) + ' по промокоду', 'w'); 
+    }
+    $('#pc').value = ''; 
+  } else {
+    if (r.error === 'already_active') toast('У вас уже есть активный бонус к депозиту', 'e');
+    else toast(r.error === 'used' ? 'Уже активировали' : r.error === 'limit' ? 'Лимит' : 'Не найден', 'e');
+  }
+};
+
+window.uPromo = async () => {
+  const code = ($('#apc')?.value || '').trim().toUpperCase();
+  const bonus = Math.floor(+($('#apb')?.value) || 0);
+  const uses = Math.floor(+($('#apu')?.value) || 0);
+  if (!code || bonus < 1 || uses < 1) { toast('Заполните все поля', 'e'); return; }
+  const r = await api('/admin/create-promo', { code, bonus, uses, type: 'fixed' });
+  if (r.ok) { toast('Промокод создан', 'w'); $('#apc').value = ''; $('#apb').value = ''; $('#apu').value = ''; syncMe(); } else toast(r.error === 'money' ? 'Недостаточно средств' : 'Ошибка', 'e');
+};
+
+if ($('#npk')) {
+  $('#npk').onclick = async () => {
+    const code = ($('#npc')?.value || '').trim().toUpperCase();
+    const bonus = Math.floor(+($('#npb')?.value) || 0);
+    const uses = Math.floor(+($('#npu')?.value) || 0);
+    const type = $('#npt')?.value || 'fixed';
+    if (!code || bonus < 1 || uses < 1) { toast('Заполните все поля', 'e'); return; }
+    const r = await api('/admin/create-promo', { code, bonus, uses, type });
+    if (r.ok) { toast('Промокод создан', 'w'); $('#npc').value = ''; $('#npb').value = ''; $('#npu').value = ''; syncMe(); } else toast(r.error === 'money' ? 'Недостаточно средств' : 'Ошибка', 'e');
+  };
+}
 
 // АДМИНКА
 async function openAdmin() {

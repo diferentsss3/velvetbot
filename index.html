@@ -746,10 +746,14 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
  <div class="card" id="pp" style="display:none">
   <div class="ttl" id="ppt">Панель</div>
   <div class="st" style="margin:12px 0"><div><b id="p1">0</b><small>активаций</small></div><div><b id="p2">0</b><small>выдано монет</small></div><div><b id="p3">0</b><small>промокодов</small></div></div>
-  <label>Новый промокод</label>
+    <label>Новый промокод</label>
   <input id="npc" placeholder="Код: A–Z, 0–9" style="text-transform:uppercase;margin-bottom:8px">
-  <div class="g2"><div><label id="lnb">Бонус</label><input id="npb" type="number" inputmode="numeric"></div><div><label id="lnu">Активаций</label><input id="npu" type="number" inputmode="numeric"></div></div>
-  <button class="btn" id="npk">Создать промокод</button>
+  <label>Тип промокода</label>
+  <select id="npt" style="margin-bottom:8px">
+    <option value="fixed">Фиксированный бонус (монеты)</option>
+    <option value="deposit">Бонус к депозиту (%)</option>
+  </select>
+  <div class="g2"><div><label id="lnb">Бонус (сумма или %)</label><input id="npb" type="number" inputmode="numeric"></div><div><label id="lnu">Активаций</label><input id="npu" type="number" inputmode="numeric"></div></div>
   <div id="pl" style="margin-top:10px"></div>
  </div>
  <div class="card" id="pm" style="display:none"><div class="ttl">Команда блогеров</div><div id="pt" style="margin-top:8px"></div></div>
