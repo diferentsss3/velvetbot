@@ -10,10 +10,10 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://competitors-conflict-logistics-guest.trycloudflare.com'; // <--- ВСТАВЬ ССЫЛКУ!
+const API_URL = 'https://pic-sky-lid-nutrition.trycloudflare.com'; // <--- ВСТАВЬ ССЫЛКУ!
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000, refDef: 50 };
 let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
-let selU = null; // Выбранный юзер в админке
+let selU = null;
 
 async function api(path, data = {}) {
   try {
@@ -26,6 +26,34 @@ async function api(path, data = {}) {
   } catch (e) { toast('Нет связи с сервером', 'e'); return { ok: false }; }
 }
 
+// --- НАСТОЯЩАЯ ЛЕНТА СТАВОК ---
+async function loadFeed() {
+  const r = await api('/feed');
+  if (!r.ok || !$('#feed')) return;
+  
+  const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты' };
+  
+  if (!r.items || r.items.length === 0) {
+    $('#feed').innerHTML = '<small style="color:var(--m); padding:10px; display:block; text-align:center;">Пока нет ставок</small>';
+    return;
+  }
+
+  $('#feed').innerHTML = r.items.map(x => {
+    const pr = Math.round((x.win - x.bet) * 100) / 100;
+    const mult = (x.win / x.bet).toFixed(2);
+    return `
+      <div class="fr">
+        <span>${gn[x.game] || x.game}</span>
+        <span>${x.name || 'Игрок'}</span>
+        <span>${fmt(x.bet)}</span>
+        <span>x${mult}</span>
+        <b style="color:var(${pr > 0 ? '--ok' : '--bad'})">${pr > 0 ? '+' : ''}${fmt(pr)}</b>
+      </div>
+    `;
+  }).join('');
+}
+setInterval(loadFeed, 10000); // Обновляем каждые 10 секунд
+
 async function syncMe() {
   const r = await api('/me');
   if (!r.ok) return;
@@ -35,7 +63,9 @@ async function syncMe() {
   S.refCount = r.user.ref_count || 0; S.refDep = r.user.ref_dep || 0; S.refEarned = r.user.ref_earned || 0;
   S.isAdmin = !!r.admin;
   if (r.cfg) S.cfg = { ...CFG0, ...r.cfg };
-  render(); dUI(); wUI();
+  
+  render(); dUI(); wUI(); loadFeed();
+  
   if (S.isAdmin) { const adm = $('#adm'); if (adm) { adm.style.display = 'block'; adm.innerHTML = 'Админ-панель'; adm.onclick = () => openAdmin(); } }
 }
 
@@ -55,6 +85,7 @@ function render() {
   if ($('#s2')) $('#s2').textContent = S.wins;
   if ($('#s3')) $('#s3').textContent = fmt(S.best);
   if ($('#hist')) $('#hist').innerHTML = S.hist.length ? S.hist.map(r=>`<div class="hr"><span>${r[0]}</span><b style="color:var(${r[1]>0?'--ok':'--bad'})">${r[1]>0?'+':''}${fmt(r[1])}</b></div>`).join('') : '<small style="color:var(--m)">Пока пусто</small>';
+  
   const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { first_name: 'Гость', id: 0, photo_url: null, username: '' };
   if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ') || 'Игрок';
   if ($('#uid')) $('#uid').textContent = (U.username ? '@' + U.username + ' · ' : '') + 'ID ' + U.id;
@@ -62,6 +93,7 @@ function render() {
   if ($('#rl')) $('#rl').value = 'https://t.me/velvetcasBot/app?startapp=ref_' + U.id;
 }
 
+// ДЕПОЗИТ
 const dAmt = () => { const v = Math.round(parseFloat(String($('#dam').value).replace(',', '.')) * 100) / 100; return v > 0 ? v : 0; };
 function dUI() { if (!$('#drate')) return; $('#drate').textContent = '1 $ = ' + fmt(S.cfg.rate) + ' монет'; if ($('#dcoins')) $('#dcoins').textContent = fmt(Math.floor(dAmt() * S.cfg.rate)); }
 if ($('#dam')) {
@@ -81,23 +113,17 @@ if ($('#dam')) {
   };
 }
 
+// ВЫВОД
 function wUI() { if (!$('#wrate')) return; const c = Math.floor(+($('#wam').value || 0)); $('#wrate').textContent = '1 $ = ' + fmt(S.cfg.rate) + ' монет'; $('#wmin').textContent = 'Минимум ' + fmt(Math.ceil(S.cfg.wdMin * S.cfg.rate)) + ' монет (' + S.cfg.wdMin + ' $)'; $('#wusd').textContent = (Math.floor(c / S.cfg.rate * 100) / 100).toFixed(2); }
-
 if ($('#wam')) {
   $('#wam').oninput = () => { const e = $('#wam'), v = e.value.replace(/\D/g, ''); if (v !== e.value) e.value = v; wUI(); };
   $('#wdb').onclick = async () => {
     const c = Math.floor(+$('#wam').value || 0);
     if (c < Math.ceil(S.cfg.wdMin * S.cfg.rate)) { toast('Минимум ' + fmt(Math.ceil(S.cfg.wdMin * S.cfg.rate)) + ' монет', 'e'); return; }
     if (c > S.bal) { toast('Недостаточно средств', 'e'); return; }
-    
     const r = await api('/withdraw', { coins: c });
-    if (r.ok) { 
-      toast('Заявка отправлена', 'w'); 
-      S.bal -= c; 
-      render(); 
-      $('#wam').value = ''; 
-      wUI(); 
-    } else {
+    if (r.ok) { toast('Заявка отправлена', 'w'); S.bal -= c; render(); $('#wam').value = ''; wUI(); } 
+    else {
       if (r.error === 'min') toast('Сумма меньше минимальной', 'e');
       else if (r.error === 'max') toast('Сумма больше максимальной (500$)', 'e');
       else if (r.error === 'pending') toast('У вас уже есть заявка в обработке', 'e');
@@ -118,39 +144,31 @@ function getBet(id){
 
 async function playGame(game, bet, params) {
   if (S.ban) { toast('Заблокирован', 'e'); return null; }
-  
   const alreadyDeducted = params && params.alreadyDeducted;
   
   if (!alreadyDeducted && (!params || (params.action !== 'climb' && params.action !== 'cashout'))) {
       if (bet > S.bal) { toast('Недостаточно средств', 'e'); return null; }
-      S.bal = Math.round((S.bal - bet) * 100) / 100; 
-      render();
+      S.bal = Math.round((S.bal - bet) * 100) / 100; render();
   }
 
   const r = await api('/bet', { game, bet, params });
-  
-  if (!r.ok) { 
-    await syncMe(); 
-    if (r.error === 'banned') toast('Аккаунт заблокирован', 'e');
-    else if (r.error === 'balance') toast('Недостаточно средств', 'e');
-    else toast('Ошибка ставки', 'e');
-    return null; 
-  }
+  if (!r.ok) { await syncMe(); toast('Ошибка ставки', 'e'); return null; }
   
   const win = r.result.win;
-  
   if (!alreadyDeducted && (!params || (params.action !== 'climb' && params.action !== 'cashout'))) {
-      S.bets++; 
-      if (win > bet) S.wins++;
+      S.bets++; if (win > bet) S.wins++;
       S.best = Math.max(S.best || 0, Math.round((win - bet) * 100) / 100);
       const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты' }[game] || game;
-      S.hist.unshift([gn, Math.round((win - bet) * 100) / 100]); 
-      S.hist = S.hist.slice(0, 15);
+      S.hist.unshift([gn, Math.round((win - bet) * 100) / 100]); S.hist = S.hist.slice(0, 15);
   }
+  
+  render(); 
+  loadFeed(); // Обновляем ленту сразу после ставки
   
   return { ...r.result, newBalance: r.balance };
 }
 
+// ГЕНЕРАТОР ПОЛЕЙ
 $$('.bet[data-id]').forEach(d => {
   const i = d.dataset.id;
   d.innerHTML = `<input id="${i}" type="number" inputmode="decimal" value="10"><button data-k="h">½</button><button data-k="d">×2</button><button data-k="m">Макс</button>`;
@@ -161,10 +179,12 @@ function tab(t) { $$('.tab').forEach(e => e.classList.toggle('on', e.id == 't-' 
 $$('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
 $$('.mc').forEach(c => c.onclick = () => tab(c.dataset.t));
 
+// БОНУСЫ
 if ($('#bw')) $('#bw').onclick = async () => { const r = await api('/bonus/start'); if (r.ok) { toast('+100 монет', 'w'); syncMe(); } else toast('Бонус уже получен', 'e'); };
 if ($('#bd')) $('#bd').onclick = async () => { const r = await api('/bonus/daily'); if (r.ok) { toast('+' + r.amount + ' монет', 'w'); syncMe(); } else toast('Приходите завтра', 'e'); };
 if ($('#pcb')) $('#pcb').onclick = async () => { const c = $('#pc').value.trim().toUpperCase(); if (!c) return; const r = await api('/promo/activate', { code: c }); if (r.ok) { S.bal += r.bonus; render(); $('#pc').value = ''; toast('+' + fmt(r.bonus) + ' по промокоду', 'w'); } };
 
+// АДМИНКА
 async function openAdmin() {
   tab('a');
   const r = await api('/admin/stats');
@@ -191,7 +211,6 @@ async function openAdmin() {
     `).join('');
   }
   
-  // Загрузка заявок
   const L = $('#wal');
   if (L) {
     L.innerHTML = '<div style="text-align:center; padding:10px;">Загрузка...</div>';

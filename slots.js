@@ -153,7 +153,7 @@ async function slotSpin(free){
    if(win>0){SL.fsTot+=win;}
  } else {
    // СИНХРОНИЗАЦИЯ С СЕРВЕРОМ (в конце)
-   const res = await playGame('slot', 0, { win: win, alreadyDeducted: true });
+   const res = await playGame('slot', bet, { win: win, alreadyDeducted: true });
    if(res && res.newBalance !== undefined) {
       S.bal = res.newBalance; 
       render();
