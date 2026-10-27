@@ -168,7 +168,7 @@ function getBet(id){
 }
 
 async function playGame(game, bet, params) {
-  if (S.ban) { toast('Заблокирован', 'e'); return null; }
+  if (S.ban) { toast('Аккаунт заблокирован', 'e'); return null; }
   
   if (!params || params.action === 'start') {
       if (bet > S.bal) { toast('Недостаточно средств', 'e'); return null; }
@@ -176,7 +176,14 @@ async function playGame(game, bet, params) {
   }
 
   const r = await api('/bet', { game, bet, params });
-  if (!r.ok) { await syncMe(); toast('Ошибка ставки', 'e'); return null; }
+  
+  if (!r.ok) { 
+    await syncMe(); 
+    if (r.error === 'banned') toast('Заблокирован', 'e');
+    else if (r.error === 'balance') toast('Недостаточно средств', 'e');
+    else toast('Ошибка ставки', 'e');
+    return null; 
+  }
   
   S.bal = r.balance;
   const win = r.result.win;

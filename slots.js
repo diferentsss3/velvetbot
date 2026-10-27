@@ -115,7 +115,7 @@ async function slotSpin(free){
  if(SL.busy)return;const G=SL.G,bet=BETS[SL.bi],ctx=free?SL.fctx:SL.ctx,T=SL.turbo;
  if(!free){
   if (S.bal < bet) { toast('Недостаточно средств', 'e'); return; }
-  S.bal -= bet; render();
+
 }
  SL.busy=true;slotLock(true);hl([]);$('#swn').textContent='0';$('#smsg').textContent=free?'Фриспин':'Удачи!';
  const g0=spinGrid(G,!!free,free&&G.mech=='cat'?ctx.st:null);
@@ -129,7 +129,7 @@ async function slotSpin(free){
   const w=Math.floor(st.win*sc*100)/100;
   if(w>0){win+=w;hl(st.ev.wins);countUp(win);$('#smsg').textContent='Выигрыш'+(st.m>1?' · x'+st.m:'');if(r.steps.length>1)await slp(T?350:700)}}
  if(free)win=Math.min(win,Math.max(0,6750*bet-SL.fsTot));
- win=Math.round(win*100)/100;
+  win=Math.round(win*100)/100; // Оставляем копейки, как ты и просил
  if(win>0){if(r.steps.length==1)hl(r.steps[0].ev.wins);countUp(win);if(win>=bet*15)bigWin(win,bet);$('#smsg').textContent=(win>=bet*20?'Большой выигрыш! ':'Выигрыш ')+'x'+(win/bet).toFixed(2)}
  else{hl([]);$('#smsg').textContent=free?'Без выигрыша':'Попробуйте ещё'}
  
