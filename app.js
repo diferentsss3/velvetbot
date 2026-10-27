@@ -10,7 +10,7 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://harris-alberta-hotels-reveals.trycloudflare.com'; // <--- ВСТАВЬ ССЫЛКУ!
+const API_URL = 'https://harris-alberta-hotels-reveals.trycloudflare.com'; // <--- ТВОЯ ССЫЛКА
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000, refDef: 50 };
 let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
 let selU = null;
@@ -384,5 +384,26 @@ const originalTab = tab;
 tab = function(t) { originalTab(t); if(t == 'p') loadMySupport(); if(t == 'b') loadGiveaways(); };
 const originalOpenAdmin = openAdmin;
 openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); };
+
+// --- СЧЕТЧИК ОНЛАЙНА (ДОБАВЛЕН СЮДА) ---
+async function updateOnline() {
+  try {
+    const r = await api('/online');
+    const el = $('#online-count');
+    if (!el) return;
+    
+    if (r && r.ok) {
+      el.textContent = r.count;
+    } else {
+      if (el.textContent === '...') el.textContent = '1';
+    }
+  } catch (e) {
+    const el = $('#online-count');
+    if (el && el.textContent === '...') el.textContent = '1';
+  }
+}
+
+updateOnline();
+setInterval(updateOnline, 15000);
 
 (async () => { render(); await syncMe(); })();
