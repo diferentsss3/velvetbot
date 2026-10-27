@@ -10,7 +10,7 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://attorneys-vacation-wolf-cast.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
+const API_URL = 'https://tournament-alpha-gaming-paul.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000, refDef: 50 };
 let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
 let selU = null;
@@ -318,5 +318,57 @@ if ($('#acs')) {
 
 async function updateOnline() { const r = await api('/online'); if (r.ok && $('#online-count')) $('#online-count').textContent = r.count; }
 updateOnline(); setInterval(updateOnline, 30000);
+// --- ПОДДЕРЖКА (ЮЗЕР) ---
+async function loadMySupport() {
+  if (!$('#sup-history')) return;
+  const r = await api('/support/my');
+  if (!r.ok) return;
+  $('#sup-history').innerHTML = r.items.map(x => `
+    <div class="hr" style="flex-direction:column; align-items:flex-start; gap:5px; padding:10px; background:rgba(0,0,0,.2); border-radius:10px; margin-bottom:5px;">
+      <small style="color:var(--m)">Вы: ${x.message}</small>
+      ${x.reply ? `<b style="color:var(--g)">Ответ: ${x.reply}</b>` : `<small style="color:var(--ok)">Ожидает ответа...</small>`}
+    </div>
+  `).join('');
+}
+if ($('#sup-btn')) {
+  $('#sup-btn').onclick = async () => {
+    const msg = $('#sup-msg').value.trim();
+    if (!msg) return;
+    const r = await api('/support/create', { message: msg });
+    if (r.ok) { toast('Сообщение отправлено', 'w'); $('#sup-msg').value = ''; loadMySupport(); }
+    else toast('Ошибка', 'e');
+  };
+}
 
+// --- ПОДДЕРЖКА (АДМИН) ---
+async function loadAdminSupport() {
+  if (!$('#admin-support-list')) return;
+  const r = await api('/admin/support/list');
+  if (!r.ok) return;
+  $('#admin-support-list').innerHTML = r.items.map(x => `
+    <div class="wr">
+      <div class="wh"><b>${x.name} (ID: ${x.uid})</b><em class="${x.status === 'open' ? 'role' : 'role ok'}">${x.status === 'open' ? 'Открыт' : 'Закрыт'}</em></div>
+      <small>${new Date(x.created_at).toLocaleString('ru-RU')}</small>
+      <div style="margin:10px 0; padding:10px; background:rgba(0,0,0,.3); border-radius:10px; font-size:13px;">${x.message}</div>
+      ${x.reply ? `<div style="margin:10px 0; padding:10px; background:rgba(74,222,128,.1); border-left:3px solid var(--ok); border-radius:10px; font-size:13px;"><b>Ваш ответ:</b> ${x.reply}</div>` : `
+      <div style="display:flex; gap:5px; margin-top:5px;">
+        <input type="text" id="reply-${x.id}" placeholder="Написать ответ..." style="flex:1; height:36px; font-size:13px;">
+        <button class="opt" style="min-height:36px;" onclick="window.replySupport(${x.id})">Ответить</button>
+      </div>`}
+    </div>
+  `).join('');
+}
+window.replySupport = async (id) => {
+  const reply = $(`#reply-${id}`)?.value;
+  if (!reply) return;
+  const r = await api('/admin/support/reply', { id, reply });
+  if (r.ok) { toast('Ответ отправлен', 'w'); loadAdminSupport(); }
+};
+
+// Вызов поддержки при входе в админку и профиль
+if ($('#sup-reload')) $('#sup-reload').onclick = loadAdminSupport;
+const originalOpenAdmin = openAdmin;
+openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); };
+const originalTab = tab;
+tab = function(t) { originalTab(t); if(t == 'p') loadMySupport(); };
 (async () => { render(); await syncMe(); })();

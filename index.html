@@ -792,6 +792,13 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <div class="st"><div><b id="s1">0</b><small>ставок</small></div><div><b id="s2">0</b><small>побед</small></div><div><b id="s3">0</b><small>макс. выигрыш</small></div></div>
  </div>
  <div class="card"><b>История</b><div id="hist" style="margin-top:6px"></div></div>
+<div class="card">
+  <div class="shead"><b>Техподдержка</b></div>
+  <p class="note" style="text-align:left;margin:0 0 10px">Напишите нам, если у вас возникли проблемы или вопросы.</p>
+  <textarea id="sup-msg" placeholder="Ваше сообщение..." style="width:100%; height:80px; background:rgba(255,255,255,.06); border:1px solid var(--ln); border-radius:13px; color:var(--t); padding:10px; margin-bottom:10px; resize:none; outline:none;"></textarea>
+  <button class="btn" id="sup-btn">Отправить</button>
+  <div id="sup-history" style="margin-top:10px;"></div>
+</div> 
  <button class="opt" style="width:100%;margin-bottom:10px;display:none" id="adm"><svg class="ic" style="display:inline-block;vertical-align:-3px;margin-right:6px"><use href="#i-gear"/></svg>Админ-панель<b id="wbadge" style="margin-left:8px;color:var(--g)"></b></button>
  <button class="opt" style="width:100%" id="reset">Сбросить аккаунт</button>
  <p class="note">Пока платёжный сервер не подключён, пополнение и вывод работают в демо-режиме.</p>
@@ -813,6 +820,10 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <label>Минимальный вывод, $</label><input id="dwm" type="number" inputmode="decimal" style="margin-bottom:10px">
   <button class="btn" id="das">Сохранить</button>
   <p class="note" style="text-align:left;margin:10px 0 0">Пока адрес пуст, пополнение работает в демо-режиме.</p></div>
+  <div class="card">
+  <div class="shead"><b>Техподдержка (Тикеты)</b><button class="opt" id="sup-reload" style="min-height:34px;padding:0 12px">Обновить</button></div>
+  <div id="admin-support-list"></div>
+</div>
  <div class="card"><b>Партнёры и рефералы</b>
   <div class="g2" style="margin-top:10px">
    <div><label>Блогер: макс. бонус</label><input id="pb1" type="number"></div><div><label>Блогер: макс. активаций</label><input id="pb2" type="number"></div>
