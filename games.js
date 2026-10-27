@@ -41,6 +41,8 @@ async function mClick(i) {
     cells.forEach((c, k) => { if (k != i && !c.className) { c.className = 'dim'; c.innerHTML = ic('gem') } });
     toast('Мина! −' + fmt(M.b), 'e'); 
     M.done = true; 
+    if (res.newBalance !== undefined) S.bal = res.newBalance;
+    render();
     mEnd(); 
     return;
   }
@@ -63,6 +65,8 @@ async function mCash() {
   const res = await playGame('mines', M.b, { mines: M.m, picks: [...M.open] });
   if (!res) return;
   M.done = true; 
+  if (res.newBalance !== undefined) S.bal = res.newBalance;
+  render();
   toast('+' + fmt(res.win) + ' (Прибыль: +' + fmt(res.win - M.b) + ')', 'w'); 
   mEnd();
 }
@@ -73,7 +77,7 @@ function mEnd() {
   $('#mbtn').textContent = 'Играть'; 
   $('#mbtn').disabled = false; 
   $('#mbtn').classList.remove('cash'); 
-  mUI();
+  // Не вызываем mUI(), чтобы кнопка осталась "Играть"
 }
 
 if ($('#mbtn')) {
@@ -153,6 +157,8 @@ if ($('#wbtn')) {
     wc.style.transform = `rotate(${rot}deg)`;
     
     setTimeout(() => {
+      if (res.newBalance !== undefined) S.bal = res.newBalance;
+      render();
       const win = res.win;
       const d = document.createElement('span'); 
       d.className = 'dot'; 
@@ -170,8 +176,7 @@ if ($('#wbtn')) {
   };
 }
 
-
-// --- КРАШ ---
+// --- КРАШ (РУЧНОЙ И АВТО) ---
 let C = null; 
 const cv = $('#cv'), cx = cv?.getContext('2d');
 function cDraw(m, t, bad) {
@@ -218,42 +223,77 @@ function cDraw(m, t, bad) {
   $('#cm').textContent = 'x' + m.toFixed(2);
 }
 
+async function cCash(targetMult) {
+  if (!C || C.cashed) return;
+  C.cashed = true;
+  const r = await api('/bet', { game: 'crash', bet: 0, params: { action: 'cashout', target: targetMult, cp: C.cp, originalBet: C.b } });
+  if (r.ok) {
+    S.bal = r.balance;
+    render();
+    toast('+' + fmt(targetMult * C.b) + ' (Прибыль: +' + fmt(targetMult * C.b - C.b) + ')', 'w');
+  }
+  $('#cbtn').disabled = true; 
+  $('#cbtn').textContent = 'Ожидание краша...';
+  $('#cbtn').classList.remove('cash');
+}
+
 if ($('#cbtn')) {
   $('#cbtn').onclick = async () => {
-    if (C) return;
+    if (C) {
+      if (!C.cashed) cCash(C.mult);
+      return;
+    }
     const b = getBet('#cb'); 
     if (!b) return; 
     const auto = +$('#ca').value || 0; 
-    $('#cbtn').disabled = true;
     
-    const res = await playGame('crash', b, { cashAt: auto });
-    if (!res) { $('#cbtn').disabled = false; return; }
+    const res = await playGame('crash', b, { action: 'start' });
+    if (!res) return;
     
-    const cp = res.meta.crashPoint; 
-    let m = 1, t0 = performance.now();
+    if (res.newBalance !== undefined) S.bal = res.newBalance;
+    render();
+    
+    const cp = res.meta.crashPoint;
+    let m = 1;
+    let t0 = performance.now();
+    
+    C = { b, cp, cashed: false, mult: 1, auto };
+    $('#cbtn').textContent = 'Забрать (x1.00)';
+    $('#cbtn').classList.add('cash');
+    $('#cbtn').disabled = false;
     
     const anim = () => {
-      if (m >= cp || m >= 1000) { 
-        cDraw(cp, Math.log(cp) / .11, true); 
-        $('#cm').style.color = 'var(--bad)'; 
-        return; 
-      }
+      if (C.cashed) return;
       m = Math.exp(.11 * ((performance.now() - t0) / 1000));
+      C.mult = m;
+      $('#cbtn').textContent = 'Забрать (x' + m.toFixed(2) + ')';
+      
+      if (m >= cp) {
+        cDraw(cp, Math.log(cp)/.11, true);
+        $('#cm').textContent = 'x' + cp.toFixed(2);
+        $('#cm').style.color = 'var(--bad)';
+        
+        if (!C.cashed) {
+           toast('Краш! −' + fmt(C.b), 'e');
+        }
+        
+        C = null;
+        $('#cbtn').disabled = false;
+        $('#cbtn').textContent = 'Сделать ставку';
+        $('#cbtn').classList.remove('cash');
+        return;
+      }
+      
+      if (C.auto > 1 && m >= C.auto) {
+        cCash(C.auto);
+      }
+      
       cDraw(m, (performance.now() - t0) / 1000, false);
       requestAnimationFrame(anim);
     };
     anim();
-    
-    setTimeout(() => {
-      const win = res.win;
-      if (win > 0) toast('+' + fmt(win) + ' (Прибыль: +' + fmt(win - b) + ')', 'w');
-      else toast('Краш! −' + fmt(b), 'e');
-      
-      $('#cbtn').disabled = false; C = null;
-    }, Math.log(cp) / .11 * 1000 + 500);
   };
 }
-
 
 // --- МОНЕТА ---
 let fpk = 'h', fsp = false, frot = 0;
@@ -280,6 +320,9 @@ if ($('#fbtn')) {
     if ($('#coin3')) $('#coin3').style.transform = 'rotateY(' + frot + 'deg)';
     
     setTimeout(() => {
+      if (res.newBalance !== undefined) S.bal = res.newBalance;
+      render();
+      
       const win = res.win;
       const d = document.createElement('span'); 
       d.className = 'pill'; 
@@ -300,12 +343,11 @@ if ($('#fbtn')) {
   };
 }
 
-
-// --- ЛЕСЕНКА ---
-const LD = { e: { p: .8, n: 10 }, n: { p: .6, n: 8 }, h: { p: .4, n: 6 } }, RH = 340;
+// --- ЛЕСЕНКА (С ПАДЕНИЕМ КАМНЯ) ---
+const LD = { e: { p: .8, n: 10 }, n: { p: .6, n: 8 }, h: { p: .4, n: 6 } }, RH = 340, LH = 420;
 let L = null, ldp = 'e';
 const lm = (k, d) => 0.97 / Math.pow(LD[d].p, k);
-const man = $('#lman'), rock = $('#lrock');
+const man = $('#lman'), rock = $('#lrock'), dust = $('#ldust'), lad = $('#lad');
 const lBot = (k, d) => 12 + k * (RH / LD[d].n) - 3;
 
 function lBuild(d) {
@@ -320,7 +362,7 @@ function lReset(d) {
   lBuild(d);
   if (man) { man.classList.remove('sq'); man.style.transition = 'none'; man.style.bottom = lBot(0, d) + 'px'; void man.offsetWidth; man.style.transition = ''; }
   if (rock) { rock.style.transition = 'none'; rock.style.top = '-100px'; }
-  if ($('#ldust')) $('#ldust').className = '';
+  if (dust) dust.className = '';
 }
 function lUI() {
   const d = L ? L.d : ldp, n = LD[d].n, k = L ? L.k : 0, cur = k ? lm(k, d) : 1;
@@ -329,7 +371,6 @@ function lUI() {
   if ($('#ln')) $('#ln').textContent = k < n ? 'x' + lm(k + 1, d).toFixed(2) : '—';
   if ($('#lc')) $('#lc').textContent = Math.round(LD[d].p * 100) + '%';
   if ($('#lw')) $('#lw').textContent = L && k ? fmt(Math.floor(L.b * cur * 100) / 100) : '—';
-  
   const a = L && !L.done;
   if ($('#lbtn')) $('#lbtn').textContent = a ? 'Подняться выше' : 'Играть';
   if ($('#lcash')) {
@@ -365,9 +406,18 @@ if ($('#lbtn')) {
         L.busy = false; lUI();
       }
     } else {
-      man.classList.add('sq');
-      toast('Камень! −' + fmt(L.b), 'e');
-      L.done = true; L.busy = false; lUI();
+      // АНИМАЦИЯ ПАДЕНИЯ КАМНЯ
+      const manTop = LH - lBot(L.k + 1, L.d) - 64;
+      rock.style.transition = 'top .5s cubic-bezier(.55,0,1,.7)';
+      rock.style.top = Math.max(-60, manTop - 52) + 'px';
+      
+      setTimeout(() => {
+         man.classList.add('sq');
+         lad.classList.remove('shake'); void lad.offsetWidth; lad.classList.add('shake');
+         dust.style.top = (manTop + 50) + 'px'; dust.className = 'dust';
+         toast('Камень! −' + fmt(L.b), 'e');
+         L.done = true; L.busy = false; lUI();
+      }, 520);
     }
   };
 }
@@ -377,11 +427,14 @@ async function lCash() {
   L.busy = true;
   const res = await playGame('ladder', 0, { action: 'cashout', step: L.k, diff: L.d, originalBet: L.b });
   if (res) {
+    if (res.newBalance !== undefined) S.bal = res.newBalance;
+    render();
     toast('+' + fmt(res.win) + ' (Прибыль: +' + fmt(res.win - L.b) + ')', 'w');
   }
   L.done = true; L.busy = false; lUI();
 }
 if ($('#lcash')) $('#lcash').onclick = () => lCash();
+
 $$('#lds button').forEach(b => b.onclick = () => {
   if (L && !L.done) return;
   ldp = b.dataset.v; $('#ld').value = ldp;

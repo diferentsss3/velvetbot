@@ -1,4 +1,4 @@
-// slots.js — Оригинальные слоты
+// slots.js
 
 const LINES=[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[1,0,0,0,1],[1,2,2,2,1],[0,0,1,2,2],[2,2,1,0,0],[1,2,1,0,1],[1,0,1,2,1],[0,1,1,1,0],[2,1,1,1,2],[0,1,0,1,0],[2,1,2,1,2],[1,1,0,1,1],[1,1,2,1,1],[0,0,2,0,0],[2,2,0,2,2],[0,2,2,2,0]];
 const CAPX=135000,zeros=()=>[0,1,2,3,4].map(()=>[0,0,0]),RI=n=>Math.floor(Math.random()*n);
@@ -96,6 +96,7 @@ function symHTML(x){const G=SL.G,s=x.s;
 function setCell(c,r,x,ex){const e=cellEl[c][r];e.className='cell k-'+x.s+' kk-'+x.s+(ex?' '+ex:'');e.innerHTML=symHTML(x)}
 function renderGrid(g,ex){for(let c=0;c<5;c++)for(let r=0;r<3;r++)setCell(c,r,g[c][r],ex)}
 (function(){const R=$('#sreels');if(!R)return;R.innerHTML='';for(let c=0;c<5;c++){const col=document.createElement('div');col.className='sreel';cellEl[c]=[];for(let r=0;r<3;r++){const e=document.createElement('div');col.appendChild(e);cellEl[c][r]=e}R.appendChild(col)}})();
+
 function slotAnim(g,free,ctx){return new Promise(res=>{const G=SL.G,T=SL.turbo,st=free?ctx.st:null,stopped=[0,0,0,0,0];const rnd=()=>{for(let c=0;c<5;c++)if(!stopped[c])for(let r=0;r<3;r++){if(st&&st[c][r])continue;setCell(c,r,mkS(drawSym(G,c,!!free)),'spin')}};rnd();const iv=setInterval(rnd,70);for(let c=0;c<5;c++)setTimeout(()=>{stopped[c]=1;for(let r=0;r<3;r++)setCell(c,r,g[c][r],'drop');h();if(c==4){clearInterval(iv);setTimeout(res,160)}},(T?220:600)+c*(T?80:240))})}
 function hl(wins){const on=new Set();wins.forEach(w=>w.cells.forEach(([c,r])=>on.add(c*3+r)));cellEl.forEach((col,c)=>col.forEach((e,r)=>{const k=on.has(c*3+r);e.classList.remove('drop','spin','pop');e.classList.toggle('wn',k);e.classList.toggle('dm',!k&&on.size>0)}))}
 function countUp(v){const el=$('#swn'),t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/600);el.textContent=fmt(v*k);if(k<1)requestAnimationFrame(f)})(t0)}
@@ -111,12 +112,17 @@ function hud(){const G=SL.G,e=$('#sfs'),F=SL.fctx;let t='';
 function ovShow(t,v,pHTML,btn){
  $('#ovt').textContent=t;$('#ovv').textContent=v;$('#ovv').style.display=v?'block':'none';$('#ovp').innerHTML=pHTML;$('#ovb').textContent=btn;$('#sov').classList.add('on');
  return new Promise(res=>{$('#ovb').onclick=()=>{$('#sov').classList.remove('on');res()}})}
+
 async function slotSpin(free){
  if(SL.busy)return;const G=SL.G,bet=BETS[SL.bi],ctx=free?SL.fctx:SL.ctx,T=SL.turbo;
+ 
+ // 1. СПИСЫВАЕМ СТАВКУ СРАЗУ (если это не фриспин)
  if(!free){
   if (S.bal < bet) { toast('Недостаточно средств', 'e'); return; }
+  S.bal = Math.round((S.bal - bet) * 100) / 100; 
+  render();
+ }
 
-}
  SL.busy=true;slotLock(true);hl([]);$('#swn').textContent='0';$('#smsg').textContent=free?'Фриспин':'Удачи!';
  const g0=spinGrid(G,!!free,free&&G.mech=='cat'?ctx.st:null);
  await slotAnim(g0,free,ctx);
@@ -129,64 +135,89 @@ async function slotSpin(free){
   const w=Math.floor(st.win*sc*100)/100;
   if(w>0){win+=w;hl(st.ev.wins);countUp(win);$('#smsg').textContent='Выигрыш'+(st.m>1?' · x'+st.m:'');if(r.steps.length>1)await slp(T?350:700)}}
  if(free)win=Math.min(win,Math.max(0,6750*bet-SL.fsTot));
-  win=Math.round(win*100)/100; // Оставляем копейки, как ты и просил
+ win=Math.round(win*100)/100; // Оставляем копейки
+
  if(win>0){if(r.steps.length==1)hl(r.steps[0].ev.wins);countUp(win);if(win>=bet*15)bigWin(win,bet);$('#smsg').textContent=(win>=bet*20?'Большой выигрыш! ':'Выигрыш ')+'x'+(win/bet).toFixed(2)}
  else{hl([]);$('#smsg').textContent=free?'Без выигрыша':'Попробуйте ещё'}
  
+ // 2. ОБНОВЛЯЕМ БАЛАНС
  if(free){
-   if(win>0){S.bal+=win;SL.fsTot+=win;render()}
+   if(win>0){SL.fsTot+=win;}
  } else {
-   // ОТПРАВЛЯЕМ ВЫИГРЫШ НА СЕРВЕР
-   const res = await playGame('slot', bet, { win: win });
-   if(res) { S.bal = res.balance; render(); }
+   const res = await playGame('slot', 0, { win: win, alreadyDeducted: true });
+   if(res && res.newBalance !== undefined) {
+      S.bal = res.newBalance; 
+      render();
+   }
  }
  
  const trig=!free&&scatCount(G,r.final)>=3;
  SL.busy=false;if(!free)slotLock(false);hud();
  if(trig){await slp(900);await runFree(bet)}
 }
+
 async function runFree(bet){const G=SL.G;
  await ovShow('Бонус!',String(G.fsn),'<p class="rl" style="text-align:center">'+G.fsText+'</p>','Начать');
  SL.fs=G.fsn;SL.fsTot=0;SL.fctx=newFS(G);
  if(G.mech=='book')await ovShow('Особый символ','','<div class="cell kk-'+SL.fctx.E+'" style="width:92px;margin:8px auto">'+symHTML({s:SL.fctx.E})+'</div><p class="rl" style="text-align:center">Выпав на барабане, он займёт его целиком.</p>','Играть');
  $('#slw').classList.add('fsm');hud();slotLock(true);
- while(SL.fs>0){SL.fs--;hud();await slotSpin(true);slotLock(true);await slp(SL.turbo?500:1100)}
+ 
+ while(SL.fs>0){
+   SL.fs--;hud();
+   await slotSpin(true);
+   slotLock(true);
+   await slp(SL.turbo?500:1100);
+ }
+ 
  $('#slw').classList.remove('fsm');
-const tot=Math.round(SL.fsTot*100)/100;
-if(tot>0){
-  S.wins++;
-  S.best=Math.max(S.best,tot);
-  // СИНХРОНИЗАЦИЯ ВЫИГРЫША БОНУСА С СЕРВЕРОМ
-  const res = await playGame('slot', 0, { win: tot });
-  if (res) { S.bal = res.balance; render(); }
-}
- S.hist.unshift([G.name+' · бонус',tot]);S.hist=S.hist.slice(0,15);render();feed(G.name,$('#un').textContent||'Вы',bet,tot);
- slotLock(false);SL.fctx=null;hud();if(tot>=bet*15)bigWin(tot,bet);
+ const tot=Math.round(SL.fsTot*100)/100;
+ 
+ if(tot>0){
+   S.wins++;
+   S.best=Math.max(S.best||0,tot);
+   
+   // Отправляем общий выигрыш бонуса на сервер
+   const res = await playGame('slot', 0, { win: tot, alreadyDeducted: true });
+   if(res && res.newBalance !== undefined) {
+      S.bal = res.newBalance;
+      render();
+   }
+ }
+ 
+ S.hist.unshift([G.name+' · бонус',tot]);
+ S.hist=S.hist.slice(0,15);
+ render();
+ feed(G.name,$('#un').textContent||'Вы',bet,tot);
+ slotLock(false);SL.fctx=null;hud();
+ if(tot>=bet*15)bigWin(tot,bet);
+ 
  await ovShow('Итого',(tot>0?'+':'')+fmt(tot),'<p class="rl" style="text-align:center">'+(tot>0?'за бонусную игру':'бонус без выигрыша')+'</p>','Продолжить');
  $('#swn').textContent=fmt(tot);
 }
+
 function showPay(){const G=SL.G,sc=slotScale()/20;
  let t=G.order.map(k=>'<div class="pt"><div class="cell k-'+k+' kk-'+k+'">'+symHTML({s:k})+'</div><div><b>'+G.pay[k].map((v,i)=>(i+3)+'× '+(v*sc).toFixed(2)).join(' · ')+'</b><small>от ставки</small></div></div>').join('');
- t+='<p class="rl">20 линий, выигрыш считается слева направо от 1-го барабана. Вайлд заменяет все символы, кроме бонуса. '+G.rules+' Максимальный выигрыш за бонус — x6750 от ставки. RTP: '+S.cfg.slot+'%.</p>';
+ t+='<p class="rl">20 линий, выигрыш считается слева направо от 1-го барабана. Вайлд заменяет все символы, кроме бонуса. '+G.rules+' Максимальный выигрыш за бонус — x6750 от ставки. RTP: '+(S.cfg.slot||96)+'%.</p>';
  ovShow('Выплаты','',t,'Закрыть')}
+
 function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=null;SL.fs=0;
  const w=$('#slw');w.className='slw th-'+id+(id=='cat'?'':' nt');
  $('#ssign').textContent=G.name.toUpperCase();
  $('#slobby').style.display='none';$('#sgame').style.display='block';
  for(let c=0;c<5;c++)for(let r=0;r<3;r++)setCell(c,r,mkS(drawSym(G,c,false)));
  $('#sov').classList.remove('on');hl([]);$('#swn').textContent='0';$('#smsg').textContent='Удачи!';hud()}
+
 function buildLobby(){const L=$('#slobby');if(!L)return;L.innerHTML='<h3 class="sh">Выберите слот</h3>';const grid=document.createElement('div');grid.className='slg';
  Object.keys(SLOTS).forEach(id=>{const G=SLOTS[id],d=document.createElement('div');d.className='sc th-'+id;
   d.innerHTML='<div class="scp">'+'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg></div><b></b><small></small><em class="rtp"></em>';
-  d.children[1].textContent=G.name;d.children[2].textContent=G.sub;d.children[3].textContent='RTP '+S.cfg.slot+'%';d.onclick=()=>openSlot(id);grid.appendChild(d)});
+  d.children[1].textContent=G.name;d.children[2].textContent=G.sub;d.children[3].textContent='RTP '+(S.cfg.slot||96)+'%';d.onclick=()=>openSlot(id);grid.appendChild(d)});
  L.appendChild(grid)}
+
 const setBet=d=>{SL.bi=Math.min(BETS.length-1,Math.max(0,SL.bi+d));$('#sbt').textContent=fmt(BETS[SL.bi])};
-$('#sm1').onclick=()=>setBet(-1);$('#sp1').onclick=()=>setBet(1);$('#sspin').onclick=()=>slotSpin(false);
+$('#sm1').onclick=()=>setBet(-1);
+$('#sp1').onclick=()=>setBet(1);
+$('#sspin').onclick=()=>slotSpin(false);
 $('#sturbo').onclick=()=>{SL.turbo=!SL.turbo;$('#sturbo').classList.toggle('sel',SL.turbo)};
 $('#sinfo').onclick=showPay;
 $('#sback').onclick=()=>{if(SL.busy)return;$('#sgame').style.display='none';$('#slobby').style.display='block'};
 SL.G=SLOTS.cat;SL.ctx={streak:0,tm:1};buildLobby();setBet(0);
-
-// Фейковая лента ставок (если нужно оставить)
-const NM=['Alex','Max','Kira','Dima','Neo','Sasha','Vlad','Lena','Tim','Zoe','Ivan','Mila'];
-function feed(g,p,b,w){const r=document.createElement('div'),pr=Math.round((w-b)*100)/100;if(!r)return;r.className='fr';r.innerHTML='<span></span><span></span><span></span><span></span><b></b>';const c=r.children;c[0].textContent=g;c[1].textContent=p;c[2].textContent=fmt(b);c[3].textContent='x'+(w/b).toFixed(2);c[4].textContent=(pr>0?'+':'')+fmt(pr);c[4].style.color=pr>0?'var(--ok)':'var(--bad)';const el=$('#feed');if(el){el.prepend(r);while(el.children.length>6)el.lastChild.remove()}}
