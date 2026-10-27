@@ -10,7 +10,7 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://tournament-alpha-gaming-paul.trycloudflare.com'; // <--- ВСТАВЬ СВОЮ ССЫЛКУ!
+const API_URL = 'https://harris-alberta-hotels-reveals.trycloudflare.com'; // <--- ВСТАВЬ ССЫЛКУ!
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000, refDef: 50 };
 let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
 let selU = null;
@@ -26,30 +26,14 @@ async function api(path, data = {}) {
   } catch (e) { toast('Нет связи с сервером', 'e'); return { ok: false }; }
 }
 
-// --- РЕАЛЬНАЯ ЛЕНТА СТАВОК ---
 async function loadFeed() {
   const r = await api('/feed');
   if (!r.ok || !$('#feed')) return;
-  
   const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты' };
-  
-  if (!r.items || r.items.length === 0) {
-    $('#feed').innerHTML = '<small style="color:var(--m); padding:10px; display:block; text-align:center;">Пока нет ставок</small>';
-    return;
-  }
-
+  if (!r.items || r.items.length === 0) { $('#feed').innerHTML = '<small style="color:var(--m); padding:10px; display:block; text-align:center;">Пока нет ставок</small>'; return; }
   $('#feed').innerHTML = r.items.map(x => {
-    const pr = Math.round((x.win - x.bet) * 100) / 100;
-    const mult = (x.win / x.bet).toFixed(2);
-    return `
-      <div class="fr">
-        <span>${gn[x.game] || x.game}</span>
-        <span>${x.name || 'Игрок'}</span>
-        <span>${fmt(x.bet)}</span>
-        <span>x${mult}</span>
-        <b style="color:var(${pr > 0 ? '--ok' : '--bad'})">${pr > 0 ? '+' : ''}${fmt(pr)}</b>
-      </div>
-    `;
+    const pr = Math.round((x.win - x.bet) * 100) / 100; const mult = (x.win / x.bet).toFixed(2);
+    return `<div class="fr"><span>${gn[x.game] || x.game}</span><span>${x.name || 'Игрок'}</span><span>${fmt(x.bet)}</span><span>x${mult}</span><b style="color:var(${pr > 0 ? '--ok' : '--bad'})">${pr > 0 ? '+' : ''}${fmt(pr)}</b></div>`;
   }).join('');
 }
 setInterval(loadFeed, 10000);
@@ -63,9 +47,7 @@ async function syncMe() {
   S.refCount = r.user.ref_count || 0; S.refDep = r.user.ref_dep || 0; S.refEarned = r.user.ref_earned || 0;
   S.isAdmin = !!r.admin;
   if (r.cfg) S.cfg = { ...CFG0, ...r.cfg };
-  
   render(); dUI(); wUI(); loadFeed();
-  
   if (S.isAdmin) { const adm = $('#adm'); if (adm) { adm.style.display = 'block'; adm.innerHTML = 'Админ-панель'; adm.onclick = () => openAdmin(); } }
 }
 
@@ -85,7 +67,6 @@ function render() {
   if ($('#s2')) $('#s2').textContent = S.wins;
   if ($('#s3')) $('#s3').textContent = fmt(S.best);
   if ($('#hist')) $('#hist').innerHTML = S.hist.length ? S.hist.map(r=>`<div class="hr"><span>${r[0]}</span><b style="color:var(${r[1]>0?'--ok':'--bad'})">${r[1]>0?'+':''}${fmt(r[1])}</b></div>`).join('') : '<small style="color:var(--m)">Пока пусто</small>';
-  
   const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { first_name: 'Гость', id: 0, photo_url: null, username: '' };
   if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ') || 'Игрок';
   if ($('#uid')) $('#uid').textContent = (U.username ? '@' + U.username + ' · ' : '') + 'ID ' + U.id;
@@ -106,11 +87,7 @@ if ($('#dam')) {
       toast('Счёт создан. Ожидаем оплату...', 'w');
       const iv = setInterval(async () => {
         const chk = await api('/claim', { id: r.id });
-        if (chk.status === 'paid') { 
-           clearInterval(iv); 
-           syncMe(); 
-           toast('Успешно! +' + chk.coins + ' монет' + (chk.msg || ''), 'w'); 
-        }
+        if (chk.status === 'paid') { clearInterval(iv); syncMe(); toast('Успешно! +' + chk.coins + ' монет' + (chk.msg || ''), 'w'); }
         else if (chk.status === 'expired') { clearInterval(iv); toast('Счёт истек', 'e'); }
       }, 5000);
     } else toast('Ошибка создания счёта', 'e');
@@ -128,7 +105,8 @@ if ($('#wam')) {
     const r = await api('/withdraw', { coins: c });
     if (r.ok) { toast('Заявка отправлена', 'w'); S.bal -= c; render(); $('#wam').value = ''; wUI(); } 
     else {
-      if (r.error === 'min') toast('Сумма меньше минимальной', 'e');
+      if (r.error === 'need_deposit') toast('Для вывода нужен депозит от $1 за последние 7 дней', 'e');
+      else if (r.error === 'min') toast('Сумма меньше минимальной', 'e');
       else if (r.error === 'max') toast('Сумма больше максимальной (500$)', 'e');
       else if (r.error === 'pending') toast('У вас уже есть заявка в обработке', 'e');
       else if (r.error === 'balance') toast('Недостаточно средств', 'e');
@@ -149,15 +127,12 @@ function getBet(id){
 async function playGame(game, bet, params) {
   if (S.ban) { toast('Заблокирован', 'e'); return null; }
   const alreadyDeducted = params && params.alreadyDeducted;
-  
   if (!alreadyDeducted && (!params || (params.action !== 'climb' && params.action !== 'cashout'))) {
       if (bet > S.bal) { toast('Недостаточно средств', 'e'); return null; }
       S.bal = Math.round((S.bal - bet) * 100) / 100; render();
   }
-
   const r = await api('/bet', { game, bet, params });
   if (!r.ok) { await syncMe(); toast('Ошибка ставки', 'e'); return null; }
-  
   const win = r.result.win;
   if (!alreadyDeducted && (!params || (params.action !== 'climb' && params.action !== 'cashout'))) {
       S.bets++; if (win > bet) S.wins++;
@@ -165,12 +140,10 @@ async function playGame(game, bet, params) {
       const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты' }[game] || game;
       S.hist.unshift([gn, Math.round((win - bet) * 100) / 100]); S.hist = S.hist.slice(0, 15);
   }
-  
   render(); loadFeed(); 
   return { ...r.result, newBalance: r.balance };
 }
 
-// ГЕНЕРАТОР ПОЛЕЙ
 $$('.bet[data-id]').forEach(d => {
   const i = d.dataset.id;
   d.innerHTML = `<input id="${i}" type="number" inputmode="decimal" value="10"><button data-k="h">½</button><button data-k="d">×2</button><button data-k="m">Макс</button>`;
@@ -182,19 +155,23 @@ $$('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
 $$('.mc').forEach(c => c.onclick = () => tab(c.dataset.t));
 
 // БОНУСЫ И ПРОМО
-if ($('#bw')) $('#bw').onclick = async () => { const r = await api('/bonus/start'); if (r.ok) { toast('+100 монет', 'w'); syncMe(); } else toast('Бонус уже получен', 'e'); };
+if ($('#bw')) $('#bw').onclick = async () => { 
+  const r = await api('/bonus/start'); 
+  if (r.ok) { toast('+100 монет', 'w'); syncMe(); } 
+  else if (r.error === 'not_subscribed') {
+    toast('Подпишитесь на канал @velvetcas', 'e');
+    if (tg && tg.openTelegramLink) tg.openTelegramLink('https://t.me/velvetcas');
+  }
+  else toast('Бонус уже получен', 'e'); 
+};
 if ($('#bd')) $('#bd').onclick = async () => { const r = await api('/bonus/daily'); if (r.ok) { toast('+' + r.amount + ' монет', 'w'); syncMe(); } else toast('Приходите завтра', 'e'); };
 
 if ($('#pcb')) $('#pcb').onclick = async () => { 
   const c = $('#pc').value.trim().toUpperCase(); if (!c) return; 
   const r = await api('/promo/activate', { code: c }); 
   if (r.ok) { 
-    if (r.type === 'deposit') {
-      toast('Активирован бонус к депозиту: +' + r.bonus + '%', 'w'); 
-    } else {
-      S.bal += r.bonus; render(); 
-      toast('+' + fmt(r.bonus) + ' по промокоду', 'w'); 
-    }
+    if (r.type === 'deposit') toast('Активирован бонус к депозиту: +' + r.bonus + '%', 'w'); 
+    else { S.bal += r.bonus; render(); toast('+' + fmt(r.bonus) + ' по промокоду', 'w'); }
     $('#pc').value = ''; 
   } else {
     if (r.error === 'already_active') toast('У вас уже есть активный бонус к депозиту', 'e');
@@ -202,34 +179,14 @@ if ($('#pcb')) $('#pcb').onclick = async () => {
   }
 };
 
-window.uPromo = async () => {
-  const code = ($('#apc')?.value || '').trim().toUpperCase();
-  const bonus = Math.floor(+($('#apb')?.value) || 0);
-  const uses = Math.floor(+($('#apu')?.value) || 0);
-  if (!code || bonus < 1 || uses < 1) { toast('Заполните все поля', 'e'); return; }
-  const r = await api('/admin/create-promo', { code, bonus, uses, type: 'fixed' });
-  if (r.ok) { toast('Промокод создан', 'w'); $('#apc').value = ''; $('#apb').value = ''; $('#apu').value = ''; syncMe(); } else toast(r.error === 'money' ? 'Недостаточно средств' : 'Ошибка', 'e');
-};
-
-if ($('#npk')) {
-  $('#npk').onclick = async () => {
-    const code = ($('#npc')?.value || '').trim().toUpperCase();
-    const bonus = Math.floor(+($('#npb')?.value) || 0);
-    const uses = Math.floor(+($('#npu')?.value) || 0);
-    const type = $('#npt')?.value || 'fixed';
-    if (!code || bonus < 1 || uses < 1) { toast('Заполните все поля', 'e'); return; }
-    const r = await api('/admin/create-promo', { code, bonus, uses, type });
-    if (r.ok) { toast('Промокод создан', 'w'); $('#npc').value = ''; $('#npb').value = ''; $('#npu').value = ''; syncMe(); } else toast(r.error === 'money' ? 'Недостаточно средств' : 'Ошибка', 'e');
-  };
-}
-
-// АДМИНКА
+// --- АДМИНКА ---
 async function openAdmin() {
   tab('a');
   const r = await api('/admin/stats');
   if (r.ok) {
     if ($('#ah')) $('#ah').textContent = fmt(r.bank);
     if ($('#at')) $('#at').textContent = fmt(r.deposit);
+    if ($('#ap')) $('#ap').textContent = r.usersCount;
     if ($('#cr1')) $('#cr1').value = S.cfg.mines;
     if ($('#cr2')) $('#cr2').value = S.cfg.wheel;
     if ($('#cr3')) $('#cr3').value = S.cfg.crash;
@@ -249,7 +206,6 @@ async function openAdmin() {
       </div>
     `).join('');
   }
-  
   const L = $('#wal');
   if (L) {
     L.innerHTML = '<div style="text-align:center; padding:10px;">Загрузка...</div>';
@@ -283,19 +239,13 @@ async function openAdmin() {
     } else L.innerHTML = '<div style="color:red; text-align:center;">Ошибка загрузки</div>';
   }
 }
-
 async function resolveWd(id, action) {
   const note = $('#wanote')?.value || '';
   if (action === 'rejected' && !note) { toast('Напишите причину в поле ниже', 'e'); return; }
   const r = await api('/admin/resolve', { id, action, note });
   if (r.ok) { toast(action === 'paid' ? 'Выплачено' : 'Отклонено', 'w'); if ($('#wanote')) $('#wanote').value = ''; openAdmin(); } else toast('Ошибка', 'e');
 }
-
-window.selectUser = (id, name, bal) => {
-  selU = id;
-  if ($('#asel')) $('#asel').textContent = `Выбран: ${name} (ID: ${id}) | Баланс: ${fmt(bal)}`;
-};
-
+window.selectUser = (id, name, bal) => { selU = id; if ($('#asel')) $('#asel').textContent = `Выбран: ${name} (ID: ${id}) | Баланс: ${fmt(bal)}`; };
 window.uEdit = async (action) => {
   if (!selU) { toast('Выберите игрока из списка', 'e'); return; }
   const amount = parseFloat($('#aamt')?.value) || 0;
@@ -303,7 +253,6 @@ window.uEdit = async (action) => {
   const r = await api('/admin/edit-balance', { target: selU, action, amount });
   if (r.ok) { toast('Баланс изменен', 'w'); if ($('#aamt')) $('#aamt').value = ''; openAdmin(); } else toast('Ошибка', 'e');
 };
-
 window.setRole = async (target, role) => { await api('/admin/set-role', { target, role }); toast('Роль изменена', 'w'); openAdmin(); };
 
 if ($('#acs')) {
@@ -316,9 +265,7 @@ if ($('#acs')) {
   };
 }
 
-async function updateOnline() { const r = await api('/online'); if (r.ok && $('#online-count')) $('#online-count').textContent = r.count; }
-updateOnline(); setInterval(updateOnline, 30000);
-// --- ПОДДЕРЖКА (ЮЗЕР) ---
+// --- ТЕХПОДДЕРЖКА ---
 async function loadMySupport() {
   if (!$('#sup-history')) return;
   const r = await api('/support/my');
@@ -332,15 +279,11 @@ async function loadMySupport() {
 }
 if ($('#sup-btn')) {
   $('#sup-btn').onclick = async () => {
-    const msg = $('#sup-msg').value.trim();
-    if (!msg) return;
+    const msg = $('#sup-msg').value.trim(); if (!msg) return;
     const r = await api('/support/create', { message: msg });
-    if (r.ok) { toast('Сообщение отправлено', 'w'); $('#sup-msg').value = ''; loadMySupport(); }
-    else toast('Ошибка', 'e');
+    if (r.ok) { toast('Сообщение отправлено', 'w'); $('#sup-msg').value = ''; loadMySupport(); } else toast('Ошибка', 'e');
   };
 }
-
-// --- ПОДДЕРЖКА (АДМИН) ---
 async function loadAdminSupport() {
   if (!$('#admin-support-list')) return;
   const r = await api('/admin/support/list');
@@ -359,16 +302,87 @@ async function loadAdminSupport() {
   `).join('');
 }
 window.replySupport = async (id) => {
-  const reply = $(`#reply-${id}`)?.value;
-  if (!reply) return;
+  const reply = $(`#reply-${id}`)?.value; if (!reply) return;
   const r = await api('/admin/support/reply', { id, reply });
   if (r.ok) { toast('Ответ отправлен', 'w'); loadAdminSupport(); }
 };
-
-// Вызов поддержки при входе в админку и профиль
 if ($('#sup-reload')) $('#sup-reload').onclick = loadAdminSupport;
+
+// --- РОЗЫГРЫШИ ---
+async function loadGiveaways() {
+  const r = await api('/giveaways/list');
+  if (!r.ok) return;
+  const card = $('#giveaways-card'), list = $('#giveaways-list');
+  if (!r.items || r.items.length === 0) { if (card) card.style.display = 'none'; return; }
+  if (card) card.style.display = 'block'; if (!list) return;
+  list.innerHTML = r.items.map(x => {
+    const timeLeft = Math.max(0, x.ends_at - Date.now());
+    const h = Math.floor(timeLeft / 3600000), m = Math.floor((timeLeft % 3600000) / 60000), s = Math.floor((timeLeft % 60000) / 1000);
+    const isCreatorAdmin = ['802498337'].includes(x.creator_id);
+    return `
+      <div style="background:rgba(0,0,0,.3); border-radius:15px; padding:15px; margin-bottom:10px; border:1px solid var(--ln);">
+        <div class="shead" style="margin-bottom:5px;">
+          <b>${isCreatorAdmin ? 'Официальный розыгрыш' : 'Розыгрыш от партнера'}</b>
+          <em class="rtp" style="background:rgba(74,222,128,.2); color:var(--ok); border-color:var(--ok);">${h}ч ${m}м ${s}с</em>
+        </div>
+        <small style="color:var(--m); display:block; margin-bottom:10px;">
+          Призовой фонд: <b>${fmt(x.prize_pool)}</b> монет<br>
+          Победителей: <b>${x.winners_count}</b> ${x.min_deposit > 0 ? '| Мин. депозит: <b>$' + x.min_deposit + '</b>' : ''}
+        </small>
+        <button class="btn" onclick="joinGiveaway(${x.id})" ${x.joined ? 'disabled' : ''} style="min-height:36px; font-size:13px; ${x.joined ? 'background:#333;' : ''}">
+          ${x.joined ? 'Вы участвуете' : 'Участвовать'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+window.joinGiveaway = async (id) => {
+  const r = await api('/giveaways/join', { id });
+  if (r.ok) { toast('Вы участвуете в розыгрыше!', 'w'); loadGiveaways(); }
+  else if (r.error === 'deposit') toast('Недостаточный депозит для участия', 'e');
+  else if (r.error === 'already') toast('Вы уже участвуете', 'e');
+  else toast('Ошибка участия', 'e');
+};
+if ($('#gw-create-btn')) {
+  $('#gw-create-btn').onclick = async () => {
+    const pool = +$('#gw-pool').value, winners = +$('#gw-winners').value, hours = +$('#gw-hours').value, mindep = +$('#gw-mindep').value;
+    if (pool < 100) { toast('Мин. фонд 100 монет', 'e'); return; }
+    const r = await api('/giveaways/create', { prize_pool: pool, winners_count: winners, hours, min_deposit: mindep });
+    if (r.ok) { toast('Розыгрыш создан!', 'w'); $('#gw-pool').value = ''; $('#gw-winners').value = ''; $('#gw-hours').value = ''; $('#gw-mindep').value = ''; loadGiveaways(); } 
+    else toast(r.error === 'money' ? 'Недостаточно средств' : 'Ошибка', 'e');
+  };
+}
+setInterval(() => { if ($('#t-b').classList.contains('on')) loadGiveaways(); }, 10000);
+
+// --- ХЭЛЛОУИН ТЕМА ---
+function enableHalloween() {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    body::before { background: radial-gradient(70% 38% at 90% -6%, rgba(255, 120, 0, 0.4), transparent 70%), radial-gradient(55% 32% at -5% 58%, rgba(139, 61, 255, 0.3), transparent 70%), radial-gradient(70% 40% at 100% 100%, rgba(20, 10, 40, 0.8), transparent 70%) !important; }
+    .lg { background: linear-gradient(135deg, #ff7b00, #ff4400) !important; box-shadow: 0 4px 16px rgba(255, 100, 0, 0.6) !important; }
+    .btn { background: linear-gradient(135deg, #ff7b00, #ff4400) !important; box-shadow: 0 10px 26px rgba(255, 100, 0, 0.5) !important; }
+    .hero.p { background: radial-gradient(70% 90% at 95% 8%, rgba(255,255,255,.28), transparent 55%), linear-gradient(125deg, #4a14c2, #9a3dff 60%, #ff7b00) !important; }
+    .halloween-bg { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+    .pumpkin { position: absolute; font-size: 40px; opacity: 0.15; animation: float 10s linear infinite; }
+    @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); } 100% { transform: translateY(-100px) rotate(360deg); } }
+  `;
+  document.head.appendChild(style);
+  const bg = document.createElement('div'); bg.className = 'halloween-bg';
+  const emojis = ['🎃', '👻', '🕷️', '🕸️', '💀'];
+  for (let i = 0; i < 15; i++) {
+    const span = document.createElement('div'); span.className = 'pumpkin'; span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    span.style.left = Math.random() * 100 + 'vw'; span.style.animationDuration = (5 + Math.random() * 10) + 's';
+    span.style.animationDelay = Math.random() * 5 + 's'; span.style.fontSize = (20 + Math.random() * 40) + 'px';
+    bg.appendChild(span);
+  }
+  document.body.appendChild(bg);
+}
+enableHalloween();
+
+// Обновление функций табов
+const originalTab = tab;
+tab = function(t) { originalTab(t); if(t == 'p') loadMySupport(); if(t == 'b') loadGiveaways(); };
 const originalOpenAdmin = openAdmin;
 openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); };
-const originalTab = tab;
-tab = function(t) { originalTab(t); if(t == 'p') loadMySupport(); };
+
 (async () => { render(); await syncMe(); })();
