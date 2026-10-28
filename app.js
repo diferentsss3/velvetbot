@@ -10,7 +10,7 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://accomplish-together-gateway-mic.trycloudflare.com';
+const API_URL = 'https://cap-myself-stephen-jaguar.trycloudflare.com';
 const CFG0 = {
   rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000,
   refDef: 50, refCap: 500,
@@ -330,34 +330,63 @@ if ($('#pcb')) $('#pcb').onclick = async () => {
     else toast(r.error === 'used' ? 'Уже активировали' : r.error === 'limit' ? 'Лимит' : 'Не найден', 'e');
   }
 };
-// ============ ПОДДЕРЖАТЬ АВТОРА (личный реф-код) ============
+
+
+// === ВВОД КОДА АВТОРА (РЕФЕРАЛА) ===
+if ($('#ref-btn')) {
+  $('#ref-btn').onclick = async () => {
+    let code = $('#ref-input').value.trim();
+    if (!code) return;
+    
+    // Если игрок ввел только цифры ID, скрипт сам добавит ref_
+    if (!code.startsWith('ref_')) code = 'ref_' + code;
+    
+    const r = await api('/ref/activate', { code });
+    if (r.ok) {
+      toast('Код успешно применён!', 'w');
+      $('#ref-input').value = '';
+      syncMe();
+    } else {
+      if (r.error === 'already') toast('Вы уже привязаны к автору', 'e');
+      else if (r.error === 'self') toast('Нельзя ввести свой собственный код', 'e');
+      else if (r.error === 'notfound') toast('Игрок с таким кодом не найден', 'e');
+      else toast('Ошибка ввода', 'e');
+    }
+  };
+}
+
+// === ЛИЧНЫЙ КОД АВТОРА (отображение, копирование, шаринг) ===
 function getMyRefCode() {
   const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { id: 0 };
   return U.id ? ('ref_' + U.id) : '';
 }
 
 async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (e) {
+  try { await navigator.clipboard.writeText(text); return true; } 
+  catch (e) {
     try {
       const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
-      document.body.appendChild(ta);
-      ta.select();
+      ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+      document.body.appendChild(ta); ta.select();
       const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
+      document.body.removeChild(ta); return ok;
     } catch (err) { return false; }
   }
 }
 
+if ($('#ref-code')) {
+  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { id: 0 };
+  $('#ref-code').textContent = U.id ? ('ref_' + U.id) : '—';
+  $('#ref-code').onclick = async () => {
+    const code = getMyRefCode(); if (!code) return;
+    const ok = await copyToClipboard(code);
+    toast(ok ? 'Код скопирован' : 'Ошибка', ok ? 'w' : 'e');
+  };
+}
+
 if ($('#rcp')) {
   $('#rcp').onclick = async () => {
-    const code = getMyRefCode();
-    if (!code) { toast('Не удалось получить код', 'e'); return; }
+    const code = getMyRefCode(); if (!code) return;
     const ok = await copyToClipboard(code);
     toast(ok ? 'Код скопирован' : 'Не удалось скопировать', ok ? 'w' : 'e');
     h('light');
@@ -366,13 +395,10 @@ if ($('#rcp')) {
 
 if ($('#rsh')) {
   $('#rsh').onclick = () => {
-    const code = getMyRefCode();
-    if (!code) { toast('Не удалось получить код', 'e'); return; }
+    const code = getMyRefCode(); if (!code) return;
     const text = `Присоединяйся к Velvet! 🎰\n\nМой реферальный код: ${code}\n\nОткрой бота и отправь /start ${code}`;
-
     if (tg && tg.openTelegramLink) {
-      const shareUrl = 'https://t.me/share/url?url=&text=' + encodeURIComponent(text);
-      tg.openTelegramLink(shareUrl);
+      tg.openTelegramLink('https://t.me/share/url?url=&text=' + encodeURIComponent(text));
     } else if (navigator.share) {
       navigator.share({ title: 'Velvet', text }).catch(() => {});
     } else {

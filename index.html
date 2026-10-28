@@ -504,7 +504,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <div class="mc" data-t="c"><em class="bd">Новое</em><div class="pn m3"><span><svg class="ic"><use href="#i-rocket"/></svg></span></div><b>Краш</b><small>Новое</small></div>
    <div class="mc" data-t="f"><em class="bd">Новое</em><div class="pn m4"><span><svg class="ic"><use href="#i-eagle"/></svg></span></div><b>Монета</b><small>Орёл и решка</small></div>
   <div class="mc" data-t="l"><em class="bd">Новое</em><div class="pn m5"><span><svg class="ic"><use href="#i-ladder"/></svg></span></div><b>Лесенка</b><small>Осторожно, камни</small></div>
-   <div class="mc wide" data-t="s"><em class="bd">Хит</em><div class="pn m6"><span><svg class="ic"><use href="#i-slotm"/></svg></span></div><div><b>Слоты</b><small>7 игр · у каждой своя механика</small></div></div>
+   <div class="mc wide" data-t="s"><em class="bd">Хит</em><div class="pn m6"><span><svg class="ic"><use href="#i-slotm"/></svg></span></div><div><b>Слоты</b><small>множество игр · у каждой своя механика</small></div></div>
  </div>
  <div class="mc wide" data-t="bj"><em class="bd">Новое</em><div class="pn m7"><span style="font-size:44px;line-height:1">♠</span></div><div><b>Блэкджек</b><small>21 очко · классика</small></div></div>
  <h3 class="sh">Последние ставки<i class="live"></i></h3>
@@ -613,6 +613,26 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 </section>
 
 <section class="tab" id="t-b">
+ <!-- ПРОМОКОДЫ -->
+ <div class="card">
+  <div class="shead"><div class="ttl">Промокод</div><em class="role" id="brole"></em></div>
+  <div class="bet">
+    <input id="pc" placeholder="Введите промокод" autocapitalize="characters" style="text-transform:uppercase">
+    <button id="pcb">Активировать</button>
+  </div>
+ </div>
+
+ <!-- ВВОД РЕФ-КОДА АВТОРА -->
+ <div class="card">
+  <div class="ttl">Ввести код автора</div>
+  <p class="note" style="text-align:left;margin:8px 0 10px">Если вас пригласили в игру, введите код друга, чтобы он получил бонус.</p>
+  <div class="bet">
+    <input id="ref-input" placeholder="Например: 802498337" style="text-transform:lowercase">
+    <button id="ref-btn">Ввести</button>
+  </div>
+ </div>
+
+ <!-- ПОДДЕРЖАТЬ АВТОРА (ваш личный код) -->
  <div class="card">
   <div class="ttl">Поддержать автора</div>
   <p class="note" style="text-align:left;margin:8px 0 10px">Приглашённый по вашему коду получит <b id="rbv">0</b> монет при первом входе.</p>
@@ -629,7 +649,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
     <div><b id="rd">0</b><small>депозиты</small></div>
     <div><b id="re">0</b><small>заработок</small></div>
   </div>
-</div>
+ </div>
 
  <div class="card" id="giveaways-card" style="display:none">
   <div class="shead"><div class="ttl">Активные розыгрыши</div></div>
@@ -638,8 +658,6 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 
  <div class="card" id="pp" style="display:none">
   <div class="ttl" id="ppt">Панель партнёра</div>
-
-  <!-- Статистика бота -->
   <div class="st" style="margin:12px 0;grid-template-columns:repeat(2,1fr)">
     <div><b id="pp-users">0</b><small>всего игроков</small></div>
     <div><b id="pp-gws">0</b><small>активных розыгрышей</small></div>
@@ -648,13 +666,11 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
     <div><b id="pp-all">0</b><small>всего создано</small></div>
     <div><b id="pp-pool">0</b><small>призовых монет</small></div>
   </div>
-
   <div class="st" style="margin:12px 0">
     <div><b id="p1">0</b><small>активаций</small></div>
     <div><b id="p2">0</b><small>выдано монет</small></div>
     <div><b id="p3">0</b><small>промокодов</small></div>
   </div>
-  
   <label>Новый промокод</label>
   <input id="npc" placeholder="Код: A–Z, 0–9" style="text-transform:uppercase;margin-bottom:8px">
   <label>Тип промокода</label>
@@ -667,10 +683,8 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
     <div><label id="lnu">Активаций</label><input id="npu" type="number" inputmode="numeric"></div>
   </div>
   <button class="btn" id="npc-btn" style="margin-top:10px;min-height:44px;font-size:14px;">Создать промокод</button>
-
   <div id="pl" style="margin-top:10px"></div>
   <hr style="border-color:var(--ln); margin:15px 0;">
-  
   <label>Создать розыгрыш (Списание с баланса)</label>
   <div class="g2">
     <div><label>Призовой фонд (монет)</label><input id="pp-gw-pool" type="number" placeholder="1000"></div>
@@ -682,7 +696,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
  </div>
 
  <div class="card" id="pm" style="display:none"><div class="ttl">Команда блогеров</div><div id="pt" style="margin-top:8px"></div></div>
-<p class="note">Промокоды и статистика синхронизируются с сервером. Реферальный бонус начисляется автоматически.</p>
+ <p class="note">Промокоды и статистика синхронизируются с сервером. Реферальный бонус начисляется автоматически.</p>
 </section>
 
 <section class="tab" id="t-p">
