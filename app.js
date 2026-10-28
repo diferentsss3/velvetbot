@@ -10,16 +10,19 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://damages-sought-selections-curves.trycloudflare.com';
+const API_URL = 'https://accomplish-together-gateway-mic.trycloudflare.com';
 const CFG0 = {
   rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000,
   refDef: 50, refCap: 500,
   blogger_max_bonus: 10000, blogger_max_uses: 1000, blogger_dep_share: 10,
   manager_max_bonus: 50000, manager_max_uses: 5000, manager_dep_share: 15,
-  botLink: 'https://t.me/velvetcasBot/app'
+  botLink: 'https://t.me/velvetcasBot/app',
+  yoo_rate: 1, yoo_min: 100, yoo_max: 50000, sbp_min: 500, yookassa_enabled: false
 };
 let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
 let selU = null;
+let dMethod = 'usd';
+let wMethod = 'crypto';
 
 async function api(path, data = {}) {
   try {
@@ -78,46 +81,185 @@ function render() {
   if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ') || 'Игрок';
   if ($('#uid')) $('#uid').textContent = (U.username ? '@' + U.username + ' · ' : '') + 'ID ' + U.id;
   if ($('#av')) { if (U.photo_url) $('#av').innerHTML = `<img src="${U.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; else $('#av').textContent = (U.first_name || '?')[0].toUpperCase(); }
-  if ($('#rl')) $('#rl').value = 'https://t.me/velvetcasBot/app?startapp=ref_' + U.id;
+  if ($('#ref-code')) $('#ref-code').textContent = U.id ? ('ref_' + U.id) : '—';
 }
 
-// --- ДЕПОЗИТ ---
+// ---------- ДЕПОЗИТ ----------
 const dAmt = () => { const v = Math.round(parseFloat(String($('#dam').value).replace(',', '.')) * 100) / 100; return v > 0 ? v : 0; };
-function dUI() { if (!$('#drate')) return; $('#drate').textContent = '1 $ = ' + fmt(S.cfg.rate) + ' монет'; if ($('#dcoins')) $('#dcoins').textContent = fmt(Math.floor(dAmt() * S.cfg.rate)); }
+
+function dUI() {
+  if (!$('#dam') || !$('#dmethod')) return;
+  const amt = dAmt();
+  if (dMethod === 'usd') {
+    if ($('#dbadge')) $('#dbadge').textContent = 'CryptoBot';
+    if ($('#dlabel')) $('#dlabel').textContent = 'Сумма пополнения, $';
+    if ($('#dmin')) $('#dmin').textContent = 'От 1 до 1000 $';
+    if ($('#dnote')) $('#dnote').innerHTML = 'Оплата через @CryptoBot. Курс: <b>1 $ = ' + fmt(S.cfg.rate) + ' монет</b>';
+    if ($('#dcoins')) $('#dcoins').textContent = fmt(Math.floor(amt * S.cfg.rate));
+  } else {
+    const rate = +S.cfg.yoo_rate || 1;
+    const min = +S.cfg.yoo_min || 100;
+    const max = +S.cfg.yoo_max || 50000;
+    if ($('#dbadge')) $('#dbadge').textContent = 'ЮKassa';
+    if ($('#dlabel')) $('#dlabel').textContent = 'Сумма пополнения, ₽';
+    if ($('#dmin')) $('#dmin').textContent = 'От ' + fmt(min) + ' до ' + fmt(max) + ' ₽';
+    if ($('#dnote')) $('#dnote').innerHTML = 'Оплата картой через ЮKassa. Курс: <b>1 ₽ = ' + rate + ' монет</b>';
+    if ($('#dcoins')) $('#dcoins').textContent = fmt(Math.floor(amt * rate));
+  }
+}
+
 if ($('#dam')) {
   $('#dam').oninput = () => { const e = $('#dam'), v = e.value.replace(/[^0-9.,]/g, ''); if (v !== e.value) e.value = v; dUI(); };
+}
+
+if ($('#dmethod')) {
+  $$('#dmethod button').forEach(b => b.onclick = () => {
+    if (b.dataset.m === 'rub' && !S.cfg.yookassa_enabled) { toast('Оплата картой временно недоступна', 'e'); return; }
+    dMethod = b.dataset.m;
+    $$('#dmethod button').forEach(z => z.classList.toggle('sel', z === b));
+    dUI();
+  });
+}
+
+if ($('#dbtn')) {
   $('#dbtn').onclick = async () => {
-    const usd = dAmt(); if (usd < 1 || usd > 1000) { toast('Сумма от 1 до 1000 $', 'e'); return; }
-    const r = await api('/invoice', { usd });
-    if (r.ok && r.url) {
-      if (tg && tg.openTelegramLink) tg.openTelegramLink(r.url); else window.open(r.url, '_blank');
-      toast('Счёт создан. Ожидаем оплату...', 'w');
-      const iv = setInterval(async () => {
-        const chk = await api('/claim', { id: r.id });
-        if (chk.status === 'paid') { clearInterval(iv); syncMe(); toast('Успешно! +' + chk.coins + ' монет' + (chk.msg || ''), 'w'); }
-        else if (chk.status === 'expired') { clearInterval(iv); toast('Счёт истек', 'e'); }
-      }, 5000);
-    } else toast('Ошибка создания счёта', 'e');
+    const amt = dAmt();
+    if (dMethod === 'usd') {
+      if (amt < 1 || amt > 1000) { toast('Сумма от 1 до 1000 $', 'e'); return; }
+      const r = await api('/invoice', { usd: amt });
+      if (r.ok && r.url) {
+        if (tg && tg.openTelegramLink) tg.openTelegramLink(r.url); else window.open(r.url, '_blank');
+        toast('Счёт создан. Ожидаем оплату...', 'w');
+        const iv = setInterval(async () => {
+          const chk = await api('/claim', { id: r.id });
+          if (chk.status === 'paid') { clearInterval(iv); syncMe(); toast('Успешно! +' + chk.coins + ' монет' + (chk.msg || ''), 'w'); }
+          else if (chk.status === 'expired') { clearInterval(iv); toast('Счёт истек', 'e'); }
+        }, 5000);
+      } else toast('Ошибка создания счёта', 'e');
+    } else {
+      if (!S.cfg.yookassa_enabled) { toast('Оплата картой временно недоступна', 'e'); return; }
+      const min = +S.cfg.yoo_min || 100;
+      const max = +S.cfg.yoo_max || 50000;
+      if (amt < min || amt > max) { toast('Сумма от ' + fmt(min) + ' до ' + fmt(max) + ' ₽', 'e'); return; }
+      const r = await api('/yookassa/create', { rub: amt });
+      if (r.ok && r.url) {
+        if (tg && tg.openLink) tg.openLink(r.url); else window.open(r.url, '_blank');
+        toast('Счёт создан. Ожидаем оплату...', 'w');
+        const iv = setInterval(async () => {
+          const chk = await api('/yookassa/claim', { id: r.id });
+          if (chk.status === 'paid') { clearInterval(iv); syncMe(); toast('Успешно! +' + chk.coins + ' монет' + (chk.msg || ''), 'w'); }
+          else if (chk.status === 'canceled') { clearInterval(iv); toast('Платёж отменён', 'e'); }
+        }, 5000);
+      } else {
+        toast(r.error === 'disabled' ? 'Оплата картой временно недоступна' :
+              r.error === 'amount' ? 'Проверьте сумму' : 'Ошибка создания счёта', 'e');
+      }
+    }
   };
 }
 
-// --- ВЫВОД ---
-function wUI() { if (!$('#wrate')) return; const c = Math.floor(+($('#wam').value || 0)); $('#wrate').textContent = '1 $ = ' + fmt(S.cfg.rate) + ' монет'; $('#wmin').textContent = 'Минимум ' + fmt(Math.ceil(S.cfg.wdMin * S.cfg.rate)) + ' монет (' + S.cfg.wdMin + ' $)'; $('#wusd').textContent = (Math.floor(c / S.cfg.rate * 100) / 100).toFixed(2); }
+// ---------- ВЫВОД ----------
+const wAmt = () => Math.floor(+($('#wam')?.value || 0));
+
+function wUI() {
+  if (!$('#wbadge')) return;
+  const c = wAmt();
+  const rate = +S.cfg.rate || 87;
+  const yooRate = +S.cfg.yoo_rate || 1;
+  const sbpMin = +S.cfg.sbp_min || 500;
+
+  if (wMethod === 'crypto') {
+    if ($('#wbadge')) $('#wbadge').textContent = 'CryptoBot';
+    if ($('#wlabel')) $('#wlabel').textContent = 'Сколько монет вывести';
+    if ($('#wnote')) $('#wnote').innerHTML = 'Выплата в USDT в @CryptoBot после проверки. Курс: <b>1 $ = ' + fmt(rate) + ' монет</b>';
+    if ($('#wmin')) $('#wmin').textContent = 'Минимум ' + fmt(Math.ceil(S.cfg.wdMin * rate)) + ' монет (' + S.cfg.wdMin + ' $)';
+    if ($('#wusd')) $('#wusd').textContent = (Math.floor(c / rate * 100) / 100).toFixed(2);
+    if ($('#wusd-label')) $('#wusd-label').textContent = '$ к получению';
+    if ($('#wphone-box')) $('#wphone-box').style.display = 'none';
+  } else {
+    if ($('#wbadge')) $('#wbadge').textContent = 'СБП (₽)';
+    if ($('#wlabel')) $('#wlabel').textContent = 'Сколько монет вывести';
+    if ($('#wnote')) $('#wnote').innerHTML = 'Выплата на карту/телефон через СБП после проверки админом. Курс: <b>1 ₽ = ' + yooRate + ' монет</b>';
+    if ($('#wmin')) $('#wmin').textContent = 'Минимум ' + fmt(Math.ceil(sbpMin * yooRate)) + ' монет (' + fmt(sbpMin) + ' ₽)';
+    const rub = Math.floor(c / yooRate * 100) / 100;
+    if ($('#wusd')) $('#wusd').textContent = rub.toFixed(2);
+    if ($('#wusd-label')) $('#wusd-label').textContent = '₽ к получению';
+    if ($('#wphone-box')) $('#wphone-box').style.display = 'block';
+  }
+}
+
 if ($('#wam')) {
   $('#wam').oninput = () => { const e = $('#wam'), v = e.value.replace(/\D/g, ''); if (v !== e.value) e.value = v; wUI(); };
+}
+
+if ($('#wmethod')) {
+  $$('#wmethod button').forEach(b => b.onclick = () => {
+    wMethod = b.dataset.m;
+    $$('#wmethod button').forEach(z => z.classList.toggle('sel', z === b));
+    wUI();
+  });
+}
+
+async function loadWithdrawals() {
+  if (!$('#wdl')) return;
+  const r = await api('/my');
+  if (!r.ok) return;
+  if (!r.items || !r.items.length) {
+    $('#wdl').innerHTML = '<small style="color:var(--m);display:block;text-align:center;padding:8px 0">Заявок пока нет</small>';
+    return;
+  }
+  $('#wdl').innerHTML = r.items.map(x => {
+    const stText = x.status === 'pending' ? 'В обработке' : x.status === 'paid' ? 'Выплачено' : 'Отклонено';
+    const stColor = x.status === 'pending' ? 'var(--g)' : x.status === 'paid' ? 'var(--ok)' : 'var(--bad)';
+    const methodIcon = x.method === 'sbp' ? '🏦' : '💎';
+    const amountText = x.method === 'sbp'
+      ? `${methodIcon} ${fmt(x.coins)} монет = ${fmt(x.rub || 0)} ₽`
+      : `${methodIcon} ${fmt(x.coins)} монет = $${Number(x.usd || 0).toFixed(2)}`;
+    return `<div class="hr"><span>${amountText}</span><em style="color:${stColor};font-style:normal;font-size:12px">${stText}</em></div>`;
+  }).join('');
+}
+
+if ($('#wdb')) {
   $('#wdb').onclick = async () => {
-    const c = Math.floor(+$('#wam').value || 0);
-    if (c < Math.ceil(S.cfg.wdMin * S.cfg.rate)) { toast('Минимум ' + fmt(Math.ceil(S.cfg.wdMin * S.cfg.rate)) + ' монет', 'e'); return; }
+    const c = wAmt();
+    const rate = +S.cfg.rate || 87;
+    const yooRate = +S.cfg.yoo_rate || 1;
+    const sbpMin = +S.cfg.sbp_min || 500;
+
+    const minCoins = wMethod === 'crypto'
+      ? Math.ceil(S.cfg.wdMin * rate)
+      : Math.ceil(sbpMin * yooRate);
+
+    if (c < minCoins) { toast('Минимум ' + fmt(minCoins) + ' монет', 'e'); return; }
     if (c > S.bal) { toast('Недостаточно средств', 'e'); return; }
-    const r = await api('/withdraw', { coins: c });
-    if (r.ok) { toast('Заявка отправлена', 'w'); S.bal -= c; render(); $('#wam').value = ''; wUI(); }
-    else {
-      if (r.error === 'need_deposit') toast('Для вывода нужен депозит от $1 за последние 7 дней', 'e');
-      else if (r.error === 'min') toast('Сумма меньше минимальной', 'e');
-      else if (r.error === 'max') toast('Сумма больше максимальной (500$)', 'e');
-      else if (r.error === 'pending') toast('У вас уже есть заявка в обработке', 'e');
-      else if (r.error === 'balance') toast('Недостаточно средств', 'e');
-      else toast('Ошибка вывода', 'e');
+
+    let details = '';
+    if (wMethod === 'sbp') {
+      const phone = ($('#wphone')?.value || '').trim();
+      const bank = ($('#wbank')?.value || '').trim();
+      if (!phone || phone.length < 5) { toast('Укажите номер телефона', 'e'); return; }
+      details = phone + (bank ? ' | ' + bank : '');
+    }
+
+    const r = await api('/withdraw', { coins: c, method: wMethod, details });
+    if (r.ok) {
+      toast('Заявка отправлена', 'w');
+      S.bal -= c; render();
+      $('#wam').value = '';
+      if ($('#wphone')) $('#wphone').value = '';
+      if ($('#wbank')) $('#wbank').value = '';
+      wUI();
+      loadWithdrawals();
+    } else {
+      const errs = {
+        'need_deposit': 'Для вывода нужен депозит за последние 7 дней',
+        'min': 'Сумма меньше минимальной',
+        'max': 'Сумма больше максимальной',
+        'pending': 'У вас уже есть заявка в обработке',
+        'balance': 'Недостаточно средств',
+        'no_phone': 'Укажите телефон'
+      };
+      toast(errs[r.error] || 'Ошибка вывода', 'e');
     }
   };
 }
@@ -159,9 +301,12 @@ $$('.bet[data-id]').forEach(d => {
 
 function tab(t) { $$('.tab').forEach(e => e.classList.toggle('on', e.id == 't-' + t)); $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.t == ('mwcfl'.includes(t) ? 'h' : t))); if(t == 'p') { dUI(); wUI(); } }
 $$('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
-$$('.mc').forEach(c => c.onclick = () => tab(c.dataset.t));
+$$('.mc').forEach(c => c.onclick = () => {
+  if (c.dataset.t === 'bj') { openBlackjack(); return; }
+  tab(c.dataset.t);
+});
 
-// --- БОНУСЫ ---
+// ---------- БОНУСЫ ----------
 if ($('#bw')) $('#bw').onclick = async () => {
   const r = await api('/bonus/start');
   if (r.ok) { toast('+100 монет', 'w'); syncMe(); }
@@ -185,16 +330,83 @@ if ($('#pcb')) $('#pcb').onclick = async () => {
     else toast(r.error === 'used' ? 'Уже активировали' : r.error === 'limit' ? 'Лимит' : 'Не найден', 'e');
   }
 };
+// ============ ПОДДЕРЖАТЬ АВТОРА (личный реф-код) ============
+function getMyRefCode() {
+  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { id: 0 };
+  return U.id ? ('ref_' + U.id) : '';
+}
 
-// --- ПАНЕЛЬ БЛОГЕРА / МЕНЕДЖЕРА / АДМИНА ---
-function updatePanels() {
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (err) { return false; }
+  }
+}
+
+if ($('#rcp')) {
+  $('#rcp').onclick = async () => {
+    const code = getMyRefCode();
+    if (!code) { toast('Не удалось получить код', 'e'); return; }
+    const ok = await copyToClipboard(code);
+    toast(ok ? 'Код скопирован' : 'Не удалось скопировать', ok ? 'w' : 'e');
+    h('light');
+  };
+}
+
+if ($('#rsh')) {
+  $('#rsh').onclick = () => {
+    const code = getMyRefCode();
+    if (!code) { toast('Не удалось получить код', 'e'); return; }
+    const text = `Присоединяйся к Velvet! 🎰\n\nМой реферальный код: ${code}\n\nОткрой бота и отправь /start ${code}`;
+
+    if (tg && tg.openTelegramLink) {
+      const shareUrl = 'https://t.me/share/url?url=&text=' + encodeURIComponent(text);
+      tg.openTelegramLink(shareUrl);
+    } else if (navigator.share) {
+      navigator.share({ title: 'Velvet', text }).catch(() => {});
+    } else {
+      copyToClipboard(text).then(ok => toast(ok ? 'Текст скопирован' : 'Ошибка', ok ? 'w' : 'e'));
+    }
+  };
+}
+
+// Клик по самому коду тоже копирует (удобно)
+if ($('#ref-code')) {
+  $('#ref-code').onclick = async () => {
+    const code = getMyRefCode();
+    if (!code) return;
+    const ok = await copyToClipboard(code);
+    toast(ok ? 'Код скопирован' : 'Не удалось', ok ? 'w' : 'e');
+  };
+}
+// ---------- ПАНЕЛЬ БЛОГЕРА ----------
+async function updatePanels() {
   const show = S.isAdmin || S.role === 'blogger' || S.role === 'manager';
   ['#pp', '#pm'].forEach(sel => { const el = $(sel); if (el) el.style.display = show ? 'block' : 'none'; });
   const ppt = $('#ppt');
-  if (ppt) ppt.textContent = S.isAdmin ? 'Панель администратора'
-    : S.role === 'blogger' ? 'Панель блогера'
-    : S.role === 'manager' ? 'Панель менеджера' : 'Панель';
-  if (show) loadMyPromos();
+  if (ppt) ppt.textContent = S.isAdmin ? 'Панель администратора' : S.role === 'blogger' ? 'Панель блогера' : S.role === 'manager' ? 'Панель менеджера' : 'Панель';
+  if (show) { loadMyPromos(); loadPanelStats(); }
+}
+
+async function loadPanelStats() {
+  if (!$('#pp-users')) return;
+  const r = await api('/panel/stats');
+  if (!r.ok) return;
+  $('#pp-users').textContent = fmt(r.totalUsers);
+  $('#pp-gws').textContent = r.activeGws;
+  if ($('#pp-all')) $('#pp-all').textContent = r.myGwsAll;
+  if ($('#pp-pool')) $('#pp-pool').textContent = fmt(r.myPool);
 }
 
 async function loadMyPromos() {
@@ -209,15 +421,8 @@ async function loadMyPromos() {
   }
   let totalUsed = 0, totalCoins = 0;
   $('#pl').innerHTML = r.items.map(x => {
-    totalUsed += x.used;
-    totalCoins += x.bonus * x.used;
-    return `
-      <div class="pr">
-        <b>${x.code}</b>
-        <small>${x.type === 'deposit' ? '+' + x.bonus + '%' : '+' + x.bonus + ' монет'} · ${x.used}/${x.max_uses}</small>
-        <button onclick="window.delPromo('${x.code}')">×</button>
-      </div>
-    `;
+    totalUsed += x.used; totalCoins += x.bonus * x.used;
+    return `<div class="pr"><b>${x.code}</b><small>${x.type === 'deposit' ? '+' + x.bonus + '%' : '+' + x.bonus + ' монет'} · ${x.used}/${x.max_uses}</small><button onclick="window.delPromo('${x.code}')">×</button></div>`;
   }).join('');
   if ($('#p1')) $('#p1').textContent = totalUsed;
   if ($('#p2')) $('#p2').textContent = fmt(totalCoins);
@@ -241,12 +446,11 @@ if ($('#npc-btn')) {
     if (!code || !/^[A-Z0-9]{3,20}$/.test(code)) { toast('Код: A–Z, 0–9, 3–20 символов', 'e'); return; }
     if (bonus < 1) { toast('Бонус > 0', 'e'); return; }
     if (uses < 1)  { toast('Активаций > 0', 'e'); return; }
-
     const r = await api('/promo/create', { code, bonus, uses, type });
     if (r.ok) {
       toast('Промокод создан', 'w');
       $('#npc').value = ''; $('#npb').value = ''; $('#npu').value = '';
-      syncMe();
+      loadMyPromos(); syncMe();
     } else {
       toast(
         r.error === 'money'       ? `Недостаточно средств (нужно ${r.need})` :
@@ -260,7 +464,7 @@ if ($('#npc-btn')) {
   };
 }
 
-// --- РОЗЫГРЫШИ ---
+// ---------- РОЗЫГРЫШИ ----------
 async function loadGiveaways() {
   const r = await api('/giveaways/list');
   if (!r.ok) return;
@@ -275,11 +479,12 @@ async function loadGiveaways() {
     const ss = sec % 60;
     const hh = Math.floor(mm / 60);
     const timeStr = hh > 0 ? `${hh}ч ${mm % 60}м ${ss}с` : `${mm}м ${ss}с`;
-    const isCreatorAdmin = ['802498337'].includes(String(x.creator_id));
+    const badge = x.isAdmin ? 'Официальный розыгрыш' : x.isOwn ? 'Ваш розыгрыш' : 'Розыгрыш от партнёра';
+    const joinedBtn = x.isOwn ? '<span style="color:var(--m);font-size:12px;">Вы создатель</span>' : `<button class="btn" onclick="joinGiveaway(${x.id})" ${x.joined ? 'disabled' : ''} style="min-height:36px; font-size:13px; ${x.joined ? 'background:#333;' : ''}">${x.joined ? 'Вы участвуете' : 'Участвовать'}</button>`;
     return `
-      <div style="background:rgba(0,0,0,.3); border-radius:15px; padding:15px; margin-bottom:10px; border:1px solid var(--ln);">
+      <div style="background:rgba(0,0,0,.3); border-radius:15px; padding:15px; margin-bottom:10px; border:1px solid ${x.isOwn ? 'rgba(193,155,255,.5)' : 'var(--ln)'};">
         <div class="shead" style="margin-bottom:5px;">
-          <b>${isCreatorAdmin ? 'Официальный розыгрыш' : 'Розыгрыш от партнёра'}</b>
+          <b>${badge}</b>
           <em class="rtp" style="background:rgba(74,222,128,.2); color:var(--ok); border-color:var(--ok);">${timeStr}</em>
         </div>
         <small style="color:var(--m); display:block; margin-bottom:10px;">
@@ -287,11 +492,7 @@ async function loadGiveaways() {
           Победителей: <b>${x.winners_count}</b>
           ${x.min_deposit > 0 ? ' | Мин. депозит: <b>$' + x.min_deposit + '</b>' : ''}
         </small>
-        <button class="btn" onclick="joinGiveaway(${x.id})"
-          ${x.joined ? 'disabled' : ''}
-          style="min-height:36px; font-size:13px; ${x.joined ? 'background:#333;' : ''}">
-          ${x.joined ? 'Вы участвуете' : 'Участвовать'}
-        </button>
+        ${joinedBtn}
       </div>
     `;
   }).join('');
@@ -302,7 +503,7 @@ window.joinGiveaway = async (id) => {
   if (r.ok) { toast('Вы участвуете в розыгрыше!', 'w'); loadGiveaways(); }
   else if (r.error === 'deposit') toast('Недостаточный депозит для участия', 'e');
   else if (r.error === 'already') toast('Вы уже участвуете', 'e');
-  else if (r.error === 'notfound') toast('Розыгрыш не найден или уже завершён', 'e');
+  else if (r.error === 'notfound') toast('Розыгрыш не найден или завершён', 'e');
   else toast('Ошибка участия', 'e');
 };
 
@@ -314,20 +515,15 @@ async function createGiveawayFrom(poolSel, winSel, minSel, depSel) {
   if (pool < 100) { toast('Мин. фонд 100 монет', 'e'); return; }
   if (winners < 1) { toast('Мин. 1 победитель', 'e'); return; }
   if (minutes < 1 || minutes > 10080) { toast('Время 1–10080 минут', 'e'); return; }
-
-  const r = await api('/giveaways/create', {
-    prize_pool: pool, winners_count: winners, minutes, min_deposit: mindep
-  });
+  const r = await api('/giveaways/create', { prize_pool: pool, winners_count: winners, minutes, min_deposit: mindep });
   if (r.ok) {
     toast(`Розыгрыш создан на ${minutes} мин.`, 'w');
     $(poolSel).value = ''; $(winSel).value = ''; $(minSel).value = ''; $(depSel).value = '';
-    loadGiveaways(); syncMe();
+    await syncMe();
+    loadGiveaways();
+    loadPanelStats();
   } else {
-    toast(
-      r.error === 'money'     ? 'Недостаточно средств на балансе' :
-      r.error === 'forbidden' ? 'Нет прав' :
-      r.error === 'data'      ? 'Проверьте поля' : 'Ошибка создания', 'e'
-    );
+    toast(r.error === 'money' ? 'Недостаточно средств на балансе' : r.error === 'forbidden' ? 'Нет прав' : 'Проверьте поля', 'e');
   }
 }
 
@@ -350,14 +546,18 @@ if ($('#gw-draw-btn')) {
 
 setInterval(() => { if ($('#t-b') && $('#t-b').classList.contains('on')) loadGiveaways(); }, 10000);
 
-// --- АДМИНКА ---
+// ---------- АДМИНКА ----------
 async function openAdmin() {
   tab('a');
   const r = await api('/admin/stats');
   if (r.ok) {
-    if ($('#ah')) $('#ah').textContent = fmt(r.bank);
-    if ($('#at')) $('#at').textContent = fmt(r.deposit);
+    if ($('#ah')) $('#ah').textContent = '$' + fmt(r.bank);
+    if ($('#at')) $('#at').textContent = '$' + fmt(r.deposit);
     if ($('#ap')) $('#ap').textContent = r.usersCount;
+    if ($('#arub')) {
+      const rate = +S.cfg.rate || 87;
+      $('#arub').innerHTML = `💎 Крипта: <b>$${fmt(r.depositUsd)}</b> · 💳 ЮKassa: <b>${fmt(r.depositRub)} ₽</b> (≈ $${fmt(r.depositRub / rate)})`;
+    }
     if ($('#cr1')) $('#cr1').value = S.cfg.mines;
     if ($('#cr2')) $('#cr2').value = S.cfg.wheel;
     if ($('#cr3')) $('#cr3').value = S.cfg.crash;
@@ -374,6 +574,10 @@ async function openAdmin() {
     if ($('#pm1')) $('#pm1').value = S.cfg.manager_max_bonus;
     if ($('#pm2')) $('#pm2').value = S.cfg.manager_max_uses;
     if ($('#pm3')) $('#pm3').value = S.cfg.manager_dep_share;
+    if ($('#yr1')) $('#yr1').value = S.cfg.yoo_rate;
+    if ($('#yr2')) $('#yr2').value = S.cfg.yoo_min;
+    if ($('#yr3')) $('#yr3').value = S.cfg.yoo_max;
+    if ($('#ysbp')) $('#ysbp').value = S.cfg.sbp_min;
   }
   const u = await api('/admin/users');
   if (u.ok && $('#ul')) {
@@ -401,12 +605,17 @@ async function openAdmin() {
           const d = document.createElement('div'); d.className = 'wr';
           const stText = x.status === 'pending' ? 'В обработке' : x.status === 'paid' ? 'Выплачено' : 'Отклонено';
           const stColor = x.status === 'pending' ? 'var(--g)' : x.status === 'paid' ? 'var(--ok)' : 'var(--bad)';
+          const methodIcon = x.method === 'sbp' ? '🏦 СБП' : '💎 Crypto';
+          const amountStr = x.method === 'sbp'
+            ? `${fmt(x.coins)} монет = ${fmt(x.rub || 0)} ₽`
+            : `${fmt(x.coins)} монет = $${Number(x.usd).toFixed(2)}`;
           d.innerHTML = `
             <div class="wh" style="display:flex; justify-content:space-between;">
               <b>${x.name || 'Игрок'} (ID: ${x.uid})</b>
               <em style="color:${stColor}; font-style:normal;">${stText}</em>
             </div>
-            <small>${fmt(x.coins)} монет = ${Number(x.usd).toFixed(2)} $</small>
+            <small>${methodIcon} · ${amountStr}</small>
+            ${x.details ? `<small style="color:var(--g)">📋 ${x.details}</small>` : ''}
             <small>Пополнений: ${Number(x.dep).toFixed(2)} $ | Выплачено: ${Number(x.paid).toFixed(2)} $</small>
             <small style="color:var(--m)">${new Date(x.created_at).toLocaleString('ru-RU')} ${x.note ? '· ' + x.note : ''}</small>
           `;
@@ -435,14 +644,12 @@ window.selectUser = (id, name, bal) => { selU = id; if ($('#asel')) $('#asel').t
 window.uEdit = async (action) => {
   if (!selU) { toast('Выберите игрока из списка', 'e'); return; }
   const amount = parseFloat($('#aamt')?.value) || 0;
-
   if (action === 'ban' || action === 'simref') {
     const r = await api('/admin/user-action', { target: selU, action });
     if (r.ok) { toast(action === 'ban' ? (r.banned ? 'Забанен' : 'Разбанен') : 'Реф-бонус начислен', 'w'); openAdmin(); }
     else toast('Ошибка', 'e');
     return;
   }
-
   if (amount <= 0 && action !== 'set') { toast('Введите сумму', 'e'); return; }
   const r = await api('/admin/edit-balance', { target: selU, action, amount });
   if (r.ok) { toast('Баланс изменён', 'w'); if ($('#aamt')) $('#aamt').value = ''; openAdmin(); } else toast('Ошибка', 'e');
@@ -454,43 +661,37 @@ window.uRole = async (role) => {
   if (r.ok) { toast('Роль изменена', 'w'); openAdmin(); } else toast('Ошибка', 'e');
 };
 
-// RTP + maxBet
 if ($('#acs')) {
   $('#acs').onclick = async () => {
     const body = {
-      mines: +$('#cr1').value || 97,
-      wheel: +$('#cr2').value || 93.33,
-      crash: +$('#cr3').value || 97,
-      flip: +$('#cr4').value || 97,
-      ladder: +$('#cr5').value || 97,
-      slot: +$('#cr6').value || 96,
+      mines: +$('#cr1').value || 97, wheel: +$('#cr2').value || 93.33,
+      crash: +$('#cr3').value || 97, flip: +$('#cr4').value || 97,
+      ladder: +$('#cr5').value || 97, slot: +$('#cr6').value || 96,
       maxBet: +$('#cmb').value || 10000
     };
     const r = await api('/admin/save-rtp', body);
-    if (r.ok) { toast('Настройки RTP сохранены', 'w'); syncMe(); } else toast('Ошибка', 'e');
+    if (r.ok) { toast('RTP сохранены', 'w'); syncMe(); } else toast('Ошибка', 'e');
   };
 }
 
-// Партнёрские лимиты и реф-бонусы
 if ($('#aps')) {
   $('#aps').onclick = async () => {
     const body = {
-      blogger_max_bonus: +$('#pb1').value || 0,
-      blogger_max_uses:  +$('#pb2').value || 0,
-      blogger_dep_share: +$('#pb3').value || 0,
-      manager_max_bonus: +$('#pm1').value || 0,
-      manager_max_uses:  +$('#pm2').value || 0,
-      manager_dep_share: +$('#pm3').value || 0,
-      refDef: +$('#prd').value || 50,
-      refCap: +$('#prm').value || 500,
-      botLink: $('#pbu').value || ''
+      blogger_max_bonus: +$('#pb1').value || 0, blogger_max_uses: +$('#pb2').value || 0, blogger_dep_share: +$('#pb3').value || 0,
+      manager_max_bonus: +$('#pm1').value || 0, manager_max_uses: +$('#pm2').value || 0, manager_dep_share: +$('#pm3').value || 0,
+      refDef: +$('#prd').value || 50, refCap: +$('#prm').value || 500,
+      botLink: $('#pbu').value || '',
+      yoo_rate: +($('#yr1')?.value) || 1,
+      yoo_min: +($('#yr2')?.value) || 100,
+      yoo_max: +($('#yr3')?.value) || 50000,
+      sbp_min: +($('#ysbp')?.value) || 500
     };
     const r = await api('/admin/save-partner-limits', body);
     if (r.ok) { toast('Сохранено', 'w'); syncMe(); } else toast('Ошибка', 'e');
   };
 }
 
-// --- ТЕХПОДДЕРЖКА ---
+// ---------- ТЕХПОДДЕРЖКА ----------
 async function loadMySupport() {
   if (!$('#sup-history')) return;
   const r = await api('/support/my');
@@ -533,38 +734,7 @@ window.replySupport = async (id) => {
 };
 if ($('#sup-reload')) $('#sup-reload').onclick = loadAdminSupport;
 
-// --- ХЭЛЛОУИН ТЕМА ---
-function enableHalloween() {
-  const style = document.createElement('style');
-  style.innerHTML = `
-    body::before { background: radial-gradient(70% 38% at 90% -6%, rgba(255, 120, 0, 0.4), transparent 70%), radial-gradient(55% 32% at -5% 58%, rgba(139, 61, 255, 0.3), transparent 70%), radial-gradient(70% 40% at 100% 100%, rgba(20, 10, 40, 0.8), transparent 70%) !important; }
-    .lg { background: linear-gradient(135deg, #ff7b00, #ff4400) !important; box-shadow: 0 4px 16px rgba(255, 100, 0, 0.6) !important; }
-    .btn { background: linear-gradient(135deg, #ff7b00, #ff4400) !important; box-shadow: 0 10px 26px rgba(255, 100, 0, 0.5) !important; }
-    .hero.p { background: radial-gradient(70% 90% at 95% 8%, rgba(255,255,255,.28), transparent 55%), linear-gradient(125deg, #4a14c2, #9a3dff 60%, #ff7b00) !important; }
-    .halloween-bg { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
-    .pumpkin { position: absolute; font-size: 40px; opacity: 0.15; animation: float 10s linear infinite; }
-    @keyframes float { 0% { transform: translateY(100vh) rotate(0deg); } 100% { transform: translateY(-100px) rotate(360deg); } }
-  `;
-  document.head.appendChild(style);
-  const bg = document.createElement('div'); bg.className = 'halloween-bg';
-  const emojis = ['🎃', '👻', '🕷️', '🕸️', '💀'];
-  for (let i = 0; i < 15; i++) {
-    const span = document.createElement('div'); span.className = 'pumpkin'; span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    span.style.left = Math.random() * 100 + 'vw'; span.style.animationDuration = (5 + Math.random() * 10) + 's';
-    span.style.animationDelay = Math.random() * 5 + 's'; span.style.fontSize = (20 + Math.random() * 40) + 'px';
-    bg.appendChild(span);
-  }
-  document.body.appendChild(bg);
-}
-enableHalloween();
-
-// --- Обёртка tab / openAdmin ---
-const originalTab = tab;
-tab = function(t) { originalTab(t); if(t == 'p') loadMySupport(); if(t == 'b') loadGiveaways(); };
-const originalOpenAdmin = openAdmin;
-openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); };
-
-// --- СЧЕТЧИК ОНЛАЙНА ---
+// ---------- ОНЛАЙН ----------
 async function updateOnline() {
   try {
     const r = await api('/online');
@@ -579,5 +749,57 @@ async function updateOnline() {
 }
 updateOnline();
 setInterval(updateOnline, 15000);
+
+// ================= BLACKJACK =================
+let bjWrap = null;
+
+function openBlackjack() {
+  if (!bjWrap) {
+    bjWrap = document.createElement('div');
+    bjWrap.id = 'bj-wrap';
+    bjWrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0b0618;overflow:hidden;';
+    bjWrap.innerHTML = `<iframe id="bj-frame" src="blackjack.html" style="width:100%;height:100%;border:0;display:block;background:#0b0618;" allow="autoplay"></iframe>`;
+    document.body.appendChild(bjWrap);
+
+    const close = () => {
+      bjWrap.style.display = 'none';
+      syncMe();
+    };
+
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'bj-close') close();
+    });
+
+    const frame = document.getElementById('bj-frame');
+    frame.addEventListener('load', () => sendBjInit());
+  } else {
+    bjWrap.style.display = 'block';
+    sendBjInit();
+  }
+}
+
+function sendBjInit() {
+  const frame = document.getElementById('bj-frame');
+  if (!frame || !frame.contentWindow) return;
+  const tg = window.Telegram && window.Telegram.WebApp;
+  try {
+    frame.contentWindow.postMessage({
+      type: 'bj-init',
+      initData: (tg && tg.initData) || '',
+      apiUrl: API_URL
+    }, '*');
+  } catch (e) { console.error('bj init:', e); }
+}
+// ==============================================
+
+// ---------- Обёртки ----------
+const originalTab = tab;
+tab = function(t) {
+  originalTab(t);
+  if (t == 'p') { loadMySupport(); loadWithdrawals(); }
+  if (t == 'b') loadGiveaways();
+};
+const originalOpenAdmin = openAdmin;
+openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); };
 
 (async () => { render(); await syncMe(); })();

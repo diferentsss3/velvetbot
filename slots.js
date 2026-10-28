@@ -51,39 +51,44 @@ function resolve(G,g0,fs,ctx){
 const newFS=G=>({st:G.mech=='cat'?zeros():null,E:G.mech=='book'?pickW(G.ew):null,tm:1,fsw:0,streak:0});
 
 const PT={l1:[3,8,30],l2:[3,8,30],l3:[4,10,40],l4:[6,16,60],l5:[6,16,60],m1:[8,25,100],m2:[10,30,120],h1:[16,50,200],h2:[24,80,300],h3:[40,120,600]};
-const WT={l1:20,l2:20,l3:18,l4:14,l5:12,m1:8,m2:7,h1:6,h2:4,h3:3,wild:10,scat:9};
+const WT={l1:22,l2:22,l3:20,l4:16,l5:12,m1:7,m2:6,h1:4.5,h2:3,h3:2,wild:6,scat:6};
 const K=['l1','l2','l3','l4','l5','m1','m2','h1','h2','h3','wild','scat'];
+
 const SLOTS={
  cat:{keys:['9','10','J','Q','K','A','collar','fish','c1','c2','c3','c4','wild','scat'],mech:'cat',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:7,noScatFS:true,wsum:true,
-  wm:fs=>fs?(Math.random()<.6?2:3):1,wt:{'9':20,'10':20,J:18,Q:16,K:12,A:10,collar:7,fish:6,c1:6,c2:5,c3:4,c4:3,wild:10,scat:9},wtf:{wild:9},
+  wm:fs=>fs?(Math.random()<.6?2:3):1,
+  wt:{'9':24,'10':24,J:20,Q:16,K:11,A:9,collar:6,fish:5,c1:3.5,c2:2.5,c3:2,c4:1.5,wild:6,scat:6},
+  wtf:{wild:4},
   pay:{'9':[6.3,16.8,63],'10':[6.3,16.8,63],J:[8.4,21,84],Q:[8.4,21,84],K:[12.6,33.6,126],A:[12.6,33.6,126],collar:[16.8,52.5,210],fish:[21,63,252],c1:[25.2,84,315],c2:[33.6,105,420],c3:[42,147,630],c4:[63,210,1050]}},
- gold:{keys:K,mech:'expand',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:8,noScatFS:true,wsum:true,wm:fs=>fs?2:1,wt:{...WT,wild:5},wtf:{wild:8},pay:PT},
+ gold:{keys:K,mech:'expand',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:8,noScatFS:true,wsum:true,wm:fs=>fs?2:1,wt:{...WT,wild:5},wtf:{wild:6},pay:PT},
  pha:{keys:K,mech:'book',wildR:[1,2,3],scatR:[0,1,2,3,4],byReel:false,fsn:10,noScatFS:true,fsMult:3,wt:{...WT,wild:6,scat:4},ew:{h1:3,h2:3,h3:2,m1:2,m2:2},pay:PT},
- neon:{keys:K,mech:'streak',wildR:[1,2,3],scatR:[0,1,2,3,4],byReel:false,fsn:8,noScatFS:true,fsStep:2,fsCap:15,wt:{...WT,wild:8,scat:4},pay:PT},
+ neon:{keys:K,mech:'streak',wildR:[1,2,3],scatR:[0,1,2,3,4],byReel:false,fsn:8,noScatFS:true,fsStep:2,fsCap:15,wt:{...WT,wild:5,scat:4},pay:PT},
  dra:{keys:K,mech:'dragon',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:8,noScatFS:true,breath:.12,fsMult:1,wt:{...WT,wild:4},pay:PT},
- cos:{keys:K,mech:'tumble',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:8,noScatFS:true,wt:{...WT,wild:8},pay:PT},
- pot:{keys:[...K,'myst'],mech:'mystery',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:8,noScatFS:true,fsMult:3,wt:{...WT,wild:5,myst:6},wtf:{myst:10},mw:{l3:8,l4:8,l5:8,m1:8,m2:8,h1:6,h2:5,h3:4,wild:3},pay:PT}
+ cos:{keys:K,mech:'tumble',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:8,noScatFS:true,wt:{...WT,wild:5},pay:PT},
+ pot:{keys:[...K,'myst'],mech:'mystery',wildR:[1,2,3],scatR:[0,2,4],byReel:true,fsn:8,noScatFS:true,fsMult:3,wt:{...WT,wild:5,myst:4},wtf:{myst:6},mw:{l3:8,l4:8,l5:8,m1:8,m2:8,h1:6,h2:5,h3:4,wild:3},pay:PT}
 };
 
 const CAL={"gold":{"pay":{"l1":[4.76,12.68,47.55],"l2":[4.76,12.68,47.55],"l3":[6.34,15.85,63.4],"l4":[9.51,25.36,95.11],"l5":[9.51,25.36,95.11],"m1":[12.68,39.63,158.51],"m2":[15.85,47.55,190.21],"h1":[25.36,79.26,317.02],"h2":[38.04,126.81,475.53],"h3":[63.4,190.21,951.07]},"base":0.9766},"pha":{"pay":{"l1":[9.45,25.19,94.45],"l2":[9.45,25.19,94.45],"l3":[12.59,31.48,125.94],"l4":[18.89,50.37,188.9],"l5":[18.89,50.37,188.9],"m1":[25.19,78.71,314.84],"m2":[31.48,94.45,377.81],"h1":[50.37,157.42,629.68],"h2":[75.56,251.87,944.51],"h3":[125.94,377.81,1889.03]},"base":0.9732},"neon":{"pay":{"l1":[5.83,15.54,58.28],"l2":[5.83,15.54,58.28],"l3":[7.77,19.43,77.7],"l4":[11.66,31.08,116.55],"l5":[11.66,31.08,116.55],"m1":[15.54,48.56,194.26],"m2":[19.43,58.28,233.11],"h1":[31.08,97.13,388.51],"h2":[46.62,155.4,582.77],"h3":[77.7,233.11,1165.53]},"base":0.9675},"dra":{"pay":{"l1":[4.62,12.33,46.25],"l2":[4.62,12.33,46.25],"l3":[6.17,15.42,61.66],"l4":[9.25,24.66,92.49],"l5":[9.25,24.66,92.49],"m1":[12.33,38.54,154.15],"m2":[15.42,46.25,184.98],"h1":[24.66,77.08,308.3],"h2":[37,123.32,462.45],"h3":[61.66,184.98,924.91]},"base":0.9673},"cos":{"pay":{"l1":[6.57,17.52,65.68],"l2":[6.57,17.52,65.68],"l3":[8.76,21.89,87.58],"l4":[13.14,35.03,131.36],"l5":[13.14,35.03,131.36],"m1":[17.52,54.73,218.94],"m2":[21.89,65.68,262.73],"h1":[35.03,109.47,437.88],"h2":[52.55,175.15,656.81],"h3":[87.58,262.73,1313.63]},"base":0.9659},"pot":{"pay":{"l1":[12.31,32.84,123.14],"l2":[12.31,32.84,123.14],"l3":[16.42,41.05,164.19],"l4":[24.63,65.68,246.28],"l5":[24.63,65.68,246.28],"m1":[32.84,102.62,410.47],"m2":[41.05,123.14,492.56],"h1":[65.68,205.24,820.94],"h2":[98.51,328.38,1231.41],"h3":[164.19,492.56,2462.82]},"base":0.9738}};
+
 const LT5={l1:'10',l2:'J',l3:'Q',l4:'K',l5:'A'},ORD=['h3','h2','h1','m2','m1','l5','l4','l3','l2','l1'];
 const META={
  cat:{name:'Cat House',sub:'Липкие вайлды x2 и x3',wl:'WILD',sl:'BONUS',lt:{'9':'9','10':'10',J:'J',Q:'Q',K:'K',A:'A'},ico:k=>k=='wild'?'yarn':k=='scat'?'paw':k,order:['c4','c3','c2','c1','fish','collar','A','K','Q','J','10','9'],hero:'c2',
-  fsText:'фриспинов. Вайлды-клубки липкие и получают множитель x2 или x3.',rules:'Вайлд-клубок выпадает на барабанах 2–4. Три бонус-символа на барабанах 1, 3 и 5 дают 7 фриспинов: вайлды становятся липкими и получают множитель x2 или x3, множители в одной линии складываются.',base:0.965},
- gold:{name:'Gold Rush',sub:'Взрывные расширяющиеся вайлды',wl:'TNT',sl:'GOLD',fsText:'фриспинов. Динамит расширяется на весь барабан и даёт множитель x2.',rules:'Вайлд-динамит на барабанах 2–4 взрывается и занимает весь барабан. Три золотых самородка на барабанах 1, 3 и 5 дают 8 фриспинов, где расширенные вайлды умножают выигрыш на x2.'},
- pha:{name:'Pharaoh Gold',sub:'Расширяющийся символ из книги',wl:'MASK',sl:'BOOK',fsText:'фриспинов. Перед началом выбирается особый символ: он занимает барабан целиком.',rules:'Три книги где угодно дают 10 фриспинов. Перед бонусом выбирается особый символ: на любом барабане, где он выпал, он расширяется на все три ячейки. Выигрыши бонуса умножаются на x3.'},
- neon:{name:'Neon Fruits',sub:'Серия побед растит множитель',wl:'WILD',sl:'BONUS',fsText:'фриспинов. Множитель растёт с каждым выигрышем и не сбрасывается.',rules:'Выигрыши подряд повышают множитель: x1, x2, x3, x5, x8, а проигрыш сбрасывает серию. Три бонус-символа где угодно дают 8 фриспинов, где множитель растёт на 2 с каждым выигрышем (до x15).',fsStep:2},
- dra:{name:'Dragon Pearl',sub:'Дыхание дракона создаёт вайлды',wl:'PEARL',sl:'INGOT',fsText:'фриспинов. Дракон выдыхает пламя каждый спин и превращает 3–6 ячеек в вайлды.',rules:'Иногда дракон выдыхает пламя и превращает 2–4 случайные ячейки в вайлды-жемчужины. Три слитка на барабанах 1, 3 и 5 дают 8 фриспинов, где пламя срабатывает каждый спин и создаёт 3–6 вайлдов.'},
- cos:{name:'Cosmic Drift',sub:'Каскады с растущим множителем',wl:'NOVA',sl:'COMET',fsText:'фриспинов. Множитель каскадов не сбрасывается между спинами.',rules:'Выигрышные символы исчезают, сверху падают новые. Каждый каскад поднимает множитель на единицу. Три кометы на барабанах 1, 3 и 5 дают 8 фриспинов, где множитель не сбрасывается между каскадами и спинами (до x25).'},
- pot:{name:'Magic Potion',sub:'Загадочные карты превращаются',wl:'ORB',sl:'MOON',fsText:'фриспинов. Загадочных карт больше, а выигрыши умножаются на x3.',rules:'Загадочные карты после остановки барабанов превращаются в один и тот же символ. Три луны на барабанах 1, 3 и 5 дают 8 фриспинов с большим числом карт и множителем x3.'}
+  fsText:'фриспинов. Вайлды-клубки липкие и получают множитель x2 или x3.',rules:'Вайлд-клубок выпадает на барабанах 2–4. Три бонус-символа на барабанах 1, 3 и 5 дают 7 фриспинов.',base:0.965},
+ gold:{name:'Gold Rush',sub:'Взрывные расширяющиеся вайлды',wl:'TNT',sl:'GOLD',fsText:'фриспинов. Динамит расширяется на весь барабан и даёт множитель x2.',rules:'Три золотых самородка на барабанах 1, 3 и 5 дают 8 фриспинов.'},
+ pha:{name:'Pharaoh Gold',sub:'Расширяющийся символ из книги',wl:'MASK',sl:'BOOK',fsText:'фриспинов. Перед началом выбирается особый символ.',rules:'Три книги где угодно дают 10 фриспинов.'},
+ neon:{name:'Neon Fruits',sub:'Серия побед растит множитель',wl:'WILD',sl:'BONUS',fsText:'фриспинов. Множитель растёт с каждым выигрышем.',rules:'Выигрыши подряд повышают множитель.',fsStep:2},
+ dra:{name:'Dragon Pearl',sub:'Дыхание дракона создаёт вайлды',wl:'PEARL',sl:'INGOT',fsText:'фриспинов. Дракон выдыхает пламя.',rules:'Три слитка на барабанах 1, 3 и 5 дают 8 фриспинов.'},
+ cos:{name:'Cosmic Drift',sub:'Каскады с растущим множителем',wl:'NOVA',sl:'COMET',fsText:'фриспинов. Множитель каскадов не сбрасывается.',rules:'Три кометы на барабанах 1, 3 и 5 дают 8 фриспинов.'},
+ pot:{name:'Magic Potion',sub:'Загадочные карты превращаются',wl:'ORB',sl:'MOON',fsText:'фриспинов. Загадочных карт больше.',rules:'Три луны на барабанах 1, 3 и 5 дают 8 фриспинов.'}
 };
 for(const id in SLOTS){const G=SLOTS[id],M=META[id];Object.assign(G,M);G.id=id;
  if(CAL[id]){G.pay=CAL[id].pay;G.base=CAL[id].base}
  if(id!='cat'){G.lt=LT5;G.order=ORD;G.hero='h1';G.ico=k=>id+'-'+k}}
+
 const BETS=[1,2,5,10,20,50,100,200,500,1000];
 const SL={fs:0,fsTot:0,ctx:null,fctx:null,busy:false,bi:3,turbo:false,G:null},slp=ms=>new Promise(r=>setTimeout(r,ms));
 const cellEl=[],slotScale=()=>{
-  const rtp = Number(S.cfg && S.cfg.slot) || 96;
+  const rtp = Number(S.cfg && S.cfg.slot) || 85;
   const base = Number(SL.G && SL.G.base) || 0.965;
   return rtp / 100 / base;
 };
@@ -114,21 +119,20 @@ function ovShow(t,v,pHTML,btn){
  return new Promise(res=>{$('#ovb').onclick=()=>{$('#sov').classList.remove('on');res()}})}
 
 async function slotSpin(free){
- if(SL.busy)return; 
- SL.busy = true;        // Блокируем кнопку моментально
- slotLock(true);        // Визуально отключаем
+ if(SL.busy)return;
+ SL.busy = true;
+ slotLock(true);
 
  const G=SL.G,bet=BETS[SL.bi],ctx=free?SL.fctx:SL.ctx,T=SL.turbo;
- 
- // 1. СПИСЫВАЕМ СТАВКУ СРАЗУ (если это не фриспин)
+
  if(!free){
-  if (S.bal < bet) { 
-    toast('Недостаточно средств', 'e'); 
-    SL.busy = false; 
-    slotLock(false); 
-    return; 
+  if (S.bal < bet) {
+    toast('Недостаточно средств', 'e');
+    SL.busy = false;
+    slotLock(false);
+    return;
   }
-  S.bal = Math.round((S.bal - bet) * 100) / 100; 
+  S.bal = Math.round((S.bal - bet) * 100) / 100;
   render();
  }
 
@@ -145,21 +149,20 @@ async function slotSpin(free){
   if(w>0){win+=w;hl(st.ev.wins);countUp(win);$('#smsg').textContent='Выигрыш'+(st.m>1?' · x'+st.m:'');if(r.steps.length>1)await slp(T?350:700)}}
  if(free)win=Math.min(win,Math.max(0,6750*bet-SL.fsTot));
  win=Math.round(win*100)/100;
- 
+
  if(win>0){if(r.steps.length==1)hl(r.steps[0].ev.wins);countUp(win);if(win>=bet*15)bigWin(win,bet);$('#smsg').textContent=(win>=bet*20?'Большой выигрыш! ':'Выигрыш ')+'x'+(win/bet).toFixed(2)}
  else{hl([]);$('#smsg').textContent=free?'Без выигрыша':'Попробуйте ещё'}
- 
+
  if(free){
    if(win>0){SL.fsTot+=win;}
  } else {
-   // СИНХРОНИЗАЦИЯ С СЕРВЕРОМ (в конце)
    const res = await playGame('slot', bet, { win: win, alreadyDeducted: true });
    if(res && res.newBalance !== undefined) {
-      S.bal = res.newBalance; 
+      S.bal = res.newBalance;
       render();
    }
  }
- 
+
  const trig=!free&&scatCount(G,r.final)>=3;
  SL.busy=false;if(!free)slotLock(false);hud();
  if(trig){await slp(900);await runFree(bet)}
@@ -170,43 +173,41 @@ async function runFree(bet){const G=SL.G;
  SL.fs=G.fsn;SL.fsTot=0;SL.fctx=newFS(G);
  if(G.mech=='book')await ovShow('Особый символ','','<div class="cell kk-'+SL.fctx.E+'" style="width:92px;margin:8px auto">'+symHTML({s:SL.fctx.E})+'</div><p class="rl" style="text-align:center">Выпав на барабане, он займёт его целиком.</p>','Играть');
  $('#slw').classList.add('fsm');hud();slotLock(true);
- 
+
  while(SL.fs>0){
    SL.fs--;hud();
    await slotSpin(true);
    slotLock(true);
    await slp(SL.turbo?500:1100);
  }
- 
+
  $('#slw').classList.remove('fsm');
  const tot=Math.round(SL.fsTot*100)/100;
- 
+
  if(tot>0){
    S.wins++;
    S.best=Math.max(S.best||0,tot);
-   
-   // СИНХРОНИЗАЦИЯ ОБЩЕГО ВЫИГРЫША БОНУСА
    const res = await playGame('slot', 0, { win: tot, alreadyDeducted: true });
    if(res && res.newBalance !== undefined) {
       S.bal = res.newBalance;
       render();
    }
  }
- 
+
  S.hist.unshift([G.name+' · бонус',tot]);
  S.hist=S.hist.slice(0,15);
  render();
  feed(G.name,$('#un').textContent||'Вы',bet,tot);
  slotLock(false);SL.fctx=null;hud();
  if(tot>=bet*15)bigWin(tot,bet);
- 
+
  await ovShow('Итого',(tot>0?'+':'')+fmt(tot),'<p class="rl" style="text-align:center">'+(tot>0?'за бонусную игру':'бонус без выигрыша')+'</p>','Продолжить');
  $('#swn').textContent=fmt(tot);
 }
 
 function showPay(){const G=SL.G,sc=slotScale()/20;
  let t=G.order.map(k=>'<div class="pt"><div class="cell k-'+k+' kk-'+k+'">'+symHTML({s:k})+'</div><div><b>'+G.pay[k].map((v,i)=>(i+3)+'× '+(v*sc).toFixed(2)).join(' · ')+'</b><small>от ставки</small></div></div>').join('');
- t+='<p class="rl">20 линий, выигрыш считается слева направо от 1-го барабана. Вайлд заменяет все символы, кроме бонуса. '+G.rules+' Максимальный выигрыш за бонус — x6750 от ставки. RTP: '+(S.cfg.slot||96)+'%.</p>';
+ t+='<p class="rl">20 линий. '+G.rules+' RTP: '+(S.cfg.slot||85)+'%.</p>';
  ovShow('Выплаты','',t,'Закрыть')}
 
 function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=null;SL.fs=0;
@@ -217,32 +218,46 @@ function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=nu
  $('#sov').classList.remove('on');hl([]);$('#swn').textContent='0';$('#smsg').textContent='Удачи!';hud()}
 
 function buildLobby(){
-  const L=$('#slobby');if(!L)return;
-  L.innerHTML='<h3 class="sh">Выберите слот</h3>';
-  const grid=document.createElement('div');grid.className='slg';
-  Object.keys(SLOTS).forEach(id=>{const G=SLOTS[id],d=document.createElement('div');d.className='sc th-'+id;
-    d.innerHTML='<div class="scp">'+'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg></div><b></b><small></small><em class="rtp"></em>';
-    d.children[1].textContent=G.name;d.children[2].textContent=G.sub;d.children[3].textContent='RTP '+(S.cfg.slot||96)+'%';d.onclick=()=>openSlot(id);grid.appendChild(d)});
+ const L=$('#slobby');if(!L)return;
+ L.innerHTML='<h3 class="sh">Выберите слот</h3>';
+ const grid=document.createElement('div');grid.className='slg';
 
-  // Gravedigger's Tip — отдельный iframe
-  const gd=document.createElement('div');
-  gd.className='sc';
-  gd.style.cssText='background:radial-gradient(140% 60% at 50% 0%,#4b1f9e,#1a0d36 70%);border:2px solid #7b3fe4;box-shadow:0 12px 26px rgba(123,63,228,.4),inset 0 1px 0 rgba(255,255,255,.2);';
-  gd.innerHTML='<div class="scp" style="font-size:56px;line-height:1;filter:drop-shadow(0 8px 10px rgba(0,0,0,.6))">⚰️</div><b style="color:#9dff4a;">Gravedigger\'s Tip</b><small>1024 ways · сбор гробов</small><em class="rtp" style="background:rgba(157,255,74,.22);color:#9dff4a;border-color:#9dff4a;">RTP 96%</em>';
-  gd.onclick=openGravedigger;
-  grid.appendChild(gd);
+ Object.keys(SLOTS).forEach(id=>{const G=SLOTS[id],d=document.createElement('div');d.className='sc th-'+id;
+  d.innerHTML='<div class="scp">'+'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg></div><b></b><small></small><em class="rtp"></em>';
+  d.children[1].textContent=G.name;d.children[2].textContent=G.sub;d.children[3].textContent='RTP '+(S.cfg.slot||85)+'%';d.onclick=()=>openSlot(id);grid.appendChild(d)});
 
-  L.appendChild(grid);
+ // Gravedigger's Tip
+ const gd=document.createElement('div');
+ gd.className='sc';
+ gd.style.cssText='background:radial-gradient(140% 60% at 50% 0%,#4b1f9e,#1a0d36 70%);border:2px solid #7b3fe4;box-shadow:0 12px 26px rgba(123,63,228,.4),inset 0 1px 0 rgba(255,255,255,.2);';
+ gd.innerHTML='<div class="scp" style="font-size:56px;line-height:1;filter:drop-shadow(0 8px 10px rgba(0,0,0,.6))">⚰️</div><b style="color:#9dff4a;">Gravedigger\'s Tip</b><small>1024 ways · сбор гробов</small><em class="rtp" style="background:rgba(157,255,74,.22);color:#9dff4a;border-color:#9dff4a;">RTP 85%</em>';
+ gd.onclick=openGravedigger;
+ grid.appendChild(gd);
+
+ // Abyssal Tide / Pharaoh's Tomb / Neon Heist
+ const newSlots=[
+   {id:'abyss',title:"Abyssal Tide",sub:'Глубины · сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)',border:'#22e5c8',file:'ABYSSALTIDE.html'},
+   {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Гробница · сбор урн',icon:'🏺',bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)',border:'#f59e0b',file:'PHARAOHSTOMB.html'},
+   {id:'neonheist',title:"Neon Heist",sub:'Взлом · сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)',border:'#ff2d95',file:'NEONHEIST.html'}
+ ];
+ newSlots.forEach(s=>{
+   const d=document.createElement('div');
+   d.className='sc';
+   d.style.cssText=`background:${s.bg};border:2px solid ${s.border};box-shadow:0 12px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2);`;
+   d.innerHTML=`<div class="scp" style="font-size:56px;line-height:1;filter:drop-shadow(0 8px 10px rgba(0,0,0,.6))">${s.icon}</div><b style="color:${s.border};">${s.title}</b><small>${s.sub}</small><em class="rtp" style="background:rgba(0,0,0,.4);color:#ffe9a0;">RTP 85%</em>`;
+   d.onclick=()=>openSlotFrame(s.id,s.file);
+   grid.appendChild(d);
+ });
+
+ L.appendChild(grid);
 }
 
-// ─────────────── Gravedigger's Tip (iframe) ───────────────
+// ===== Gravedigger iframe =====
 let gdWrap=null;
-
 function openGravedigger(){
   if(SL.busy)return;
   $('#slobby').style.display='none';
   $('#sgame').style.display='none';
-
   if(!gdWrap){
     gdWrap=document.createElement('div');
     gdWrap.id='gd-wrap';
@@ -252,37 +267,52 @@ function openGravedigger(){
       <iframe id="gd-frame" src="gravedigger.html" style="width:100%;height:100%;border:0;display:block;background:#0d0716;" allow="autoplay"></iframe>
     `;
     document.body.appendChild(gdWrap);
-
-    const close=()=>{
-      gdWrap.style.display='none';
-      $('#slobby').style.display='block';
-      syncMe();
-    };
+    const close=()=>{ gdWrap.style.display='none'; $('#slobby').style.display='block'; syncMe(); };
     document.getElementById('gd-close').onclick=close;
-
-    window.addEventListener('message',(e)=>{
-      if(e.data&&e.data.type==='gd-close')close();
-    });
-
+    window.addEventListener('message',(e)=>{ if(e.data&&e.data.type==='gd-close')close(); });
     const frame=document.getElementById('gd-frame');
-    frame.addEventListener('load',()=>sendGdInit());
+    frame.addEventListener('load',()=>{
+      const tg=window.Telegram&&window.Telegram.WebApp;
+      try{frame.contentWindow.postMessage({type:'gd-init',initData:(tg&&tg.initData)||'',apiUrl:API_URL},'*')}catch(e){}
+    });
   } else {
     gdWrap.style.display='block';
-    sendGdInit();
+    const frame=document.getElementById('gd-frame');
+    if(frame&&frame.contentWindow){
+      const tg=window.Telegram&&window.Telegram.WebApp;
+      try{frame.contentWindow.postMessage({type:'gd-init',initData:(tg&&tg.initData)||'',apiUrl:API_URL},'*')}catch(e){}
+    }
   }
 }
 
-function sendGdInit(){
-  const frame=document.getElementById('gd-frame');
+// ===== Универсальный iframe-слот =====
+const slotWraps={};
+function openSlotFrame(id,htmlFile){
+  const key='w_'+id;
+  if(!slotWraps[key]){
+    const w=document.createElement('div');
+    w.id=key;
+    w.style.cssText='position:fixed;inset:0;z-index:9999;background:#0a0612;overflow:hidden;';
+    w.innerHTML=`
+      <button id="close-${id}" aria-label="Закрыть" style="position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:10px;z-index:10001;width:42px;height:42px;border-radius:50%;background:linear-gradient(#ff5a7e,#b3123a);color:#fff;border:3px solid #0a0612;box-shadow:0 4px 0 #0a0612;font:900 22px system-ui;line-height:1;cursor:pointer;display:grid;place-items:center;">×</button>
+      <iframe id="frame-${id}" src="${htmlFile}" style="width:100%;height:100%;border:0;display:block;background:#0a0612;" allow="autoplay"></iframe>
+    `;
+    document.body.appendChild(w);
+    slotWraps[key]=w;
+    document.getElementById('close-'+id).onclick=()=>{w.style.display='none';syncMe()};
+    const frame=document.getElementById('frame-'+id);
+    frame.addEventListener('load',()=>sendSlotInit(id));
+  } else {
+    slotWraps[key].style.display='block';
+    sendSlotInit(id);
+  }
+}
+
+function sendSlotInit(id){
+  const frame=document.getElementById('frame-'+id);
   if(!frame||!frame.contentWindow)return;
   const tg=window.Telegram&&window.Telegram.WebApp;
-  try{
-    frame.contentWindow.postMessage({
-      type:'gd-init',
-      initData:(tg&&tg.initData)||'',
-      apiUrl:API_URL
-    },'*');
-  }catch(e){console.error('gd init:',e)}
+  try{frame.contentWindow.postMessage({type:'slot-init',initData:(tg&&tg.initData)||'',apiUrl:API_URL},'*')}catch(e){}
 }
 
 const setBet=d=>{SL.bi=Math.min(BETS.length-1,Math.max(0,SL.bi+d));$('#sbt').textContent=fmt(BETS[SL.bi])};

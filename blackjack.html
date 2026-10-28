@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Блэкджек</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0618;--felt1:#2a1566;--felt2:#120a2e;--gold:#e8c872;--gold2:#a9822f;--ivory:#f7f1e3;--red:#c8304b;--ink:#1a1230;--win:#58e0a0;--lose:#ff6b84}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--ivory);font-family:Manrope,system-ui,sans-serif;overflow:hidden}
+.app{max-width:480px;height:100dvh;margin:auto;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);background:radial-gradient(120% 70% at 50% 38%,var(--felt1),var(--felt2) 62%,var(--bg))}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.back{width:38px;height:38px;border-radius:12px;border:1px solid #ffffff22;background:#ffffff0d;color:var(--ivory);font-size:18px}
+h1{font:700 26px/1 "Cormorant Garamond",serif;letter-spacing:.02em;color:var(--gold)}
+.bal{display:flex;flex-direction:column;align-items:flex-end;padding:6px 14px;border-radius:14px;background:linear-gradient(#ffffff14,#ffffff06);border:1px solid #e8c87244}
+.bal small{font-size:11px;opacity:.65}.bal b{font-size:17px;color:var(--gold);font-variant-numeric:tabular-nums}
+.table{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;padding:6px 0 10px;position:relative}
+.table:before{content:"";position:absolute;inset:4px 0 8px;border-radius:200px 200px 28px 28px/120px 120px 28px 28px;border:1px solid #e8c87238;box-shadow:inset 0 0 60px #0006;pointer-events:none}
+.seat{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1}
+.who{display:flex;align-items:center;gap:8px;font-size:13px;opacity:.85}
+.score{min-width:30px;padding:3px 10px;border-radius:99px;background:#0008;border:1px solid var(--gold2);color:var(--gold);font-weight:800;font-size:13px;text-align:center;transition:.25s}
+.score.bust{border-color:var(--lose);color:var(--lose)}.score.bj{background:var(--gold);color:var(--ink)}
+.hand{display:flex;justify-content:center;height:clamp(96px,15dvh,124px);width:100%}
+.card{--w:clamp(62px,17vw,76px);width:var(--w);height:calc(var(--w)*1.43);margin:0 calc(var(--w)*-.26);perspective:700px;animation:deal .42s cubic-bezier(.2,.8,.2,1) both}
+.card:last-child{margin-right:calc(var(--w)*-.26)}
+@keyframes deal{from{transform:translate(90px,-90px) rotate(14deg);opacity:0}}
+.inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s}
+.card.back .inner{transform:rotateY(180deg)}
+.face,.cover{position:absolute;inset:0;border-radius:9px;backface-visibility:hidden;box-shadow:0 8px 18px #0008,0 0 0 1px #0003}
+.face{background:linear-gradient(160deg,#fff,var(--ivory) 60%,#e6dcc2);color:var(--ink);padding:5px 6px;display:flex;flex-direction:column;justify-content:space-between}
+.face.r{color:var(--red)}
+.face .rk{font:700 calc(var(--w)*.34)/1 "Cormorant Garamond",serif}
+.face .rk i{display:block;font-style:normal;font-size:.7em}
+.face .big{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--w)*.5);opacity:.92}
+.cover{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,#ffffff10 0 2px,transparent 2px 7px),linear-gradient(150deg,#4a2ba8,#1e0f52);border:2px solid var(--gold);outline:3px solid #1e0f52;outline-offset:-6px}
+.cover:after{content:"♠";position:absolute;inset:0;display:grid;place-items:center;font-size:26px;color:var(--gold)}
+.mid{height:54px;display:grid;place-items:center;position:relative;z-index:1;text-align:center}
+.msg{font:700 26px/1.1 "Cormorant Garamond",serif;color:var(--gold);opacity:0;transform:translateY(6px);transition:.35s}
+.msg.on{opacity:1;transform:none}.msg.win{color:var(--win)}.msg.lose{color:var(--lose)}
+.msg small{display:block;font:700 13px Manrope;color:var(--ivory);opacity:.8;margin-top:3px}
+.panel{padding:10px 0 14px;display:flex;flex-direction:column;gap:12px}
+.betrow{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.betrow b{font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
+.chips{display:flex;justify-content:space-between}
+.chip{width:clamp(54px,16vw,64px);aspect-ratio:1;border-radius:50%;border:0;color:#fff;font:800 15px Manrope;background:radial-gradient(circle,var(--c) 52%,transparent 53%),repeating-conic-gradient(#fff 0 12deg,var(--c) 12deg 30deg);box-shadow:0 6px 14px #0008,inset 0 0 0 3px #0004;transition:.15s}
+.chip:active{transform:translateY(2px) scale(.96)}.chip:disabled{filter:grayscale(1) brightness(.5)}
+.row{display:flex;gap:10px}
+.btn{flex:1;height:52px;border-radius:15px;border:1px solid #ffffff26;background:#ffffff10;color:var(--ivory);font:800 15px Manrope;transition:.15s}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.35}
+.btn.gold{background:linear-gradient(#f3d98d,var(--gold) 50%,var(--gold2));color:var(--ink);border:0;box-shadow:0 8px 22px #e8c87238}
+.btn.small{flex:0 0 96px}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:rgba(11,6,24,.92);z-index:100;font-size:14px;color:var(--gold)}
+.loading[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button class="back" id="back" aria-label="Назад">←</button>
+    <h1>Блэкджек</h1>
+    <div class="bal"><small>Баланс</small><b id="bal">…</b></div>
+  </header>
+
+  <main class="table">
+    <section class="seat">
+      <div class="who">Дилер <span class="score" id="dS" hidden>0</span></div>
+      <div class="hand" id="dealer"></div>
+    </section>
+    <div class="mid"><div class="msg" id="msg"></div></div>
+    <section class="seat">
+      <div class="hand" id="player"></div>
+      <div class="who">Вы <span class="score" id="pS" hidden>0</span></div>
+    </section>
+  </main>
+
+  <div class="panel">
+    <div id="betUI">
+      <div class="betrow"><span>Ставка</span><b id="bet">0</b></div>
+      <div class="chips" id="chips" style="margin:12px 0"></div>
+      <div class="row">
+        <button class="btn small" id="clear">Сбросить</button>
+        <button class="btn gold" id="deal">Раздать</button>
+      </div>
+      <button class="btn" id="topup" hidden style="width:100%;margin-top:10px">Недостаточно средств — пополнить</button>
+    </div>
+    <div class="row" id="playUI" hidden>
+      <button class="btn" id="stand">Стоп</button>
+      <button class="btn gold" id="hit">Ещё</button>
+      <button class="btn" id="dbl">Удвоить</button>
+    </div>
+    <div class="row" id="doneUI" hidden>
+      <button class="btn" id="change">Изменить ставку</button>
+      <button class="btn gold" id="again">Повторить</button>
+    </div>
+  </div>
+</div>
+<div class="loading" id="loading">Подключение к балансу…</div>
+
+<script>
+/* ================= ИНТЕГРАЦИЯ С КАЗИНО ================= */
+let INIT_DATA = '';
+let API_URL = 'https://accomplish-together-gateway-mic.trycloudflare.com';
+let ready = false;
+let syncRetries = 0;
+
+async function apiCall(path, data = {}) {
+  try {
+    const r = await fetch(API_URL + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ ...data, initData: INIT_DATA })
+    });
+    return await r.json();
+  } catch (e) { return { ok: false }; }
+}
+
+async function initFromServer() {
+  if (!INIT_DATA) return;
+  const r = await apiCall('/me');
+  if (r.ok && r.user) {
+    bal = Number(r.user.balance) || 0;
+    ready = true;
+    renderBal();
+    $('#loading').hidden = true;
+    ui();
+  } else if (syncRetries < 2) {
+    syncRetries++;
+    setTimeout(initFromServer, 800);
+  } else {
+    $('#loading').innerHTML = 'Не удалось получить баланс<br><small>Закройте и попробуйте снова</small>';
+  }
+}
+
+async function syncServerBet(wager, totalWin) {
+  syncing = true;
+  ui();
+  const r = await apiCall('/bet', {
+    game: 'blackjack',
+    bet: wager,
+    params: { win: totalWin }
+  });
+  if (r.ok && typeof r.balance === 'number') {
+    bal = r.balance;
+    renderBal();
+  } else {
+    // Если сервер не ответил — перезапрашиваем баланс
+    const me = await apiCall('/me');
+    if (me.ok && me.user) { bal = Number(me.user.balance) || 0; renderBal(); }
+  }
+  syncing = false;
+  ui();
+  return r;
+}
+
+window.addEventListener('message', (e) => {
+  if (!e.data || e.data.type !== 'bj-init') return;
+  if (e.data.initData) INIT_DATA = e.data.initData;
+  if (e.data.apiUrl) API_URL = e.data.apiUrl;
+  initFromServer();
+});
+
+try { if (window.parent !== window) window.parent.postMessage({ type: 'bj-ready' }, '*'); } catch (e) {}
+
+const _tgInit = window.Telegram && window.Telegram.WebApp;
+if (_tgInit && _tgInit.initData) {
+  INIT_DATA = _tgInit.initData;
+  initFromServer();
+}
+/* ===================================================== */
+
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const buzz = t => { try { tg.HapticFeedback.impactOccurred(t || 'light'); } catch (e) {} };
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const SUITS = ['♠','♥','♦','♣'];
+const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const CHIPS = [[10,'#3b7be0'],[50,'#2fa36b'],[100,'#c8304b'],[500,'#7b3fd0']];
+
+let shoe = [], P = [], D = [];
+let bal = 0, bet = 0, wager = 0, lastBet = 0;
+let phase = 'bet', busy = false, dHidden = null, syncing = false;
+
+function newShoe() {
+  shoe = [];
+  for (let d = 0; d < 6; d++) for (const s of SUITS) for (const r of RANKS) shoe.push({ r, s });
+  for (let i = shoe.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [shoe[i], shoe[j]] = [shoe[j], shoe[i]]; }
+}
+const draw = () => { if (shoe.length < 60) newShoe(); return shoe.pop(); };
+const val = r => r === 'A' ? 11 : ('JQK'.includes(r) || r === '10') ? 10 : +r;
+
+function total(h) {
+  let t = 0, a = 0;
+  for (const c of h) { t += val(c.r); if (c.r === 'A') a++; }
+  while (t > 21 && a) { t -= 10; a--; }
+  return t;
+}
+const isBJ = h => h.length === 2 && total(h) === 21;
+const fmt = n => Math.round(n).toLocaleString('ru-RU');
+
+function renderBal() {
+  $('#bal').textContent = ready ? fmt(bal) : '…';
+}
+
+function cardEl(c, hidden) {
+  const red = c.s === '♥' || c.s === '♦';
+  const el = document.createElement('div');
+  el.className = 'card' + (hidden ? ' back' : '');
+  el.innerHTML = `<div class="inner"><div class="face ${red ? 'r' : ''}"><div class="rk">${c.r}<i>${c.s}</i></div><div class="big">${c.s}</div></div><div class="cover"></div></div>`;
+  return el;
+}
+
+async function give(who, hidden) {
+  const c = draw();
+  const hand = who === 'P' ? P : D;
+  hand.push(c);
+  const el = cardEl(c, hidden);
+  $(who === 'P' ? 'player' : 'dealer').append(el);
+  if (hidden) dHidden = el;
+  buzz();
+  scores();
+  await sleep(340);
+}
+
+function scores(final) {
+  const p = total(P);
+  const dv = (final || !dHidden) ? total(D) : total(D.slice(0, 1));
+  const ps = $('pS'), ds = $('dS');
+  ps.hidden = !P.length; ds.hidden = !D.length;
+  ps.textContent = p;
+  ps.className = 'score' + (p > 21 ? ' bust' : isBJ(P) ? ' bj' : '');
+  ds.textContent = dv;
+  ds.className = 'score' + ((final && dv > 21) ? ' bust' : (final && isBJ(D)) ? ' bj' : '');
+}
+
+function msg(t, cls, sub) {
+  const m = $('msg');
+  m.className = 'msg' + (t ? ' on ' + (cls || '') : '');
+  m.innerHTML = t ? t + (sub ? `<small>${sub}</small>` : '') : '';
+}
+
+function ui() {
+  if (!ready) {
+    $('betUI').hidden = true;
+    $('playUI').hidden = true;
+    $('doneUI').hidden = true;
+    return;
+  }
+  $('betUI').hidden = phase !== 'bet';
+  $('playUI').hidden = phase !== 'play' || busy || syncing;
+  $('doneUI').hidden = phase !== 'done' || busy || syncing;
+  $('bet').textContent = fmt(bet);
+  $('deal').disabled = bet <= 0 || busy || syncing || bet > bal;
+  $('clear').disabled = bet <= 0;
+  $('topup').hidden = !(phase === 'bet' && bal < 10 && bet === 0);
+  $('chips').querySelectorAll('button').forEach(b => b.disabled = +b.dataset.v > bal - bet);
+  $('dbl').disabled = !(P.length === 2 && bal >= wager);
+  $('again').disabled = lastBet > bal || lastBet <= 0 || syncing;
+  $('again').textContent = 'Повторить · ' + fmt(lastBet);
+}
+
+async function deal() {
+  if (busy || syncing || bet <= 0 || bet > bal) return;
+  busy = true;
+  wager = lastBet = bet;
+  bal -= wager;
+  renderBal();
+  P = []; D = []; dHidden = null;
+  $('player').innerHTML = $('dealer').innerHTML = '';
+  msg('');
+  phase = 'play';
+  ui();
+  buzz('medium');
+  await give('P'); await give('D'); await give('P'); await give('D', true);
+  busy = false;
+  if (isBJ(P) || isBJ(D)) await finish();
+  else ui();
+}
+
+async function hit() {
+  if (busy || syncing) return;
+  busy = true; ui();
+  await give('P');
+  busy = false;
+  const t = total(P);
+  if (t > 21) await finish();
+  else if (t === 21) { busy = true; await finish(); }
+  else ui();
+}
+
+async function stand() {
+  if (busy || syncing || phase !== 'play') return;
+  busy = true; ui();
+  await finish();
+}
+
+async function dbl() {
+  if (busy || syncing || P.length !== 2 || bal < wager) return;
+  busy = true; ui();
+  bal -= wager;
+  renderBal();
+  wager *= 2;
+  await give('P');
+  await finish();
+}
+
+async function finish() {
+  busy = true;
+  phase = 'done';
+  ui();
+  if (dHidden) dHidden.classList.remove('back');
+  dHidden = null;
+  await sleep(550);
+  scores(true);
+  const pbj = isBJ(P), dbj = isBJ(D);
+  if (total(P) <= 21 && !pbj && !dbj) {
+    while (total(D) < 17) await give('D');
+  }
+  const pt = total(P), dt = total(D);
+  let pay = 0, t = '', cls = '';
+  if (pbj && dbj) { pay = wager; t = 'Ничья'; cls = ''; }
+  else if (pbj) { pay = wager * 2.5; t = 'Блэкджек!'; cls = 'win'; }
+  else if (pt > 21) { t = 'Перебор'; cls = 'lose'; }
+  else if (dbj) { t = 'У дилера блэкджек'; cls = 'lose'; }
+  else if (dt > 21 || pt > dt) { pay = wager * 2; t = 'Победа'; cls = 'win'; }
+  else if (pt === dt) { pay = wager; t = 'Ничья'; cls = ''; }
+  else { t = 'Поражение'; cls = 'lose'; }
+
+  bal += pay;
+  renderBal();
+  scores(true);
+  const net = pay - wager;
+  msg(t, cls, net > 0 ? '+' + fmt(net) : net < 0 ? '−' + fmt(-net) : 'Ставка возвращена');
+  buzz(net > 0 ? 'heavy' : 'light');
+
+  await syncServerBet(wager, pay);
+
+  bet = 0;
+  busy = false;
+  ui();
+}
+
+CHIPS.forEach(([v, c]) => {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.textContent = v; b.dataset.v = v;
+  b.style.setProperty('--c', c);
+  b.setAttribute('aria-label', 'Фишка ' + v);
+  b.onclick = () => { if (v <= bal - bet) { bet += v; buzz(); ui(); } };
+  $('chips').append(b);
+});
+
+$('clear').onclick = () => { bet = 0; ui(); };
+$('deal').onclick = deal;
+$('hit').onclick = hit;
+$('stand').onclick = stand;
+$('dbl').onclick = dbl;
+$('again').onclick = () => { bet = lastBet; phase = 'bet'; deal(); };
+$('change').onclick = () => {
+  phase = 'bet'; bet = 0; P = []; D = [];
+  $('player').innerHTML = $('dealer').innerHTML = '';
+  $('pS').hidden = $('dS').hidden = true;
+  msg('');
+  ui();
+};
+$('topup').onclick = () => {
+  if (window.parent !== window) window.parent.postMessage({ type: 'bj-close' }, '*');
+};
+$('back').onclick = () => {
+  if (window.parent !== window) window.parent.postMessage({ type: 'bj-close' }, '*');
+  else history.back();
+};
+
+newShoe();
+renderBal();
+ui();
+</script>
+</body>
+</html>
