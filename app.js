@@ -10,7 +10,7 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://harris-alberta-hotels-reveals.trycloudflare.com'; // <--- ТВОЯ ССЫЛКА
+const API_URL = 'https://trackback-ranch-brooks-championships.trycloudflare.com';
 const CFG0 = { rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000, refDef: 50 };
 let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
 let selU = null;
@@ -308,51 +308,117 @@ window.replySupport = async (id) => {
 };
 if ($('#sup-reload')) $('#sup-reload').onclick = loadAdminSupport;
 
-// --- РОЗЫГРЫШИ ---
+// ============================================================
+// ===================== РОЗЫГРЫШИ (КЛИЕНТ) ===================
+// ============================================================
+
 async function loadGiveaways() {
   const r = await api('/giveaways/list');
   if (!r.ok) return;
   const card = $('#giveaways-card'), list = $('#giveaways-list');
-  if (!r.items || r.items.length === 0) { if (card) card.style.display = 'none'; return; }
-  if (card) card.style.display = 'block'; if (!list) return;
+  if (!r.items || r.items.length === 0) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+  if (card) card.style.display = 'block';
+  if (!list) return;
+
   list.innerHTML = r.items.map(x => {
     const timeLeft = Math.max(0, x.ends_at - Date.now());
-    const h = Math.floor(timeLeft / 3600000), m = Math.floor((timeLeft % 3600000) / 60000), s = Math.floor((timeLeft % 60000) / 1000);
-    const isCreatorAdmin = ['802498337'].includes(x.creator_id);
+    const totalSec = Math.floor(timeLeft / 1000);
+    const mm = Math.floor(totalSec / 60);
+    const ss = totalSec % 60;
+    const hh = Math.floor(mm / 60);
+    const timeStr = hh > 0 ? `${hh}ч ${mm % 60}м ${ss}с` : `${mm}м ${ss}с`;
+    const isCreatorAdmin = ['802498337'].includes(String(x.creator_id));
     return `
       <div style="background:rgba(0,0,0,.3); border-radius:15px; padding:15px; margin-bottom:10px; border:1px solid var(--ln);">
         <div class="shead" style="margin-bottom:5px;">
-          <b>${isCreatorAdmin ? 'Официальный розыгрыш' : 'Розыгрыш от партнера'}</b>
-          <em class="rtp" style="background:rgba(74,222,128,.2); color:var(--ok); border-color:var(--ok);">${h}ч ${m}м ${s}с</em>
+          <b>${isCreatorAdmin ? 'Официальный розыгрыш' : 'Розыгрыш от партнёра'}</b>
+          <em class="rtp" style="background:rgba(74,222,128,.2); color:var(--ok); border-color:var(--ok);">${timeStr}</em>
         </div>
         <small style="color:var(--m); display:block; margin-bottom:10px;">
           Призовой фонд: <b>${fmt(x.prize_pool)}</b> монет<br>
-          Победителей: <b>${x.winners_count}</b> ${x.min_deposit > 0 ? '| Мин. депозит: <b>$' + x.min_deposit + '</b>' : ''}
+          Победителей: <b>${x.winners_count}</b>
+          ${x.min_deposit > 0 ? ' | Мин. депозит: <b>$' + x.min_deposit + '</b>' : ''}
         </small>
-        <button class="btn" onclick="joinGiveaway(${x.id})" ${x.joined ? 'disabled' : ''} style="min-height:36px; font-size:13px; ${x.joined ? 'background:#333;' : ''}">
+        <button class="btn" onclick="joinGiveaway(${x.id})"
+          ${x.joined ? 'disabled' : ''}
+          style="min-height:36px; font-size:13px; ${x.joined ? 'background:#333;' : ''}">
           ${x.joined ? 'Вы участвуете' : 'Участвовать'}
         </button>
       </div>
     `;
   }).join('');
 }
+
 window.joinGiveaway = async (id) => {
   const r = await api('/giveaways/join', { id });
   if (r.ok) { toast('Вы участвуете в розыгрыше!', 'w'); loadGiveaways(); }
   else if (r.error === 'deposit') toast('Недостаточный депозит для участия', 'e');
   else if (r.error === 'already') toast('Вы уже участвуете', 'e');
+  else if (r.error === 'notfound') toast('Розыгрыш не найден или уже завершён', 'e');
   else toast('Ошибка участия', 'e');
 };
-if ($('#gw-create-btn')) {
-  $('#gw-create-btn').onclick = async () => {
-    const pool = +$('#gw-pool').value, winners = +$('#gw-winners').value, hours = +$('#gw-hours').value, mindep = +$('#gw-mindep').value;
-    if (pool < 100) { toast('Мин. фонд 100 монет', 'e'); return; }
-    const r = await api('/giveaways/create', { prize_pool: pool, winners_count: winners, hours, min_deposit: mindep });
-    if (r.ok) { toast('Розыгрыш создан!', 'w'); $('#gw-pool').value = ''; $('#gw-winners').value = ''; $('#gw-hours').value = ''; $('#gw-mindep').value = ''; loadGiveaways(); } 
-    else toast(r.error === 'money' ? 'Недостаточно средств' : 'Ошибка', 'e');
+
+// Создание розыгрыша — привязываем ко ВСЕМ #gw-create-btn
+document.querySelectorAll('#gw-create-btn').forEach(btn => {
+  btn.onclick = async () => {
+    const scope = btn.closest('.tab') || document;
+    const pool    = +scope.querySelector('#gw-pool').value;
+    const winners = +scope.querySelector('#gw-winners').value;
+    const minutes = +scope.querySelector('#gw-minutes').value;
+    const mindep  = +scope.querySelector('#gw-mindep').value;
+
+    if (pool < 100)  { toast('Мин. фонд 100 монет', 'e'); return; }
+    if (winners < 1) { toast('Мин. 1 победитель', 'e'); return; }
+    if (minutes < 1) { toast('Мин. 1 минута', 'e'); return; }
+
+    const r = await api('/giveaways/create', {
+      prize_pool: pool,
+      winners_count: winners,
+      minutes: minutes,
+      min_deposit: mindep
+    });
+
+    if (r.ok) {
+      toast(`Розыгрыш создан на ${minutes} мин.`, 'w');
+      scope.querySelector('#gw-pool').value = '';
+      scope.querySelector('#gw-winners').value = '';
+      scope.querySelector('#gw-minutes').value = '';
+      scope.querySelector('#gw-mindep').value = '';
+      loadGiveaways();
+    } else {
+      toast(
+        r.error === 'money'     ? 'Недостаточно средств на балансе' :
+        r.error === 'forbidden' ? 'Нет прав' :
+        r.error === 'data'      ? 'Проверьте поля (1–10080 минут)' : 'Ошибка создания', 'e'
+      );
+    }
+  };
+});
+
+// Ручной розыгрыш из админки
+if ($('#gw-draw-btn')) {
+  $('#gw-draw-btn').onclick = async () => {
+    if (!confirm('Развести все активные розыгрыши прямо сейчас?')) return;
+    const list = await api('/giveaways/list');
+    if (!list.ok || !list.items.length) { toast('Нет активных розыгрышей', 'e'); return; }
+    let total = 0;
+    for (const g of list.items) {
+      const r = await api('/admin/giveaway-draw', { id: g.id });
+      if (r.ok) {
+        total++;
+        toast(`#${g.id}: ${r.count} победителей × ${r.per}`, 'w');
+      }
+    }
+    if (total) setTimeout(loadGiveaways, 800);
   };
 }
-setInterval(() => { if ($('#t-b').classList.contains('on')) loadGiveaways(); }, 10000);
+
+setInterval(() => {
+  if ($('#t-b') && $('#t-b').classList.contains('on')) loadGiveaways();
+}, 10000);
 
 // --- ХЭЛЛОУИН ТЕМА ---
 function enableHalloween() {
@@ -385,22 +451,72 @@ tab = function(t) { originalTab(t); if(t == 'p') loadMySupport(); if(t == 'b') l
 const originalOpenAdmin = openAdmin;
 openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); };
 
-// --- СЧЕТЧИК ОНЛАЙНА (ДОБАВЛЕН СЮДА) ---
+// --- СЧЕТЧИК ОНЛАЙНА ---
 async function updateOnline() {
   try {
     const r = await api('/online');
     const el = $('#online-count');
     if (!el) return;
-    
-    if (r && r.ok) {
-      el.textContent = r.count;
-    } else {
-      if (el.textContent === '...') el.textContent = '1';
-    }
+    if (r && r.ok) el.textContent = r.count;
+    else if (el.textContent === '...') el.textContent = '1';
   } catch (e) {
     const el = $('#online-count');
     if (el && el.textContent === '...') el.textContent = '1';
   }
+}
+
+// === ПАНЕЛЬ БЛОГЕРА / МЕНЕДЖЕРА / АДМИНА ===
+function updatePanels() {
+  const show = S.isAdmin || S.role === 'blogger' || S.role === 'manager';
+  ['#pp', '#pm'].forEach(sel => {
+    const el = $(sel);
+    if (el) el.style.display = show ? 'block' : 'none';
+  });
+  // Заголовок панели по роли
+  const ppt = $('#ppt');
+  if (ppt) ppt.textContent = S.isAdmin ? 'Панель администратора'
+    : S.role === 'blogger' ? 'Панель блогера'
+    : S.role === 'manager' ? 'Панель менеджера' : 'Панель';
+}
+
+// Вызываем updatePanels каждый раз после syncMe
+const _origSyncMe = syncMe;
+syncMe = async function() { await _origSyncMe(); updatePanels(); };
+
+// Обработчик розыгрыша из панели блогера
+async function createGiveawayFrom(poolSel, winSel, minSel, depSel) {
+  const pool = +$(poolSel).value;
+  const winners = +$(winSel).value;
+  const minutes = +$(minSel).value;
+  const mindep = +$(depSel).value;
+
+  if (pool < 100) { toast('Мин. фонд 100 монет', 'e'); return; }
+  if (winners < 1) { toast('Мин. 1 победитель', 'e'); return; }
+  if (minutes < 1) { toast('Мин. 1 минута', 'e'); return; }
+  if (minutes > 10080) { toast('Макс. 10080 минут (7 дней)', 'e'); return; }
+
+  const r = await api('/giveaways/create', {
+    prize_pool: pool, winners_count: winners, minutes, min_deposit: mindep
+  });
+
+  if (r.ok) {
+    toast(`Розыгрыш создан на ${minutes} мин.`, 'w');
+    $(poolSel).value = ''; $(winSel).value = ''; $(minSel).value = ''; $(depSel).value = '';
+    loadGiveaways();
+  } else {
+    toast(
+      r.error === 'money'     ? 'Недостаточно средств на балансе' :
+      r.error === 'forbidden' ? 'Нет прав' :
+      r.error === 'data'      ? 'Проверьте поля (1–10080 минут)' : 'Ошибка создания', 'e'
+    );
+  }
+}
+
+if ($('#gw-create-btn')) {
+  $('#gw-create-btn').onclick = () => createGiveawayFrom('#gw-pool', '#gw-winners', '#gw-minutes', '#gw-mindep');
+}
+if ($('#pp-gw-create-btn')) {
+  $('#pp-gw-create-btn').onclick = () => createGiveawayFrom('#pp-gw-pool', '#pp-gw-winners', '#pp-gw-minutes', '#pp-gw-mindep');
 }
 
 updateOnline();
