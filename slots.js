@@ -216,11 +216,74 @@ function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=nu
  for(let c=0;c<5;c++)for(let r=0;r<3;r++)setCell(c,r,mkS(drawSym(G,c,false)));
  $('#sov').classList.remove('on');hl([]);$('#swn').textContent='0';$('#smsg').textContent='Удачи!';hud()}
 
-function buildLobby(){const L=$('#slobby');if(!L)return;L.innerHTML='<h3 class="sh">Выберите слот</h3>';const grid=document.createElement('div');grid.className='slg';
- Object.keys(SLOTS).forEach(id=>{const G=SLOTS[id],d=document.createElement('div');d.className='sc th-'+id;
-  d.innerHTML='<div class="scp">'+'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg></div><b></b><small></small><em class="rtp"></em>';
-  d.children[1].textContent=G.name;d.children[2].textContent=G.sub;d.children[3].textContent='RTP '+(S.cfg.slot||96)+'%';d.onclick=()=>openSlot(id);grid.appendChild(d)});
- L.appendChild(grid)}
+function buildLobby(){
+  const L=$('#slobby');if(!L)return;
+  L.innerHTML='<h3 class="sh">Выберите слот</h3>';
+  const grid=document.createElement('div');grid.className='slg';
+  Object.keys(SLOTS).forEach(id=>{const G=SLOTS[id],d=document.createElement('div');d.className='sc th-'+id;
+    d.innerHTML='<div class="scp">'+'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg></div><b></b><small></small><em class="rtp"></em>';
+    d.children[1].textContent=G.name;d.children[2].textContent=G.sub;d.children[3].textContent='RTP '+(S.cfg.slot||96)+'%';d.onclick=()=>openSlot(id);grid.appendChild(d)});
+
+  // Gravedigger's Tip — отдельный iframe
+  const gd=document.createElement('div');
+  gd.className='sc';
+  gd.style.cssText='background:radial-gradient(140% 60% at 50% 0%,#4b1f9e,#1a0d36 70%);border:2px solid #7b3fe4;box-shadow:0 12px 26px rgba(123,63,228,.4),inset 0 1px 0 rgba(255,255,255,.2);';
+  gd.innerHTML='<div class="scp" style="font-size:56px;line-height:1;filter:drop-shadow(0 8px 10px rgba(0,0,0,.6))">⚰️</div><b style="color:#9dff4a;">Gravedigger\'s Tip</b><small>1024 ways · сбор гробов</small><em class="rtp" style="background:rgba(157,255,74,.22);color:#9dff4a;border-color:#9dff4a;">RTP 96%</em>';
+  gd.onclick=openGravedigger;
+  grid.appendChild(gd);
+
+  L.appendChild(grid);
+}
+
+// ─────────────── Gravedigger's Tip (iframe) ───────────────
+let gdWrap=null;
+
+function openGravedigger(){
+  if(SL.busy)return;
+  $('#slobby').style.display='none';
+  $('#sgame').style.display='none';
+
+  if(!gdWrap){
+    gdWrap=document.createElement('div');
+    gdWrap.id='gd-wrap';
+    gdWrap.style.cssText='position:fixed;inset:0;z-index:9999;background:#0d0716;overflow:hidden;';
+    gdWrap.innerHTML=`
+      <button id="gd-close" aria-label="Закрыть" style="position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:10px;z-index:10001;width:42px;height:42px;border-radius:50%;background:linear-gradient(#ff5a7e,#b3123a);color:#fff;border:3px solid #0d0716;box-shadow:0 4px 0 #0d0716;font:900 22px system-ui;line-height:1;cursor:pointer;display:grid;place-items:center;">×</button>
+      <iframe id="gd-frame" src="gravedigger.html" style="width:100%;height:100%;border:0;display:block;background:#0d0716;" allow="autoplay"></iframe>
+    `;
+    document.body.appendChild(gdWrap);
+
+    const close=()=>{
+      gdWrap.style.display='none';
+      $('#slobby').style.display='block';
+      syncMe();
+    };
+    document.getElementById('gd-close').onclick=close;
+
+    window.addEventListener('message',(e)=>{
+      if(e.data&&e.data.type==='gd-close')close();
+    });
+
+    const frame=document.getElementById('gd-frame');
+    frame.addEventListener('load',()=>sendGdInit());
+  } else {
+    gdWrap.style.display='block';
+    sendGdInit();
+  }
+}
+
+function sendGdInit(){
+  const frame=document.getElementById('gd-frame');
+  if(!frame||!frame.contentWindow)return;
+  const tg=window.Telegram&&window.Telegram.WebApp;
+  try{
+    frame.contentWindow.postMessage({
+      type:'gd-init',
+      initData:(tg&&tg.initData)||'',
+      apiUrl:API_URL
+    },'*');
+  }catch(e){console.error('gd init:',e)}
+}
 
 const setBet=d=>{SL.bi=Math.min(BETS.length-1,Math.max(0,SL.bi+d));$('#sbt').textContent=fmt(BETS[SL.bi])};
 $('#sm1').onclick=()=>setBet(-1);

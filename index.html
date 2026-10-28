@@ -722,18 +722,22 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <label>Ссылка на бота (Mini App)</label><input id="pbu" placeholder="https://t.me/ВАШ_БОТ/app" style="margin-bottom:10px">
   <button class="btn" id="aps">Сохранить</button></div>
  <div class="card"><b>Пользователи</b><div id="ul" style="margin-top:6px"></div></div>
- <div class="card"><small id="asel" style="color:var(--m)"></small>
+ <div class="card"><small id="asel" style="color:var(--m)">Выберите игрока в списке выше</small>
   <div class="bet" style="margin:8px 0"><input id="aamt" type="number" inputmode="decimal" placeholder="Сумма"></div>
-  <div class="g2"><button class="opt" onclick="uEdit('add')">Начислить</button><button class="opt" onclick="uEdit('sub')">Списать</button><button class="opt" onclick="uEdit('set')">Установить</button><button class="opt" onclick="uEdit('ban')">Бан / разбан</button></div>
+  <div class="g2">
+    <button class="opt" onclick="uEdit('add')">Начислить</button>
+    <button class="opt" onclick="uEdit('sub')">Списать</button>
+    <button class="opt" onclick="uEdit('set')">Установить</button>
+    <button class="opt" onclick="uEdit('ban')">Бан / разбан</button>
+  </div>
   <label>Статус</label>
-  <div class="g2"><button class="opt" onclick="uRole('player')">Игрок</button><button class="opt" onclick="uRole('blogger')">Блогер</button><button class="opt" onclick="uRole('manager')">Менеджер</button><button class="opt" onclick="uEdit('simref')">+ тест-реферал</button></div>
-  <label>Индивидуальный реф. бонус (0 = по умолчанию)</label>
-  <div class="bet"><input id="arb" type="number" inputmode="numeric"><button onclick="uRb()">Задать</button></div>
-  <label>Промокод для выбранного</label>
-  <div class="g2"><input id="apc" placeholder="КОД" style="text-transform:uppercase"><input id="apb" type="number" inputmode="numeric" placeholder="Бонус"></div>
-  <div class="bet"><input id="apu" type="number" inputmode="numeric" placeholder="Активаций"><button onclick="uPromo()">Создать</button></div></div>
- <div class="g2"><button class="opt" id="abn">Бонус всем +100</button><button class="opt" id="arh">Сбросить статистику</button></div>
- <p class="note">Данные хранятся только на этом устройстве: без сервера админка не видит реальных игроков. Для этого нужна база (Supabase, Firebase). Проверка админа по ID на клиенте не защищает от подмены.</p>
+  <div class="g2">
+    <button class="opt" onclick="uRole('player')">Игрок</button>
+    <button class="opt" onclick="uRole('blogger')">Блогер</button>
+    <button class="opt" onclick="uRole('manager')">Менеджер</button>
+    <button class="opt" onclick="uEdit('simref')">+ тест-реферал</button>
+  </div>
+ </div>
 </section>
 </main>
 

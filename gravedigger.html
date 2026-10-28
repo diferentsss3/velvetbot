@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0d0716">
+<title>Gravedigger's Tip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js" async></script>
+<style>
+:root{
+  --ink:#0d0716; --bg:#120a22; --bone:#f4ecd2; --green:#9dff4a; --orange:#ff8a1f;
+  --pink:#ff3d81; --purple:#7b3fe4; --gold:#ffd23f; --cell:70px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--ink);color:var(--bone);font-family:'Rubik',system-ui,sans-serif;
+  overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.ft{font-family:'Bungee','Impact',sans-serif}
+
+#app{position:relative;max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+  background:#0d0716}
+#bg{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.fog{position:absolute;left:-30%;width:160%;height:200px;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(190,160,255,.22),rgba(190,160,255,0) 65%);filter:blur(6px)}
+.fog.f1{bottom:25%;animation:drift 14s ease-in-out infinite alternate}
+.fog.f2{bottom:5%;animation:drift 19s ease-in-out infinite alternate-reverse;opacity:.8}
+@keyframes drift{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+
+header{position:relative;z-index:3;text-align:center;padding:calc(env(safe-area-inset-top) + 8px) 0 2px}
+.logo{display:inline-flex;flex-direction:column;align-items:center;line-height:.9}
+.logo small{font-family:'Bungee';font-size:15px;letter-spacing:2px;color:var(--bone);
+  -webkit-text-stroke:5px var(--ink);paint-order:stroke fill;text-shadow:0 3px 0 var(--ink)}
+.logo b{font-family:'Bungee';font-size:42px;color:var(--green);-webkit-text-stroke:8px var(--ink);paint-order:stroke fill;
+  text-shadow:0 5px 0 var(--ink),0 0 24px rgba(157,255,74,.65);letter-spacing:3px}
+
+#hud{position:relative;z-index:3;height:38px;display:flex;align-items:center;justify-content:center;padding:0 12px}
+#msg{font-weight:900;font-size:14px;letter-spacing:.5px;text-align:center;color:var(--bone);text-shadow:0 2px 0 var(--ink)}
+#msg.win{color:var(--green);font-size:20px;font-family:'Bungee'}
+#fsinfo{display:none;gap:8px;align-items:center;width:100%;justify-content:center}
+#fsinfo .chip{background:linear-gradient(#ffdf6b,#ff9f1c);color:var(--ink);border:3px solid var(--ink);border-radius:12px;
+  padding:3px 12px;font-family:'Bungee';font-size:14px;box-shadow:0 3px 0 var(--ink)}
+#fsinfo .chip.m{background:linear-gradient(#b8ff6b,#5fd400)}
+.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.35) rotate(-4deg)}}
+#app.fs #msg{display:none}#app.fs #fsinfo{display:flex}
+
+main{position:relative;z-index:3;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:0}
+#frame{position:relative;padding:10px;border-radius:24px;background:linear-gradient(#41207a,#1d0f3a);
+  border:5px solid var(--ink);box-shadow:0 0 0 3px var(--purple),0 0 44px rgba(123,63,228,.6),0 10px 0 rgba(0,0,0,.35)}
+#app.fs #frame{box-shadow:0 0 0 3px var(--green),0 0 50px rgba(157,255,74,.55),0 10px 0 rgba(0,0,0,.35)}
+.plate{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:linear-gradient(#ffe27a,#ff9f1c);
+  color:var(--ink);border:4px solid var(--ink);border-radius:12px;padding:2px 14px;font-family:'Bungee';font-size:12px;
+  white-space:nowrap;box-shadow:0 3px 0 var(--ink);z-index:6}
+.corner{position:absolute;width:28px;height:28px;z-index:6;top:-10px}
+.corner.l{left:-4px}.corner.r{right:-4px}
+#reels{display:flex;gap:3px;border-radius:14px;overflow:hidden;background:#0d0716;padding:3px;position:relative}
+.col{width:var(--cell);height:calc(var(--cell)*4);overflow:hidden;position:relative;border-radius:8px;
+  background:linear-gradient(#24124a,#170b30)}
+.strip{will-change:transform}
+.strip.moving{filter:blur(1.4px)}
+.cell{width:var(--cell);height:var(--cell);padding:5%;border-bottom:1px solid rgba(255,255,255,.05)}
+.cell svg{width:100%;height:100%;display:block;overflow:visible}
+.cell.win{background:radial-gradient(circle,rgba(157,255,74,.3),rgba(157,255,74,0) 70%)}
+.cell.win svg{animation:wig .55s ease-in-out infinite}
+.cell.dim svg{filter:brightness(.4) saturate(.5)}
+.cell.coll svg{animation:glow .45s ease-in-out infinite alternate}
+.cell.land svg{animation:land .35s ease-out}
+@keyframes wig{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.12) rotate(-4deg)}70%{transform:scale(1.12) rotate(4deg)}}
+@keyframes glow{from{transform:scale(1);filter:drop-shadow(0 0 2px #ffd23f)}to{transform:scale(1.15);filter:drop-shadow(0 0 12px #ffd23f)}}
+@keyframes land{0%{transform:scale(1.25)}100%{transform:scale(1)}}
+#fx{position:absolute;inset:0;pointer-events:none;z-index:8;overflow:hidden;border-radius:20px}
+.pop{position:absolute;font-family:'Bungee';color:var(--gold);font-size:18px;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill;
+  transform:translate(-50%,-50%);animation:pop 1s ease-out forwards;white-space:nowrap}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}20%{opacity:1;transform:translate(-50%,-60%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-190%) scale(1)}}
+
+footer{position:relative;z-index:3;padding:6px 14px calc(env(safe-area-inset-bottom) + 12px);
+  background:linear-gradient(rgba(13,7,22,0),rgba(13,7,22,.92) 30%)}
+.stats{display:flex;gap:8px;margin-bottom:10px}
+.stat{flex:1;background:#1a0e33;border:3px solid var(--ink);border-radius:14px;padding:4px 6px;text-align:center;
+  box-shadow:0 0 0 2px #3b2270,0 3px 0 var(--ink)}
+.stat span{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;color:#a994d6}
+.stat b{display:block;font-family:'Bungee';font-size:17px;color:var(--bone);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat.w b{color:var(--green)}
+.stat.bt b{color:var(--gold)}
+.row{display:flex;justify-content:center;align-items:center;gap:9px}
+.btn{border:4px solid var(--ink);box-shadow:0 5px 0 var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  transition:transform .08s,box-shadow .08s;flex:none}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.sm{width:46px;height:46px;background:linear-gradient(#a98bff,#6a36d8);font-family:'Bungee';font-size:26px;color:var(--bone);
+  -webkit-text-stroke:0}
+.btn.spin{width:92px;height:92px;background:radial-gradient(circle at 35% 30%,#d6ff8f,#7be000 55%,#3fa000);
+  box-shadow:0 7px 0 var(--ink),0 0 26px rgba(157,255,74,.6)}
+.btn.spin:active{box-shadow:0 2px 0 var(--ink),0 0 16px rgba(157,255,74,.6);transform:translateY(5px)}
+.btn.spin svg{width:54px;height:54px}
+.btn.spin.go svg{animation:rot 0.8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.btn.buy{width:66px;height:66px;background:radial-gradient(circle at 35% 30%,#fff1a8,#ffb61f 60%,#e27a00);color:var(--ink);
+  flex-direction:column;font-family:'Bungee';line-height:1}
+.btn.buy small{font-size:9px}
+.btn.buy b{font-size:16px}
+.btn.auto{width:66px;height:66px;background:linear-gradient(#ff7aa8,#e0245e);font-family:'Bungee';font-size:12px;color:var(--bone);
+  flex-direction:column;line-height:1.1}
+.btn.auto.on{background:linear-gradient(#b8ff6b,#5fd400);color:var(--ink)}
+.btn[disabled],.btn.dis{filter:grayscale(.8) brightness(.6);pointer-events:none}
+.pills{display:flex;justify-content:center;gap:8px;margin-top:12px}
+.pill{background:#1a0e33;border:3px solid var(--ink);box-shadow:0 0 0 2px #3b2270,0 3px 0 var(--ink);border-radius:20px;padding:5px 12px;
+  font-weight:900;font-size:12px;letter-spacing:.5px;color:var(--bone)}
+.pill.on{background:var(--green);color:var(--ink)}
+.pill:active{transform:translateY(2px)}
+
+.ov{position:absolute;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(5,2,12,.78);
+  backdrop-filter:blur(3px);padding:20px}
+.ov.show{display:flex;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.card{width:100%;max-width:380px;max-height:86%;overflow:auto;background:linear-gradient(#3a1d6e,#1d0f3a);border:5px solid var(--ink);
+  box-shadow:0 0 0 3px var(--purple),0 0 50px rgba(123,63,228,.6);border-radius:26px;padding:22px 18px;text-align:center;
+  animation:cardin .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes cardin{from{transform:scale(.6);opacity:0}}
+.card h2{font-family:'Bungee';font-size:28px;color:var(--green);-webkit-text-stroke:7px var(--ink);paint-order:stroke fill;
+  text-shadow:0 4px 0 var(--ink);line-height:1.05;margin-bottom:10px}
+.card .big{font-family:'Bungee';font-size:54px;color:var(--gold);-webkit-text-stroke:9px var(--ink);paint-order:stroke fill;
+  text-shadow:0 5px 0 var(--ink);line-height:1;margin:6px 0 12px}
+.card p{font-size:14px;line-height:1.45;color:#d9cdf5;margin-bottom:14px;font-weight:500}
+.card .acts{display:flex;gap:10px;justify-content:center}
+.cta{background:linear-gradient(#d6ff8f,#6fd400);color:var(--ink);border:4px solid var(--ink);border-radius:18px;padding:12px 26px;
+  font-family:'Bungee';font-size:17px;box-shadow:0 5px 0 var(--ink)}
+.cta:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.cta.alt{background:linear-gradient(#ff8fb4,#e0245e);color:var(--bone)}
+.pt{display:grid;grid-template-columns:48px 1fr;gap:4px 10px;align-items:center;text-align:left;margin:8px 0 12px}
+.pt svg{width:46px;height:46px}
+.pt .p{font-size:12px;color:#d9cdf5;font-weight:700}
+.pt .p i{font-style:normal;color:var(--gold);font-family:'Bungee';font-size:12px}
+.rules{text-align:left;font-size:12.5px;color:#d9cdf5;line-height:1.5;margin-bottom:14px}
+.rules li{margin:0 0 6px 16px}
+.rules b{color:var(--green)}
+
+#bigwin{z-index:60;background:radial-gradient(circle,rgba(157,255,74,.18),rgba(5,2,12,.85) 70%)}
+#bigwin .card{background:none;border:0;box-shadow:none;animation:bwin .6s cubic-bezier(.2,1.5,.4,1)}
+@keyframes bwin{from{transform:scale(.2) rotate(-12deg);opacity:0}}
+#bigwin h2{font-size:44px;color:var(--orange)}
+#bigwin .big{font-size:60px}
+#toast{position:absolute;left:50%;top:18%;transform:translateX(-50%);z-index:70;background:var(--pink);color:var(--bone);border:4px solid var(--ink);
+  border-radius:16px;padding:8px 16px;font-weight:900;font-size:13px;box-shadow:0 4px 0 var(--ink);display:none;white-space:nowrap}
+#toast.show{display:block;animation:fade .2s}
+</style>
+</head>
+<body>
+<div id="app">
+  <svg id="bg" viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3b1a78"/><stop offset=".55" stop-color="#1a0d36"/><stop offset="1" stop-color="#0d0716"/>
+      </linearGradient>
+      <radialGradient id="moonglow"><stop offset="0" stop-color="#f4ecd2" stop-opacity=".55"/><stop offset="1" stop-color="#f4ecd2" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="480" height="900" fill="url(#sky)"/>
+    <g fill="#f4ecd2">
+      <circle cx="40" cy="60" r="2"/><circle cx="110" cy="130" r="1.6"/><circle cx="180" cy="40" r="2.2"/><circle cx="250" cy="100" r="1.5"/>
+      <circle cx="320" cy="55" r="2"/><circle cx="440" cy="190" r="1.8"/><circle cx="70" cy="230" r="1.6"/><circle cx="210" cy="190" r="1.4"/>
+    </g>
+    <circle cx="370" cy="120" r="120" fill="url(#moonglow)"/>
+    <circle cx="370" cy="120" r="52" fill="#f4ecd2" stroke="#0d0716" stroke-width="5"/>
+    <circle cx="352" cy="104" r="9" fill="#d9ceaa"/><circle cx="388" cy="138" r="12" fill="#d9ceaa"/><circle cx="380" cy="96" r="5" fill="#d9ceaa"/>
+    <path d="M0 640 Q120 580 240 630 T480 600 L480 900 L0 900Z" fill="#150a2b" stroke="#0d0716" stroke-width="5"/>
+    <path d="M60 640 L60 560 M60 590 L30 560 M60 580 L90 548 M60 565 L48 540 M60 600 L92 590" stroke="#0d0716" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <g fill="#1d0f3a" stroke="#0d0716" stroke-width="5" stroke-linejoin="round">
+      <path d="M390 680 V630 Q390 610 410 610 Q430 610 430 630 V680Z"/>
+      <path d="M300 700 V660 Q300 645 315 645 Q330 645 330 660 V700Z"/>
+      <path d="M20 720 V670 Q20 650 40 650 Q60 650 60 670 V720Z"/>
+    </g>
+    <path d="M410 626 V646 M402 634 H418" stroke="#3b2270" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <div class="fog f1"></div><div class="fog f2"></div>
+
+  <header><div class="logo"><small>GRAVEDIGGER'S</small><b>TIP</b></div></header>
+
+  <div id="hud">
+    <div id="msg">Крути и копай!</div>
+    <div id="fsinfo">
+      <div class="chip" id="fsLeft">ФРИСПИНЫ 8</div>
+      <div class="chip m" id="fsMult">МНОЖ. x1</div>
+      <div class="chip" id="fsWin" style="background:linear-gradient(#ff8fb4,#e0245e);color:#f4ecd2">0</div>
+    </div>
+  </div>
+
+  <main>
+    <div id="frame">
+      <div class="plate">1024 WAYS • МАКС. x15000</div>
+      <svg class="corner l" viewBox="0 0 100 100"><use href="#skullDef"/></svg>
+      <svg class="corner r" viewBox="0 0 100 100"><use href="#skullDef"/></svg>
+      <div id="reels"></div>
+      <div id="fx"></div>
+    </div>
+  </main>
+
+  <footer id="foot">
+    <div class="stats">
+      <div class="stat"><span>БАЛАНС</span><b id="bal">0</b></div>
+      <div class="stat bt"><span>СТАВКА</span><b id="bet">0</b></div>
+      <div class="stat w"><span>ВЫИГРЫШ</span><b id="win">0</b></div>
+    </div>
+    <div class="row">
+      <button class="btn buy" id="btnBuy"><small>БОНУС</small><b>x95</b></button>
+      <button class="btn sm" id="btnMinus">−</button>
+      <button class="btn spin" id="btnSpin" aria-label="Спин">
+        <svg viewBox="0 0 48 48"><path d="M24 9a15 15 0 1 0 14 20" fill="none" stroke="#0d0716" stroke-width="7" stroke-linecap="round"/><path d="M20 -1 L38 10 L20 21Z" fill="#0d0716" stroke="#0d0716" stroke-width="3" stroke-linejoin="round" transform="translate(4 1)"/></svg>
+      </button>
+      <button class="btn sm" id="btnPlus">+</button>
+      <button class="btn auto" id="btnAuto"><span>АВТО</span></button>
+    </div>
+    <div class="pills">
+      <button class="pill" id="btnTurbo">⚡ ТУРБО</button>
+      <button class="pill" id="btnRules">ℹ ПРАВИЛА</button>
+      <button class="pill on" id="btnSound">🔊 ЗВУК</button>
+    </div>
+  </footer>
+
+  <div class="ov" id="ov"><div class="card" id="card"></div></div>
+  <div class="ov" id="bigwin"><div class="card"><h2 id="bwTitle">BIG WIN</h2><div class="big" id="bwNum">0</div></div></div>
+  <div id="toast"></div>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="skullDef" stroke="#0d0716" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M50 10 C80 10 88 34 82 52 L78 60 L78 76 Q78 84 70 84 L30 84 Q22 84 22 76 L22 60 L18 52 C12 34 20 10 50 10Z" fill="#f4ecd2"/>
+      <ellipse cx="36" cy="46" rx="10" ry="11" fill="#0d0716"/><ellipse cx="64" cy="46" rx="10" ry="11" fill="#0d0716"/>
+      <circle cx="36" cy="47" r="3.5" fill="#9dff4a" stroke="none"/><circle cx="64" cy="47" r="3.5" fill="#9dff4a" stroke="none"/>
+      <path d="M50 58 L43 69 L57 69Z" fill="#0d0716"/>
+      <path d="M38 74 V84 M50 74 V84 M62 74 V84" fill="none" stroke-width="4"/>
+    </g>
+  </defs>
+</svg>
+
+<script>
+//ENGINE_START
+const COLS=5, ROWS=4;
+const CFG={MAX_WIN:15000, BUY:95, START_SPINS:{3:8,4:12,5:16}, RETRIG:{3:5,4:7,5:10}};
+const PAY={
+  J:[0.03,0.09,0.26], Q:[0.03,0.09,0.26], K:[0.05,0.14,0.38], A:[0.05,0.14,0.38],
+  shovel:[0.09,0.24,0.78], lantern:[0.1,0.31,1.04], raven:[0.14,0.43,1.56], skull:[0.21,0.69,2.59]
+};
+const WEIGHTS={
+  base:{J:15,Q:15,K:13,A:13,shovel:9,lantern:8,raven:7,skull:6,digger:0.9,coffin:2.6,scatter:1.4},
+  fs:{J:12,Q:12,K:11,A:11,shovel:8,lantern:7,raven:6,skull:5,digger:1.65,coffin:4.7,scatter:1.5}
+};
+const COFFIN={
+  base:[[0.5,30],[1,26],[2,18],[3,10],[5,7],[10,5],[25,2.5],[50,1],[100,.3]],
+  fs:[[1,26],[2,22],[3,14],[5,11],[10,9],[25,5],[50,2.5],[100,1],[250,.3]]
+};
+let rng=()=>{
+  if(typeof crypto!=='undefined'&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296}
+  return Math.random();
+};
+function mk(pairs){let t=0;const cum=pairs.map(([k,w])=>{t+=w;return [k,t]});return {cum,t}}
+function pickFrom(tb){const x=rng()*tb.t;for(const [k,c] of tb.cum)if(x<c)return k;return tb.cum[tb.cum.length-1][0]}
+const TB={};
+for(const m in WEIGHTS) TB[m]={sym:mk(Object.entries(WEIGHTS[m])),cof:mk(COFFIN[m])};
+function spin(mode,mult){
+  mult=mult||1;
+  const T=TB[mode], grid=[]; let sc=0,dg=0,cofSum=0;
+  for(let c=0;c<COLS;c++){
+    const col=[];
+    for(let r=0;r<ROWS;r++){
+      const s=pickFrom(T.sym); let v=0;
+      if(s==='coffin'){v=pickFrom(T.cof);cofSum+=v}
+      else if(s==='scatter')sc++;
+      else if(s==='digger')dg++;
+      col.push({s,v});
+    }
+    grid.push(col);
+  }
+  const wins=[]; let waysPay=0;
+  for(const s in PAY){
+    const cnt=[]; let n=0, ways=1;
+    for(let c=0;c<COLS;c++){let k=0;for(let r=0;r<ROWS;r++){const t=grid[c][r].s;if(t===s||t==='digger')k++}cnt.push(k)}
+    for(let c=0;c<COLS;c++){if(!cnt[c])break;n++;ways*=cnt[c]}
+    if(n>=3){
+      const pay=PAY[s][n-3]*ways, cells=[];
+      for(let c=0;c<n;c++)for(let r=0;r<ROWS;r++){const t=grid[c][r].s;if(t===s||t==='digger')cells.push([c,r])}
+      wins.push({s,n,ways,pay,cells}); waysPay+=pay;
+    }
+  }
+  let newMult=mult, collect=0;
+  if(dg>0){
+    if(mode==='fs') newMult=mult+dg;
+    if(cofSum>0) collect=cofSum*(mode==='fs'?newMult:1);
+  }
+  return {grid,wins,waysPay,collect,cofSum,dg,sc,newMult,total:waysPay+collect};
+}
+const Engine={spin,PAY,CFG,COFFIN,WEIGHTS,setRng:f=>{rng=f}};
+//ENGINE_END
+
+const INK='#0d0716';
+const O=`stroke="${INK}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"`;
+function tile(l,c1,c2){
+  return `<rect x="8" y="8" width="84" height="84" rx="20" fill="${c1}" ${O}/>
+  <path d="M19 32 Q19 19 32 19 L56 19" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="5" stroke-linecap="round"/>
+  <text x="50" y="72" text-anchor="middle" font-size="60" class="ft" fill="${c2}" stroke="${INK}" stroke-width="7" paint-order="stroke" stroke-linejoin="round">${l}</text>`;
+}
+const ART={
+  J:()=>tile('J','#18b98a','#f4ecd2'),
+  Q:()=>tile('Q','#8b57f0','#f4ecd2'),
+  K:()=>tile('K','#ff8f1f','#f4ecd2'),
+  A:()=>tile('A','#ff3d81','#f4ecd2'),
+  shovel:()=>`<g transform="rotate(35 50 50)">
+    <rect x="45" y="6" width="10" height="58" rx="4" fill="#9a622c" ${O}/>
+    <rect x="30" y="4" width="40" height="12" rx="6" fill="#b87333" ${O}/>
+    <path d="M28 60 Q50 50 72 60 L66 92 Q50 99 34 92Z" fill="#c4cfe3" ${O}/>
+    <path d="M40 66 L38 86" stroke="#fff" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/></g>`,
+  lantern:()=>`<path d="M36 24 Q50 0 64 24" fill="none" ${O}/>
+    <rect x="32" y="22" width="36" height="12" rx="4" fill="#5b5478" ${O}/>
+    <rect x="28" y="32" width="44" height="50" rx="10" fill="#ffb03a" ${O}/>
+    <ellipse cx="50" cy="58" rx="13" ry="18" fill="#fff4a8" stroke="${INK}" stroke-width="4"/>
+    <path d="M50 42 Q60 56 50 72 Q40 56 50 42Z" fill="#ff7a1a" stroke="${INK}" stroke-width="3"/>
+    <path d="M40 34 V80 M60 34 V80" stroke="${INK}" stroke-width="4"/>
+    <rect x="30" y="78" width="40" height="12" rx="4" fill="#5b5478" ${O}/>`,
+  raven:()=>`<path d="M22 64 L4 78 L30 76Z" fill="#2b2342" ${O}/>
+    <ellipse cx="48" cy="60" rx="30" ry="22" fill="#2b2342" ${O}/>
+    <circle cx="68" cy="38" r="17" fill="#2b2342" ${O}/>
+    <path d="M82 34 L99 42 L82 47Z" fill="#ff8a1f" ${O}/>
+    <circle cx="71" cy="34" r="6" fill="#ffd23f" stroke="${INK}" stroke-width="3"/><circle cx="72.5" cy="34" r="2.5" fill="${INK}"/>
+    <path d="M24 58 Q44 38 64 62 Q44 74 24 58Z" fill="#5b43a0" ${O}/>
+    <path d="M42 80 V92 M54 80 V92" stroke="#ff8a1f" stroke-width="5" stroke-linecap="round"/>`,
+  skull:()=>`<use href="#skullDef"/>`,
+  digger:()=>`<path d="M26 66 Q50 104 74 66 Q76 92 50 96 Q24 92 26 66Z" fill="#3a3347" ${O}/>
+    <ellipse cx="50" cy="58" rx="28" ry="26" fill="#b9de8c" ${O}/>
+    <path d="M18 40 Q50 -2 82 40Z" fill="#7a4a24" ${O}/>
+    <rect x="10" y="36" width="80" height="11" rx="5" fill="#3b2412" ${O}/>
+    <circle cx="38" cy="56" r="9" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="40" cy="57" r="3.5" fill="${INK}"/>
+    <circle cx="62" cy="57" r="6" fill="#fff" stroke="${INK}" stroke-width="4"/><circle cx="61" cy="58" r="2.5" fill="${INK}"/>
+    <path d="M34 66 Q50 86 66 66Z" fill="#fff" ${O}/><path d="M42 68 V76 M50 69 V80 M58 68 V76" stroke="${INK}" stroke-width="3"/>
+    <ellipse cx="50" cy="63" rx="4" ry="3" fill="#e6a96a" stroke="${INK}" stroke-width="3"/>
+    <rect x="20" y="80" width="60" height="16" rx="5" fill="#9dff4a" ${O}/>
+    <text x="50" y="93" text-anchor="middle" font-size="12" class="ft" fill="${INK}">WILD</text>`,
+  scatter:()=>`<path d="M20 94 V42 Q20 8 50 8 Q80 8 80 42 V94Z" fill="#9aa3b8" ${O}/>
+    <path d="M28 88 V44 Q28 16 50 16" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="50" cy="42" r="23" fill="#9dff4a" fill-opacity=".45" stroke="${INK}" stroke-width="4"/>
+    <text x="50" y="49" text-anchor="middle" font-size="19" class="ft" fill="#f4ecd2" stroke="${INK}" stroke-width="6" paint-order="stroke">FREE</text>
+    <text x="50" y="74" text-anchor="middle" font-size="13" class="ft" fill="#9dff4a" stroke="${INK}" stroke-width="5" paint-order="stroke">SPINS</text>
+    <path d="M12 96 H88" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>`
+};
+function coffinArt(v){
+  const t=(v<1?String(v):String(v))+'x', fs=t.length<=2?22:t.length===3?19:16;
+  return `<path d="M36 6 L64 6 L84 34 L66 96 L34 96 L16 34Z" fill="#7b4a24" ${O}/>
+    <path d="M40 14 L60 14 L74 36 L60 88 L40 88 L26 36Z" fill="#9a622c" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M50 16 V32 M44 22 H56" stroke="#ffd23f" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="50" cy="62" r="23" fill="#ffd23f" ${O}/>
+    <circle cx="50" cy="62" r="17" fill="none" stroke="#ff9f1c" stroke-width="3"/>
+    <text x="50" y="${62+fs*0.36}" text-anchor="middle" font-size="${fs}" class="ft" fill="${INK}">${t}</text>`;
+}
+function symSVG(s,v){
+  const inner=s==='coffin'?coffinArt(v):ART[s]();
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+}
+const cellHTML=(s,v,extra)=>`<div class="cell ${extra||''}" data-s="${s}">${symSVG(s,v)}</div>`;
+
+const $=id=>document.getElementById(id);
+const BETS=[10,20,50,100,200,500,1000,2000];
+const fmt=n=>Math.round(n).toLocaleString('ru-RU');
+let balance=0, betIdx=3, turbo=false, auto=false, snd=true, busy=false;
+let fs={on:false,left:0,mult:1,total:0};
+let cell=70, strips=[], cur=[];
+const TG=window.Telegram&&window.Telegram.WebApp;
+try{const b=localStorage.getItem('gdt_bal');if(b!==null)balance=+b;const i=localStorage.getItem('gdt_bet');if(i!==null&&BETS[+i])betIdx=+i}catch(e){}
+function save(){try{localStorage.setItem('gdt_bal',String(Math.round(balance)));localStorage.setItem('gdt_bet',String(betIdx))}catch(e){}}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const T=ms=>turbo?ms*0.4:ms;
+function hap(t){try{TG&&TG.HapticFeedback&&TG.HapticFeedback.impactOccurred(t||'light')}catch(e){}}
+
+/* ─────────────── ИНТЕГРАЦИЯ С КАЗИНО ─────────────── */
+let INIT_DATA = '';
+let API_URL = 'https://harris-alberta-hotels-reveals.trycloudflare.com';
+
+async function apiCall(path, data = {}) {
+  try {
+    const r = await fetch(API_URL + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ ...data, initData: INIT_DATA })
+    });
+    return await r.json();
+  } catch (e) { return { ok: false }; }
+}
+
+async function initFromServer() {
+  if (!INIT_DATA) return;
+  const r = await apiCall('/me');
+  if (r.ok && r.user) {
+    balance = Number(r.user.balance) || 0;
+    updUI();
+  }
+}
+
+async function syncServerBet(betAmount, winAmount) {
+  const r = await apiCall('/bet', {
+    game: 'slot',
+    bet: betAmount,
+    params: { win: winAmount, alreadyDeducted: true }
+  });
+  if (r.ok && typeof r.balance === 'number') {
+    balance = r.balance;
+    updUI();
+  }
+  return r;
+}
+
+window.addEventListener('message', (e) => {
+  if (!e.data || e.data.type !== 'gd-init') return;
+  if (e.data.initData) INIT_DATA = e.data.initData;
+  if (e.data.apiUrl) API_URL = e.data.apiUrl;
+  initFromServer();
+});
+
+try { if (window.parent !== window) window.parent.postMessage({ type: 'gd-ready' }, '*'); } catch (e) {}
+
+const _tgInit = window.Telegram && window.Telegram.WebApp;
+if (_tgInit && _tgInit.initData) {
+  INIT_DATA = _tgInit.initData;
+  initFromServer();
+}
+/* ──────────────────────────────────────────────────── */
+
+let AC;
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,d,type,v,slide,delay){
+  if(!snd)return;const a=ac();if(!a)return;const t=a.currentTime+(delay||0);
+  const o=a.createOscillator(),g=a.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);
+  if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d);
+  g.gain.setValueAtTime(v||.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.03);
+}
+const sfx={
+  spin(){tone(220,.5,'sawtooth',.035,260)},
+  land(){tone(120,.12,'sine',.14,-60)},
+  win(n){const base=[523,659,784,1047,1319];for(let i=0;i<Math.min(5,n);i++)tone(base[i],.16,'triangle',.07,0,i*.07)},
+  coin(i){tone(900+i*90,.1,'square',.035,500,0)},
+  scatter(){tone(180,.4,'sawtooth',.06,300);tone(360,.5,'triangle',.06,200,.1)},
+  fanfare(){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.2,'triangle',.07,0,i*.09))},
+  click(){tone(500,.05,'square',.03)}
+};
+
+function layout(){
+  const app=$('app');
+  const wBased=Math.floor((app.clientWidth-20-6-12-12)/5);
+  const free=window.innerHeight-document.querySelector('header').offsetHeight-$('hud').offsetHeight-$('foot').offsetHeight-52;
+  cell=Math.max(44,Math.min(wBased,Math.floor(free/4),96));
+  document.documentElement.style.setProperty('--cell',cell+'px');
+}
+function buildReels(){
+  const reels=$('reels');reels.innerHTML='';strips=[];cur=[];
+  for(let c=0;c<COLS;c++){
+    const col=document.createElement('div');col.className='col';
+    const st=document.createElement('div');st.className='strip';col.appendChild(st);reels.appendChild(col);strips.push(st);
+    const arr=[];for(let r=0;r<ROWS;r++)arr.push({s:filler(),v:0});
+    cur.push(arr);setColumn(c,arr);
+  }
+}
+const FILL=['J','Q','K','A','shovel','lantern','raven','skull'];
+const filler=()=>FILL[Math.floor(Math.random()*FILL.length)];
+function setColumn(c,arr){
+  const st=strips[c];st.style.transition='none';st.style.transform='translateY(0)';st.classList.remove('moving');
+  st.innerHTML=arr.map(x=>cellHTML(x.s,x.v)).join('');
+}
+const getCell=(c,r)=>strips[c].children[r];
+const allCells=()=>{const a=[];for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)a.push([c,r,getCell(c,r)]);return a};
+function clearHL(){allCells().forEach(([c,r,el])=>{el&&el.classList.remove('win','dim','coll','land')})}
+function highlight(set){
+  const keys=new Set(set.map(x=>x[0]+','+x[1]));
+  allCells().forEach(([c,r,el])=>{if(!el)return;if(keys.has(c+','+r)){el.classList.add('win');el.classList.remove('dim')}else if(!el.classList.contains('win'))el.classList.add('dim')});
+}
+
+function updUI(){
+  $('bal').textContent=fmt(balance);$('bet').textContent=fmt(BETS[betIdx]);save();
+}
+function setMsg(t,win){const m=$('msg');m.textContent=t;m.classList.toggle('win',!!win)}
+function setWin(n){$('win').textContent=fmt(n)}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1800)}
+function lock(on){
+  ['btnMinus','btnPlus','btnBuy'].forEach(i=>$(i).classList.toggle('dis',on));
+  $('btnSpin').classList.toggle('go',on);
+}
+function countUp(el,from,to,dur,fmtFn){
+  return new Promise(res=>{
+    const t0=performance.now();dur=Math.max(150,dur);
+    (function f(t){const k=Math.min(1,(t-t0)/dur);el.textContent=(fmtFn||fmt)(from+(to-from)*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f);else res()})(t0);
+  });
+}
+function popAt(c,r,text){
+  const fx=$('fx');
+  const p=document.createElement('div');p.className='pop';p.textContent=text;
+  p.style.left=(13+c*(cell+3)+cell/2)+'px';p.style.top=(13+r*cell+cell/2)+'px';
+  fx.appendChild(p);setTimeout(()=>p.remove(),1000);
+}
+function showCard(html,{ok='ОК',cancel=null}={}){
+  return new Promise(res=>{
+    const ov=$('ov'),card=$('card');
+    card.innerHTML=html+`<div class="acts">${cancel?`<button class="cta alt" id="cCancel">${cancel}</button>`:''}<button class="cta" id="cOk">${ok}</button></div>`;
+    ov.classList.add('show');
+    const done=v=>{ov.classList.remove('show');res(v)};
+    $('cOk').onclick=()=>{sfx.click();done(true)};
+    if(cancel)$('cCancel').onclick=()=>{sfx.click();done(false)};
+  });
+}
+function showBig(x,amount){
+  const tiers=[[500,'ЛЕГЕНДА!'],[100,'ЭПИК!'],[30,'МЕГА ВИН'],[10,'БИГ ВИН']];
+  const t=tiers.find(t=>x>=t[0]);if(!t)return Promise.resolve();
+  return new Promise(async res=>{
+    const ov=$('bigwin');$('bwTitle').textContent=t[1];ov.classList.add('show');sfx.fanfare();hap('heavy');
+    let closed=false;const close=()=>{if(closed)return;closed=true;ov.classList.remove('show');res()};
+    ov.onclick=close;
+    await countUp($('bwNum'),0,amount,turbo?900:2200);
+    setTimeout(close,turbo?400:1300);
+  });
+}
+
+async function animateSpin(grid){
+  const dur=turbo?380:900, stag=turbo?45:140;
+  strips.forEach((st,c)=>{
+    const n=(turbo?4:8)+c*(turbo?1:3);
+    let html='';grid[c].forEach(x=>html+=cellHTML(x.s,x.v));
+    for(let i=0;i<n;i++)html+=cellHTML(filler(),0);
+    cur[c].forEach(x=>html+=cellHTML(x.s,x.v));
+    st.style.transition='none';st.innerHTML=html;
+    st.style.transform=`translateY(${-(n+4)*cell}px)`;st.classList.add('moving');
+  });
+  void $('reels').offsetWidth;
+  strips.forEach((st,c)=>{
+    st.style.transition=`transform ${dur+c*stag}ms cubic-bezier(.25,.9,.3,1.05)`;
+    st.style.transform='translateY(0)';
+  });
+  sfx.spin();
+  for(let c=0;c<COLS;c++){
+    const d=dur+c*stag;
+    setTimeout(()=>{strips[c].classList.remove('moving');sfx.land();hap('light')},d*0.85);
+  }
+  await wait(dur+(COLS-1)*stag+80);
+  for(let c=0;c<COLS;c++)setColumn(c,grid[c]);
+  cur=grid;
+  allCells().forEach(([c,r,el])=>{const s=grid[c][r].s;if(s==='scatter'||s==='digger'||s==='coffin')el.classList.add('land')});
+}
+
+async function playRound(free,capLeft){
+  const bet=BETS[betIdx];
+  clearHL();setWin(0);
+  const res=Engine.spin(fs.on?'fs':'base',fs.mult);
+  setMsg(free?'КОПАЕМ БОНУС...':'КОПАЕМ...');
+  await animateSpin(res.grid);
+  let win=0;
+  const cap=capLeft;
+  if(res.wins.length){
+    const set=[];res.wins.forEach(w=>set.push(...w.cells));
+    highlight(set);sfx.win(res.wins.length);hap('medium');
+    const w=Math.min(cap,Math.round(res.waysPay*bet));
+    setMsg('+'+fmt(w),true);await countUp($('win'),0,w,T(600));win+=w;
+    await wait(T(450));
+  }
+  if(res.dg>0){
+    const dCells=[],cCells=[];
+    res.grid.forEach((col,c)=>col.forEach((x,r)=>{if(x.s==='digger')dCells.push([c,r]);if(x.s==='coffin')cCells.push([c,r,x.v])}));
+    if(fs.on){fs.mult=res.newMult;const m=$('fsMult');m.textContent='МНОЖ. x'+fs.mult;m.classList.remove('bump');void m.offsetWidth;m.classList.add('bump')}
+    if(cCells.length){
+      allCells().forEach(([c,r,el])=>el.classList.remove('dim'));
+      dCells.forEach(([c,r])=>getCell(c,r).classList.add('win'));
+      setMsg(fs.on?`КОПАТЕЛЬ СОБИРАЕТ x${fs.mult}!`:'КОПАТЕЛЬ СОБИРАЕТ!',true);
+      let run=win;const plus=Math.min(cap-win,Math.round(res.collect*bet));
+      let i=0;
+      for(const [c,r,v] of cCells){
+        getCell(c,r).classList.add('coll');sfx.coin(i++);hap('light');
+        popAt(c,r,'+'+(v<1?v:v)+'x');await wait(T(170));
+      }
+      await wait(T(250));
+      await countUp($('win'),win,win+plus,T(700));win+=plus;
+      await wait(T(350));
+    }else if(fs.on){await wait(T(300))}
+  }
+  win=Math.min(win,cap);
+  if(win>0){balance+=win;updUI()}
+  setWin(win);
+  return {win,res};
+}
+
+async function onSpin(){
+  if(busy)return;
+  ac();
+  const bet=BETS[betIdx];
+  if(balance<bet){
+    toast('Не хватает фишек');
+    auto=false;syncAuto();
+    return;
+  }
+  busy=true;lock(true);
+  balance-=bet;updUI();
+  try{
+    const r=await playRound(false,Engine.CFG.MAX_WIN*bet);
+    if(r.res.sc>=3){
+      await scatterFX(r.res);
+      await runFreeSpins(r.res.sc,false,r.win);
+      // sync выполнен внутри runFreeSpins
+    }else{
+      if(r.win>0){setMsg('ВЫИГРЫШ '+fmt(r.win),true);await showBig(r.win/bet,r.win)}
+      else setMsg('Крути и копай!');
+      await syncServerBet(bet, r.win);
+    }
+  }catch(e){console.error(e)}
+  busy=false;lock(false);
+  if(auto&&balance>=bet)setTimeout(onSpin,T(500));else{auto=false;syncAuto()}
+}
+async function scatterFX(res){
+  sfx.scatter();hap('heavy');
+  const set=[];res.grid.forEach((col,c)=>col.forEach((x,r)=>{if(x.s==='scatter')set.push([c,r])}));
+  highlight(set);setMsg('БОНУС! '+res.sc+' НАДГРОБИЯ',true);
+  await wait(T(1100));
+}
+async function runFreeSpins(sc,bought,pre){
+  const bet=BETS[betIdx];
+  const start=Engine.CFG.START_SPINS[Math.min(5,sc)];
+  await showCard(`<h2>ФРИСПИНЫ</h2><div class="big">${start}</div><p>Каждый копатель поднимает множитель сбора. Гробы платят всё больше — копай до конца!</p>`,{ok:'ПОГНАЛИ'});
+  fs={on:true,left:start,mult:1,total:pre||0};
+  $('app').classList.add('fs');updFS();
+  const cap=Engine.CFG.MAX_WIN*bet;
+  while(fs.left>0){
+    fs.left--;updFS();
+    const r=await playRound(true,Math.max(0,cap-fs.total));
+    fs.total+=r.win;$('fsWin').textContent=fmt(fs.total);
+    if(fs.total>=cap){fs.left=0;toast('МАКС. ВЫИГРЫШ!')}
+    else if(r.res.sc>=3){
+      const add=Engine.CFG.RETRIG[Math.min(5,r.res.sc)];fs.left+=add;sfx.scatter();
+      const set=[];r.res.grid.forEach((col,c)=>col.forEach((x,rr)=>{if(x.s==='scatter')set.push([c,rr])}));highlight(set);
+      setMsg('+'+add+' ФРИСПИНОВ!',true);toast('+'+add+' фриспинов');updFS();await wait(T(1200));
+    }
+    await wait(T(500));
+  }
+  const total=fs.total;
+  $('app').classList.remove('fs');
+  fs.on=false;fs.mult=1;
+  sfx.fanfare();
+
+  // ─── СИНХРОНИЗАЦИЯ С СЕРВЕРОМ ───
+  const syncBet = bought ? (bet * Engine.CFG.BUY) : bet;
+  await syncServerBet(syncBet, total);
+
+  await showCard(`<h2>ИТОГО В БОНУСЕ</h2><div class="big">${fmt(total)}</div><p>x${(total/bet).toFixed(1)} от ставки</p>`,{ok:'ЗАБРАТЬ'});
+  setWin(total);setMsg('ВЫИГРЫШ '+fmt(total),true);
+  await showBig(total/bet,total);
+  setMsg('Крути и копай!');
+}
+function updFS(){
+  $('fsLeft').textContent='ФРИСПИНЫ '+fs.left;
+  $('fsMult').textContent='МНОЖ. x'+fs.mult;
+  $('fsWin').textContent=fmt(fs.total);
+}
+
+async function onBuy(){
+  if(busy)return;ac();
+  const bet=BETS[betIdx],price=bet*Engine.CFG.BUY;
+  if(balance<price){toast('Не хватает фишек на покупку');return}
+  const ok=await showCard(`<h2>БОНУС-БАЙ</h2><p>Купить 8 фриспинов с гарантированным запуском бонуса.</p><div class="big" style="font-size:40px">${fmt(price)}</div>`,{ok:'КУПИТЬ',cancel:'ОТМЕНА'});
+  if(!ok)return;
+  busy=true;lock(true);balance-=price;updUI();clearHL();
+  try{await runFreeSpins(3,true,0)}catch(e){console.error(e)}
+  busy=false;lock(false);
+}
+
+function showRules(){
+  const names={skull:'Череп',raven:'Ворон',lantern:'Фонарь',shovel:'Лопата',A:'A',K:'K',Q:'Q',J:'J'};
+  let rows='';
+  for(const s of ['skull','raven','lantern','shovel','A','K','Q','J']){
+    const p=Engine.PAY[s];
+    rows+=`<div>${symSVG(s,0)}</div><div class="p">${names[s]}: 3 — <i>${p[0]}x</i> · 4 — <i>${p[1]}x</i> · 5 — <i>${p[2]}x</i></div>`;
+  }
+  const html=`<h2>ПРАВИЛА</h2>
+  <div class="pt">${rows}
+    <div>${symSVG('digger',0)}</div><div class="p"><b style="color:#9dff4a">КОПАТЕЛЬ</b> — заменяет все символы кроме надгробия и гроба, а ещё забирает все гробы на экране.</div>
+    <div>${symSVG('coffin',25)}</div><div class="p"><b style="color:#ffd23f">ГРОБ</b> — несёт приз от 0.5x до 100x ставки. Платит, когда на поле есть Копатель.</div>
+    <div>${symSVG('scatter',0)}</div><div class="p"><b style="color:#9dff4a">НАДГРОБИЕ</b> — 3+ дают 8 / 12 / 16 фриспинов.</div>
+  </div>
+  <ul class="rules">
+    <li>Выигрыш по <b>1024 путям</b>: символы слева направо, от 3 барабанов подряд. Приведены выплаты за один путь (в долях ставки), они умножаются на число путей.</li>
+    <li>Во фриспинах каждый Копатель <b>+1 к множителю сбора</b>, множитель не сбрасывается до конца бонуса. Сбор гробов умножается на него.</li>
+    <li>Во фриспинах 3 / 4 / 5 надгробий добавляют 5 / 7 / 10 спинов.</li>
+    <li>Бонус-бай: <b>x95</b> от ставки. Теоретический RTP игры ≈ 96%.</li>
+    <li>Максимальный выигрыш: <b>x15000</b> от ставки.</li>
+  </ul>`;
+  showCard(html,{ok:'ЗАКРЫТЬ'});
+}
+
+function syncAuto(){$('btnAuto').classList.toggle('on',auto);$('btnAuto').innerHTML=auto?'<span>СТОП</span>':'<span>АВТО</span>'}
+$('btnSpin').onclick=()=>{if(busy){return}onSpin()};
+$('btnMinus').onclick=()=>{if(busy)return;sfx.click();betIdx=Math.max(0,betIdx-1);updUI()};
+$('btnPlus').onclick=()=>{if(busy)return;sfx.click();betIdx=Math.min(BETS.length-1,betIdx+1);updUI()};
+$('btnBuy').onclick=onBuy;
+$('btnAuto').onclick=()=>{ac();auto=!auto;syncAuto();if(auto&&!busy)onSpin()};
+$('btnTurbo').onclick=function(){turbo=!turbo;this.classList.toggle('on',turbo);sfx.click()};
+$('btnSound').onclick=function(){snd=!snd;this.classList.toggle('on',snd);this.textContent=(snd?'🔊':'🔇')+' ЗВУК'};
+$('btnRules').onclick=()=>{sfx.click();showRules()};
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();if(!busy&&!$('ov').classList.contains('show'))onSpin()}});
+window.addEventListener('resize',()=>{layout()});
+
+function initTG(){
+  const tg=window.Telegram&&window.Telegram.WebApp;if(!tg)return;
+  try{tg.ready();tg.expand();tg.setHeaderColor('#0d0716');tg.setBackgroundColor('#0d0716')}catch(e){}
+}
+initTG();window.addEventListener('load',()=>{initTG();layout()});
+updUI();layout();buildReels();
+document.fonts&&document.fonts.ready.then(()=>layout());
+</script>
+</body>
+</html>
