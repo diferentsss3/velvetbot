@@ -217,41 +217,78 @@ function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=nu
  for(let c=0;c<5;c++)for(let r=0;r<3;r++)setCell(c,r,mkS(drawSym(G,c,false)));
  $('#sov').classList.remove('on');hl([]);$('#swn').textContent='0';$('#smsg').textContent='Удачи!';hud()}
 
+// ================== ИСПРАВЛЕННОЕ ЛОББИ ==================
 function buildLobby(){
- const L=$('#slobby');if(!L)return;
+ const L=$('#slobby'); if(!L) return;
  L.innerHTML='<h3 class="sh">Выберите слот</h3>';
- const grid=document.createElement('div');grid.className='slg';
+ 
+ // Форсируем сетку инлайн-стилями, чтобы не зависеть от кэша index.html
+ const grid = document.createElement('div');
+ grid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;';
+ 
+ const makeCard = (title, sub, iconHTML, bg, border, rtpColor, onclick) => {
+   const d = document.createElement('div');
+   d.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:space-between; border-radius:20px; padding:12px 8px; text-align:center; cursor:pointer; background:${bg}; border:2px solid ${border}; box-shadow:0 12px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2); overflow:hidden; transition:transform .12s; position:relative;`;
+   d.onclick = onclick;
+   d.innerHTML = `
+     <div style="height:80px; display:grid; place-items:center; margin-bottom:8px;">${iconHTML}</div>
+     <b style="display:block; color:#fff; font:700 14px var(--hd); text-shadow:0 2px 4px rgba(0,0,0,.8); line-height:1.2;">${title}</b>
+     <small style="display:block; color:#fff; opacity:.85; font-size:11px; margin:4px 0 10px; min-height:30px; text-shadow:0 1px 3px rgba(0,0,0,.8); line-height:1.2;">${sub}</small>
+     <em style="background:rgba(0,0,0,.5); color:${rtpColor}; padding:4px 10px; border-radius:10px; font-weight:800; font-size:11px; font-style:normal; border:1px solid ${rtpColor}40;">RTP 85%</em>
+   `;
+   return d;
+ };
 
- Object.keys(SLOTS).forEach(id=>{const G=SLOTS[id],d=document.createElement('div');d.className='sc th-'+id;
-  d.innerHTML='<div class="scp">'+'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg></div><b></b><small></small><em class="rtp"></em>';
-  d.children[1].textContent=G.name;d.children[2].textContent=G.sub;d.children[3].textContent='RTP '+(S.cfg.slot||85)+'%';d.onclick=()=>openSlot(id);grid.appendChild(d)});
+ // 1. Старые слоты
+ Object.keys(SLOTS).forEach(id => {
+   const G = SLOTS[id];
+   let bg = 'linear-gradient(180deg,#3a1d6e,#1d0f3a)';
+   let border = '#7b3fe4';
+   if (id === 'cat') { bg = 'linear-gradient(180deg,#7ec8f5 0,#c9ecff 40%,#6fcf5a 41%,#3b9a3a)'; border = '#3b9a3a'; }
+   if (id === 'gold') { bg = 'linear-gradient(180deg,#ffd9a0 0,#f4a259 28%,#c0662b 29%,#7a3d1c 62%,#4a2310 100%)'; border = '#f59e0b'; }
+   if (id === 'pha') { bg = 'linear-gradient(180deg,#1c5b8c 0,#52b6dc 26%,#f3d98f 27%,#dcae5c 60%,#a8742e 100%)'; border = '#fbbf24'; }
+   if (id === 'neon') { bg = 'linear-gradient(180deg,#0a0420,#1a0638 45%,#0c0324)'; border = '#22e3ff'; }
+   if (id === 'dra') { bg = 'linear-gradient(180deg,#4a0c18 0,#9a1624 28%,#2e0a12 29%,#14050b 100%)'; border = '#ff3b30'; }
+   if (id === 'cos') { bg = 'radial-gradient(70% 40% at 20% 20%,rgba(160,80,255,.45),transparent),radial-gradient(60% 40% at 90% 70%,rgba(34,211,238,.35),transparent),linear-gradient(180deg,#070720,#0c0c3a 60%,#05051a)'; border = '#a855f7'; }
+   if (id === 'pot') { bg = 'linear-gradient(180deg,#1a0a2e 0,#3a1466 36%,#12062c 100%)'; border = '#c084fc'; }
 
- // Gravedigger's Tip
- const gd=document.createElement('div');
- gd.className='sc';
- gd.style.cssText='background:radial-gradient(140% 60% at 50% 0%,#4b1f9e,#1a0d36 70%);border:2px solid #7b3fe4;box-shadow:0 12px 26px rgba(123,63,228,.4),inset 0 1px 0 rgba(255,255,255,.2);';
- gd.innerHTML='<div class="scp" style="font-size:56px;line-height:1;filter:drop-shadow(0 8px 10px rgba(0,0,0,.6))">⚰️</div><b style="color:#9dff4a;">Gravedigger\'s Tip</b><small>1024 ways · сбор гробов</small><em class="rtp" style="background:rgba(157,255,74,.22);color:#9dff4a;border-color:#9dff4a;">RTP 85%</em>';
- gd.onclick=openGravedigger;
- grid.appendChild(gd);
+   const icon = `<svg class="ic" style="width:70px; height:70px; filter:drop-shadow(0 8px 10px rgba(0,0,0,.5));"><use href="#i-${G.ico(G.hero)}"/></svg>`;
+   const card = makeCard(G.name, G.sub, icon, bg, border, '#ffe9a0', () => openSlot(id));
+   grid.appendChild(card);
+ });
 
- // Abyssal Tide / Pharaoh's Tomb / Neon Heist
- const newSlots=[
+ // 2. Gravedigger's Tip
+ const gdCard = makeCard(
+   "Gravedigger's Tip", 
+   "1024 ways · сбор гробов", 
+   `<div style="font-size:56px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.6));">⚰️</div>`,
+   'radial-gradient(140% 60% at 50% 0%,#4b1f9e,#1a0d36 70%)',
+   '#7b3fe4', '#9dff4a', openGravedigger
+ );
+ gdCard.style.gridColumn = '1 / -1';
+ grid.appendChild(gdCard);
+
+ // 3. Новые слоты (iframe)
+ const newSlots = [
    {id:'abyss',title:"Abyssal Tide",sub:'Глубины · сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)',border:'#22e5c8',file:'ABYSSALTIDE.html'},
    {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Гробница · сбор урн',icon:'🏺',bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)',border:'#f59e0b',file:'PHARAOHSTOMB.html'},
    {id:'neonheist',title:"Neon Heist",sub:'Взлом · сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)',border:'#ff2d95',file:'NEONHEIST.html'},
    {id:'crazymix',title:"Crazy Mix",sub:'Смешивай и выигрывай',icon:'🎲',bg:'radial-gradient(140% 60% at 50% 0%,#41207a,#150a2b 70%)',border:'#ff3d81',file:'crazy-mix.html'}
  ];
- newSlots.forEach(s=>{
-   const d=document.createElement('div');
-   d.className='sc';
-   d.style.cssText=`background:${s.bg};border:2px solid ${s.border};box-shadow:0 12px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2);`;
-   d.innerHTML=`<div class="scp" style="font-size:56px;line-height:1;filter:drop-shadow(0 8px 10px rgba(0,0,0,.6))">${s.icon}</div><b style="color:${s.border};">${s.title}</b><small>${s.sub}</small><em class="rtp" style="background:rgba(0,0,0,.4);color:#ffe9a0;">RTP 85%</em>`;
-   d.onclick=()=>openSlotFrame(s.id,s.file);
-   grid.appendChild(d);
+
+ newSlots.forEach(s => {
+   const card = makeCard(
+     s.title, s.sub,
+     `<div style="font-size:56px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.6));">${s.icon}</div>`,
+     s.bg, s.border, '#ffe9a0', () => openSlotFrame(s.id, s.file)
+   );
+   card.style.gridColumn = '1 / -1';
+   grid.appendChild(card);
  });
 
  L.appendChild(grid);
 }
+// ==========================================================
 
 // ===== Gravedigger iframe =====
 let gdWrap=null;
@@ -313,7 +350,10 @@ function sendSlotInit(id){
   const frame=document.getElementById('frame-'+id);
   if(!frame||!frame.contentWindow)return;
   const tg=window.Telegram&&window.Telegram.WebApp;
-  try{frame.contentWindow.postMessage({type:'slot-init',initData:(tg&&tg.initData)||'',apiUrl:API_URL},'*')}catch(e){}
+  const msg = {type:'slot-init',initData:(tg&&tg.initData)||'',apiUrl:API_URL};
+  try{frame.contentWindow.postMessage(msg,'*')}catch(e){}
+  setTimeout(()=>{ try{frame.contentWindow.postMessage(msg,'*')}catch(e){} }, 200);
+  setTimeout(()=>{ try{frame.contentWindow.postMessage(msg,'*')}catch(e){} }, 1000);
 }
 
 const setBet=d=>{SL.bi=Math.min(BETS.length-1,Math.max(0,SL.bi+d));$('#sbt').textContent=fmt(BETS[SL.bi])};

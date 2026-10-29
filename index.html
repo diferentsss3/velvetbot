@@ -28,6 +28,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 .btn{width:100%;min-height:52px;padding:14px;border-radius:15px;font-weight:800;font-size:16px;color:#fff;background:linear-gradient(135deg,#7b2ff7,#b84dff);box-shadow:0 10px 26px rgba(123,47,247,.5),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .12s}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.5;box-shadow:none}
+.btn.gold{background:linear-gradient(#f3d98d,#c19bff 50%,#7b2ff7);color:var(--bg);border:0;box-shadow:0 8px 22px #e8c87238}
 .bet{display:flex;gap:6px;margin-bottom:12px}
 input,select,textarea{flex:1;min-width:0;width:100%;background:rgba(255,255,255,.06);border:1px solid var(--ln);border-radius:13px;color:var(--t);padding:0 12px;font:700 16px Manrope,system-ui,sans-serif;outline:0}
 input,select{height:46px}
@@ -96,6 +97,7 @@ nav .on span{filter:none;opacity:1}
 .m1{background:radial-gradient(120% 90% at 50% 130%,#d58bff,transparent 62%),linear-gradient(145deg,#4a14c2,#8b3dff)}
 .m2{background:radial-gradient(120% 90% at 50% 130%,#ffa0d6,transparent 62%),linear-gradient(145deg,#8e1aa8,#ec4899)}
 .m3{background:radial-gradient(120% 90% at 50% 130%,#7be0ff,transparent 62%),linear-gradient(145deg,#2a2fc9,#3b82f6)}
+.m7{background:radial-gradient(120% 90% at 50% 130%,#f3d98d,transparent 62%),linear-gradient(145deg,#7a5a18,#c9a13a)}
 .bd{position:absolute;top:13px;left:13px;font-style:normal;font-size:9.5px;font-weight:800;padding:3px 7px;border-radius:8px;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);color:#fff;z-index:1}
 .mc b{display:block;margin-top:9px;font-size:14px;font-weight:800}.mc small{color:var(--m);font-size:11px;font-weight:600}
 .fr,.fh{display:grid;grid-template-columns:1fr 1.25fr 1fr .85fr 1.1fr;gap:4px;padding:10px 2px;font-size:12px;text-align:center;align-items:center}
@@ -378,7 +380,8 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <div class="mc" data-t="c"><em class="bd">Новое</em><div class="pn m3"><span><svg class="ic"><use href="#i-rocket"/></svg></span></div><b>Краш</b><small>Новое</small></div>
    <div class="mc" data-t="f"><em class="bd">Новое</em><div class="pn m4"><span><svg class="ic"><use href="#i-eagle"/></svg></span></div><b>Монета</b><small>Орёл и решка</small></div>
   <div class="mc" data-t="l"><em class="bd">Новое</em><div class="pn m5"><span><svg class="ic"><use href="#i-ladder"/></svg></span></div><b>Лесенка</b><small>Осторожно, камни</small></div>
-   <div class="mc wide" data-t="s"><em class="bd">Хит</em><div class="pn m6"><span><svg class="ic"><use href="#i-slotm"/></svg></span></div><div><b>Слоты</b><small>Много игр · у каждой своя механика</small></div></div>
+   <div class="mc wide" data-t="bj"><em class="bd">Новое</em><div class="pn m7"><span style="font-size:44px;line-height:1">♠</span></div><div><b>Блэкджек</b><small>21 очко · классика</small></div></div>
+   <div class="mc wide" data-t="s"><em class="bd">Хит</em><div class="pn m6"><span><svg class="ic"><use href="#i-slotm"/></svg></span></div><div><b>Слоты</b><small>Множество игр · уникальные механики</small></div></div>
  </div>
  <h3 class="sh">Последние ставки<i class="live"></i></h3>
  <div class="card" style="padding:4px 10px"><div class="fh"><span>Режим</span><span>Игрок</span><span>Ставка</span><span>X</span><span>Итог</span></div><div id="feed"></div></div>
@@ -504,6 +507,17 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   </div>
  </div>
 
+ <!-- ЕЖЕНЕДЕЛЬНЫЙ КЭШБЭК -->
+ <div class="card">
+  <div class="shead"><div class="ttl">Еженедельный кэшбэк</div><i class="rtp" id="cb-rank-badge">0%</i></div>
+  <p class="note" style="text-align:left;margin:8px 0 10px">Кэшбэк начисляется раз в неделю (в понедельник в 00:00 МСК) от суммы депозитов за последние 7 дней. Выигрыш нужно отыграть с вейджером x2.</p>
+  <div class="st" style="margin-bottom:12px">
+    <div style="grid-column:1/-1"><b id="cb-available">0</b><small>монет доступно</small></div>
+  </div>
+  <button class="btn gold" id="cb-claim-btn">Забрать кэшбэк</button>
+  <p class="note" id="cb-timer" style="margin:10px 0 0"></p>
+ </div>
+
  <!-- ПОДДЕРЖАТЬ АВТОРА -->
  <div class="card">
   <div class="ttl">Поддержать автора</div>
@@ -519,16 +533,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
     <div><b id="re">0</b><small>заработок</small></div>
   </div>
  </div>
- <!-- Еженедельный кэшбэк -->
- <div class="card">
-  <div class="shead"><div class="ttl">Еженедельный кэшбэк</div><i class="rtp" id="cb-rank-badge">0%</i></div>
-  <p class="note" style="text-align:left;margin:8px 0 10px">Кэшбэк начисляется раз в неделю (в понедельник в 00:00 МСК) от суммы депозитов за последние 7 дней. Выигрыш нужно отыграть с вейджером x2.</p>
-  <div class="st" style="margin-bottom:12px">
-    <div style="grid-column:1/-1"><b id="cb-available">0</b><small>монет доступно</small></div>
-  </div>
-  <button class="btn gold" id="cb-claim-btn">Забрать кэшбэк</button>
-  <p class="note" id="cb-timer" style="margin:10px 0 0"></p>
- </div>
+
  <!-- РОЗЫГРЫШИ -->
  <div class="card" id="giveaways-card" style="display:none">
   <div class="shead"><div class="ttl">Активные розыгрыши</div></div>
@@ -584,7 +589,8 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <div class="av" id="av"></div><b id="un"></b><br><small id="uid"></small><br><em class="role" id="urole"></em>
   <div style="margin:10px 0 2px"><small>Баланс</small></div><div class="big" id="pbal">0</div>
  </div>
-  <!-- Звание -->
+
+ <!-- Звание -->
  <div class="card" id="rank-card">
   <div class="shead">
     <b>Ваше звание</b>
@@ -604,6 +610,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
     • x2 к активации промокодов
   </div>
  </div>
+ 
  <!-- Пополнение -->
  <div class="card">
   <div class="shead"><b>Пополнение</b><i class="rtp" id="dbadge">CryptoBot</i></div>
@@ -622,30 +629,43 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
  <!-- Вывод -->
  <div class="card">
   <div class="shead"><b>Вывод средств</b><i class="rtp" id="wbadge">CryptoBot</i></div>
-   <div id="wager-info" style="display:none; background:rgba(255,84,112,.15); border:1px solid rgba(255,84,112,.4); border-radius:12px; padding:10px; margin-bottom:12px; text-align:center;">
-    <small style="color:var(--bad); font-weight:700;">Для вывода нужно отыграть:</small><br>
-    <b id="wager-left" style="color:var(--bad); font-size:16px;">0</b> <small style="color:var(--bad);">монет</small>
-  </div>
-  <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
-
-  <div class="seg" id="wmethod" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
-  <div class="seg" id="wmethod" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+  
+  <div class="seg" id="wmethod" style="grid-template-columns:1fr 1fr;margin-bottom:14px">
     <button data-m="crypto" class="sel">💎 CryptoBot</button>
     <button data-m="sbp">🏦 СБП (₽)</button>
   </div>
-  <p class="note" id="wnote" style="text-align:left;margin:0 0 10px"></p>
-  <label id="wlabel">Сколько монет вывести</label>
-  <input id="wam" type="text" inputmode="numeric" autocomplete="off" placeholder="Количество монет" style="margin-bottom:6px">
-  <p class="note" id="wmin" style="text-align:left;margin:0 0 10px"></p>
-  <div id="wphone-box" style="display:none">
-    <label>Номер телефона для СБП</label>
-    <input id="wphone" type="tel" inputmode="tel" placeholder="+7 900 000-00-00" style="margin-bottom:8px">
-    <label>Банк (необязательно)</label>
-    <input id="wbank" type="text" placeholder="Сбер, Тинькофф, ..." style="margin-bottom:10px">
+
+  <div id="wager-info" style="display:none; background:rgba(255,84,112,.15); border:1px solid rgba(255,84,112,.4); border-radius:12px; padding:10px; margin-bottom:12px; text-align:center;">
+    <small style="color:var(--bad); font-weight:700;">Для вывода нужно отыграть:</small><br>
+    <b id="wager-left" style="color:var(--bad); font-size:16px;">0</b> <small style="color:var(--bad);">монет</small>
   </div>
-  <div class="st" style="margin-bottom:12px"><div style="grid-column:1/-1"><b id="wusd">0.00</b><small id="wusd-label">$ к получению</small></div></div>
-  <button class="btn" id="wdb">Запросить вывод</button>
-  <div id="wdl" style="margin-top:12px"></div>
+
+  <p class="note" id="wnote" style="text-align:left;margin:0 0 10px"></p>
+  
+  <div class="input-wrap" style="position:relative; margin-bottom:8px;">
+    <input id="wam" type="text" inputmode="numeric" autocomplete="off" placeholder="Количество монет" style="padding-right:50px; height:52px; font-size:18px;">
+    <button id="wmax" style="position:absolute; right:8px; top:6px; bottom:6px; background:var(--g); color:var(--bg); border-radius:8px; padding:0 10px; font-weight:800; font-size:12px;">MAX</button>
+  </div>
+
+  <div class="st" style="margin-bottom:14px; grid-template-columns:1fr;">
+    <div style="background:linear-gradient(180deg, rgba(123,47,247,.2), rgba(123,47,247,.05)); border-color:rgba(123,47,247,.4); padding:16px;">
+      <b id="wusd" style="font-size:24px; color:var(--g); text-shadow:0 0 12px rgba(193,155,255,.4);">0.00</b>
+      <small id="wusd-label" style="font-size:12px; margin-top:4px;">$ к получению</small>
+    </div>
+  </div>
+
+  <div id="wphone-box" style="display:none; margin-bottom:14px;">
+    <label>Номер телефона для СБП</label>
+    <input id="wphone" type="tel" inputmode="tel" placeholder="+7 900 000-00-00" style="margin-bottom:8px; height:46px;">
+    <label>Банк (необязательно)</label>
+    <input id="wbank" type="text" placeholder="Сбер, Тинькофф, ..." style="height:46px;">
+  </div>
+
+  <button class="btn" id="wdb" style="min-height:54px; font-size:16px; border-radius:16px; margin-bottom:16px;">Запросить вывод</button>
+  
+  <div style="height:1px; background:var(--ln); margin:16px 0;"></div>
+  <div class="ttl" style="font-size:13px; margin-bottom:10px; color:var(--m);">Ваши заявки</div>
+  <div id="wdl"></div>
  </div>
 
  <div class="card">
