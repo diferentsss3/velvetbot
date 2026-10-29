@@ -11,7 +11,7 @@ const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://applications-indicator-agreement-assignment.trycloudflare.com';
+const API_URL = 'https://referred-proof-pretty-maximize.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
@@ -25,11 +25,13 @@ const CFG0 = {
 
 let S = { 
   user: {}, bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, 
-  refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0, wager_req: 0 
+  refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0, wager_req: 0,
+  event: { active: false, end: 0 }
 };
 let selU = null;
 let dMethod = 'usd';
 let wMethod = 'crypto';
+let evInterval = null;
 
 async function api(path, data = {}) {
   try {
@@ -45,7 +47,7 @@ async function api(path, data = {}) {
 async function loadFeed() {
   const r = await api('/feed');
   if (!r.ok || !$('#feed')) return;
-  const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты' };
+  const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты', blackjack: 'Блэкджек' };
   if (!r.items || r.items.length === 0) { $('#feed').innerHTML = '<small style="color:var(--m); padding:10px; display:block; text-align:center;">Пока нет ставок</small>'; return; }
   $('#feed').innerHTML = r.items.map(x => {
     const pr = Math.round((x.win - x.bet) * 100) / 100; const mult = (x.win / x.bet).toFixed(2);
@@ -66,12 +68,47 @@ async function syncMe() {
   S.isAdmin = !!r.admin;
   if (r.cfg) S.cfg = { ...CFG0, ...r.cfg };
   
+  if (r.event) {
+    S.event = r.event;
+    startEventTimer();
+  }
+  
   render(); dUI(); wUI(); loadFeed();
   
   if (S.isAdmin) { const adm = $('#adm'); if (adm) { adm.style.display = 'block'; adm.innerHTML = 'Админ-панель'; adm.onclick = () => openAdmin(); } }
   
   updatePanels();
   updateRankUI();
+}
+
+function startEventTimer() {
+  clearInterval(evInterval);
+  const el = $('#event-timer');
+  const timeEl = $('#ev-time');
+  
+  if (!S.event || !S.event.active) {
+    if (el) el.style.display = 'none';
+    return;
+  }
+
+  if (el) el.style.display = 'flex';
+  
+  evInterval = setInterval(() => {
+    const now = Date.now();
+    const left = S.event.end - now;
+    
+    if (left <= 0) {
+      clearInterval(evInterval);
+      if (el) el.style.display = 'none';
+      syncMe();
+      return;
+    }
+    
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    const s = Math.floor((left % 60000) / 1000);
+    if (timeEl) timeEl.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
 }
 
 let tt;
@@ -95,7 +132,11 @@ function render() {
   if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ') || 'Игрок';
   if ($('#uid')) $('#uid').textContent = (U.username ? '@' + U.username + ' · ' : '') + 'ID ' + U.id;
   if ($('#av')) { if (U.photo_url) $('#av').innerHTML = `<img src="${U.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; else $('#av').textContent = (U.first_name || '?')[0].toUpperCase(); }
-  if ($('#ref-code')) $('#ref-code').textContent = U.id ? ('ref_' + U.id) : '—';
+  
+  if ($('#ref-link-text')) {
+    const link = getMyRefLink();
+    $('#ref-link-text').textContent = link || '—';
+  }
 }
 
 // ================= ЗВАНИЯ И КЭШБЭК =================
@@ -111,7 +152,6 @@ function updateRankUI() {
   const dep = S.user.dep_rub || 0;
   const r = getRankInfo(dep);
 
-  // Профиль
   if ($('#rank-name')) {
     $('#rank-name').textContent = r.name;
     $('#rank-name').style.background = r.color;
@@ -137,14 +177,12 @@ function updateRankUI() {
     else $('#rank-perks').style.display = 'none';
   }
 
-  // Бонусы
   if ($('#cb-rank-badge')) {
     $('#cb-rank-badge').textContent = 'Ваш кэшбэк: ' + r.rate + '%';
     $('#cb-rank-badge').style.background = r.color;
     $('#cb-rank-badge').style.color = '#000';
   }
 
-  // Проверка таймера кэшбэка
   if ($('#cb-timer') && $('#cb-claim-btn')) {
     const last = S.user.last_cashback || 0;
     const next = last + 7 * 24 * 60 * 60 * 1000;
@@ -293,6 +331,16 @@ function wUI() {
     if ($('#wusd')) $('#wusd').textContent = rub.toFixed(2);
     if ($('#wusd-label')) $('#wusd-label').textContent = '₽ к получению';
     if ($('#wphone-box')) $('#wphone-box').style.display = 'block';
+  }
+
+  const x2Banner = $('#user-x2-banner');
+  if (x2Banner && S.user) {
+    const hasUsed = S.user.used_x2_dep || 0;
+    if (S.event && S.event.active && !hasUsed) {
+      x2Banner.style.display = 'block';
+    } else {
+      x2Banner.style.display = 'none';
+    }
   }
 }
 
@@ -486,31 +534,15 @@ if ($('#pcb')) $('#pcb').onclick = async () => {
   }
 };
 
-// ---------- ВВОД РЕФ-КОДА АВТОРА ----------
-if ($('#ref-btn')) {
-  $('#ref-btn').onclick = async () => {
-    let code = $('#ref-input').value.trim();
-    if (!code) return;
-    if (!code.startsWith('ref_')) code = 'ref_' + code;
-    const r = await api('/ref/activate', { code });
-    if (r.ok) {
-      toast('Код успешно применён!', 'w');
-      $('#ref-input').value = '';
-      syncMe();
-    } else {
-      if (r.error === 'already') toast('Вы уже привязаны к автору', 'e');
-      else if (r.error === 'self') toast('Нельзя ввести свой собственный код', 'e');
-      else if (r.error === 'notfound') toast('Игрок с таким кодом не найден', 'e');
-      else toast('Ошибка ввода', 'e');
-    }
-  };
+// ---------- РЕФЕРАЛЬНАЯ ССЫЛКА ----------
+function getMyRefLink() {
+  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { id: 0 };
+  if (!U.id) return '';
+  let base = S.cfg.botLink || 'https://t.me/velvetcasBot/app';
+  base = base.split('?')[0]; 
+  return base + '?startapp=ref_' + U.id;
 }
 
-// ---------- ЛИЧНЫЙ КОД АВТОРА ----------
-function getMyRefCode() {
-  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { id: 0 };
-  return U.id ? ('ref_' + U.id) : '';
-}
 async function copyToClipboard(text) {
   try { await navigator.clipboard.writeText(text); return true; } 
   catch (e) {
@@ -523,28 +555,28 @@ async function copyToClipboard(text) {
     } catch (err) { return false; }
   }
 }
-if ($('#ref-code')) {
-  $('#ref-code').onclick = async () => {
-    const code = getMyRefCode(); if (!code) return;
-    const ok = await copyToClipboard(code);
-    toast(ok ? 'Код скопирован' : 'Ошибка', ok ? 'w' : 'e');
-  };
-}
+
 if ($('#rcp')) {
   $('#rcp').onclick = async () => {
-    const code = getMyRefCode(); if (!code) return;
-    const ok = await copyToClipboard(code);
-    toast(ok ? 'Код скопирован' : 'Ошибка', ok ? 'w' : 'e');
+    const link = getMyRefLink(); if (!link) return;
+    const ok = await copyToClipboard(link);
+    toast(ok ? 'Ссылка скопирована' : 'Ошибка', ok ? 'w' : 'e');
     h('light');
   };
 }
+
 if ($('#rsh')) {
   $('#rsh').onclick = () => {
-    const code = getMyRefCode(); if (!code) return;
-    const text = `Присоединяйся к Velvet! 🎰\n\nМой реферальный код: ${code}\n\nОткрой бота и отправь /start ${code}`;
-    if (tg && tg.openTelegramLink) tg.openTelegramLink('https://t.me/share/url?url=&text=' + encodeURIComponent(text));
-    else if (navigator.share) navigator.share({ title: 'Velvet', text }).catch(() => {});
-    else copyToClipboard(text).then(ok => toast(ok ? 'Текст скопирован' : 'Ошибка', ok ? 'w' : 'e'));
+    const link = getMyRefLink(); if (!link) return;
+    const text = `Присоединяйся к Velvet! 🎰\n\nПолучи бонус за регистрацию:\n${link}`;
+    
+    if (tg && tg.openTelegramLink) {
+      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('Присоединяйся к Velvet! 🎰\n\nПолучи бонус за регистрацию:'));
+    } else if (navigator.share) {
+      navigator.share({ title: 'Velvet', text }).catch(() => {});
+    } else {
+      copyToClipboard(text).then(ok => toast(ok ? 'Текст скопирован' : 'Ошибка', ok ? 'w' : 'e'));
+    }
   };
 }
 
@@ -908,6 +940,50 @@ if ($('#aps')) {
     };
     const r = await api('/admin/save-partner-limits', body);
     if (r.ok) { toast('Сохранено', 'w'); syncMe(); } else toast('Ошибка', 'e');
+  };
+}
+
+if ($('#btn-event')) {
+  $('#btn-event').onclick = async () => {
+    const r = await api('/admin/toggle-event');
+    if (r.ok) {
+      toast(r.active ? 'Ивент включен на 24 часа!' : 'Ивент выключен', 'w');
+      syncMe(); 
+    } else {
+      toast('Ошибка', 'e');
+    }
+  };
+}
+
+if ($('#bc-send')) {
+  $('#bc-send').onclick = async () => {
+    const msg = $('#bc-msg').value.trim();
+    const btnT = $('#bc-btn-text').value.trim();
+    const btnU = $('#bc-btn-url').value.trim();
+    
+    if (!msg) { toast('Введите текст сообщения', 'e'); return; }
+    if ((btnT && !btnU) || (!btnT && btnU)) { toast('Заполните и текст, и ссылку для кнопки', 'e'); return; }
+    
+    if (!confirm('Отправить рассылку всем пользователям? Это действие нельзя отменить.')) return;
+    
+    const btn = $('#bc-send');
+    btn.disabled = true;
+    btn.textContent = 'Запуск...';
+    
+    const r = await api('/admin/broadcast', { message: msg, btnText: btnT, btnUrl: btnU });
+    if (r.ok) {
+      toast(`Рассылка запущена для ${r.count} игроков!`, 'w');
+      $('#bc-msg').value = '';
+      $('#bc-btn-text').value = '';
+      $('#bc-btn-url').value = '';
+    } else {
+      toast('Ошибка запуска рассылки', 'e');
+    }
+    
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = 'Отправить всем';
+    }, 3000);
   };
 }
 
