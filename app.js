@@ -12,7 +12,7 @@ const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
 const API_URL = 'https://applications-indicator-agreement-assignment.trycloudflare.com';
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
   rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000,
@@ -297,7 +297,29 @@ function wUI() {
 }
 
 if ($('#wam')) {
-  $('#wam').oninput = () => { const e = $('#wam'), v = e.value.replace(/\D/g, ''); if (v !== e.value) e.value = v; wUI(); };
+  $('#wam').oninput = () => { 
+    const e = $('#wam'), v = e.value.replace(/\D/g, ''); 
+    if (v !== e.value) e.value = v; 
+    wUI(); 
+  };
+}
+
+if ($('#wmax')) {
+  $('#wmax').onclick = () => {
+    const minCoins = wMethod === 'crypto' 
+      ? Math.ceil(S.cfg.wdMin * (+S.cfg.rate || 87)) 
+      : Math.ceil((+S.cfg.sbp_min || 500) * (+S.cfg.yoo_rate || 1));
+      
+    const maxCoins = Math.floor(S.bal);
+    
+    if (maxCoins < minCoins) {
+      toast('Недостаточно средств для минимального вывода', 'e');
+      return;
+    }
+    
+    $('#wam').value = maxCoins;
+    wUI();
+  };
 }
 
 if ($('#wmethod')) {
@@ -313,17 +335,36 @@ async function loadWithdrawals() {
   const r = await api('/my');
   if (!r.ok) return;
   if (!r.items || !r.items.length) {
-    $('#wdl').innerHTML = '<small style="color:var(--m);display:block;text-align:center;padding:8px 0">Заявок пока нет</small>';
+    $('#wdl').innerHTML = '<div style="text-align:center; padding:20px; background:rgba(0,0,0,.2); border-radius:14px; color:var(--m); font-size:13px;">Заявок пока нет</div>';
     return;
   }
   $('#wdl').innerHTML = r.items.map(x => {
     const stText = x.status === 'pending' ? 'В обработке' : x.status === 'paid' ? 'Выплачено' : 'Отклонено';
-    const stColor = x.status === 'pending' ? 'var(--g)' : x.status === 'paid' ? 'var(--ok)' : 'var(--bad)';
+    const stColor = x.status === 'pending' ? '#fbbf24' : x.status === 'paid' ? 'var(--ok)' : 'var(--bad)';
+    const stBg = x.status === 'pending' ? 'rgba(251,191,36,.15)' : x.status === 'paid' ? 'rgba(74,222,128,.15)' : 'rgba(255,84,112,.15)';
+    
     const methodIcon = x.method === 'sbp' ? '🏦' : '💎';
+    
     const amountText = x.method === 'sbp'
-      ? `${methodIcon} ${fmt(x.coins)} монет = ${fmt(x.rub || 0)} ₽`
-      : `${methodIcon} ${fmt(x.coins)} монет = $${Number(x.usd || 0).toFixed(2)}`;
-    return `<div class="hr"><span>${amountText}</span><em style="color:${stColor};font-style:normal;font-size:12px">${stText}</em></div>`;
+      ? `<b>${fmt(x.coins)}</b> монет = <b>${fmt(x.rub || 0)} ₽</b>`
+      : `<b>${fmt(x.coins)}</b> монет = <b>$${Number(x.usd || 0).toFixed(2)}</b>`;
+      
+    return `
+      <div style="background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div>
+          <div style="font-size:14px; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+            <span style="font-size:16px;">${methodIcon}</span> ${amountText}
+          </div>
+          <div style="font-size:11px; color:var(--m);">
+            ${new Date(x.created_at).toLocaleString('ru-RU', {day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'})}
+            ${x.details ? `<br><span style="color:var(--g)">📋 ${x.details}</span>` : ''}
+          </div>
+        </div>
+        <div style="background:${stBg}; color:${stColor}; border:1px solid ${stColor}40; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:800; white-space:nowrap;">
+          ${stText}
+        </div>
+      </div>
+    `;
   }).join('');
 }
 
@@ -580,6 +621,56 @@ if ($('#npc-btn')) {
     }
   };
 }
+
+// ================= BLACKJACK =================
+let bjWrap = null;
+
+function openBlackjack() {
+  if (!bjWrap) {
+    bjWrap = document.createElement('div');
+    bjWrap.id = 'bj-wrap';
+    bjWrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0b0618;overflow:hidden;';
+    bjWrap.innerHTML = `
+      <button id="bj-close" style="position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:10px;z-index:10001;width:42px;height:42px;border-radius:50%;background:linear-gradient(#ff5a7e,#b3123a);color:#fff;border:3px solid #0b0618;box-shadow:0 4px 0 #0b0618;font:900 22px system-ui;line-height:1;cursor:pointer;display:grid;place-items:center;">×</button>
+      <iframe id="bj-frame" src="blackjack.html" style="width:100%;height:100%;border:0;display:block;background:#0b0618;" allow="autoplay"></iframe>
+    `;
+    document.body.appendChild(bjWrap);
+
+    const close = () => {
+      bjWrap.style.display = 'none';
+      syncMe();
+    };
+
+    document.getElementById('bj-close').onclick = close;
+
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'bj-close') close();
+    });
+
+    const frame = document.getElementById('bj-frame');
+    frame.addEventListener('load', () => sendBjInit());
+    setTimeout(() => sendBjInit(), 500);
+    setTimeout(() => sendBjInit(), 1500);
+  } else {
+    bjWrap.style.display = 'block';
+    sendBjInit();
+  }
+}
+
+function sendBjInit() {
+  const frame = document.getElementById('bj-frame');
+  if (!frame || !frame.contentWindow) return;
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const msg = {
+    type: 'bj-init',
+    initData: (tg && tg.initData) || '',
+    apiUrl: API_URL
+  };
+  try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {}
+  setTimeout(() => { try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {} }, 200);
+  setTimeout(() => { try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {} }, 1000);
+}
+// ==============================================
 
 // ---------- РОЗЫГРЫШИ ----------
 async function loadGiveaways() {

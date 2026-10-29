@@ -74,12 +74,12 @@ const LT5={l1:'10',l2:'J',l3:'Q',l4:'K',l5:'A'},ORD=['h3','h2','h1','m2','m1','l
 const META={
  cat:{name:'Cat House',sub:'Липкие вайлды x2 и x3',wl:'WILD',sl:'BONUS',lt:{'9':'9','10':'10',J:'J',Q:'Q',K:'K',A:'A'},ico:k=>k=='wild'?'yarn':k=='scat'?'paw':k,order:['c4','c3','c2','c1','fish','collar','A','K','Q','J','10','9'],hero:'c2',
   fsText:'фриспинов. Вайлды-клубки липкие и получают множитель x2 или x3.',rules:'Вайлд-клубок выпадает на барабанах 2–4. Три бонус-символа на барабанах 1, 3 и 5 дают 7 фриспинов.',base:0.965},
- gold:{name:'Gold Rush',sub:'Взрывные расширяющиеся вайлды',wl:'TNT',sl:'GOLD',fsText:'фриспинов. Динамит расширяется на весь барабан и даёт множитель x2.',rules:'Три золотых самородка на барабанах 1, 3 и 5 дают 8 фриспинов.'},
- pha:{name:'Pharaoh Gold',sub:'Расширяющийся символ из книги',wl:'MASK',sl:'BOOK',fsText:'фриспинов. Перед началом выбирается особый символ.',rules:'Три книги где угодно дают 10 фриспинов.'},
- neon:{name:'Neon Fruits',sub:'Серия побед растит множитель',wl:'WILD',sl:'BONUS',fsText:'фриспинов. Множитель растёт с каждым выигрышем.',rules:'Выигрыши подряд повышают множитель.',fsStep:2},
- dra:{name:'Dragon Pearl',sub:'Дыхание дракона создаёт вайлды',wl:'PEARL',sl:'INGOT',fsText:'фриспинов. Дракон выдыхает пламя.',rules:'Три слитка на барабанах 1, 3 и 5 дают 8 фриспинов.'},
- cos:{name:'Cosmic Drift',sub:'Каскады с растущим множителем',wl:'NOVA',sl:'COMET',fsText:'фриспинов. Множитель каскадов не сбрасывается.',rules:'Три кометы на барабанах 1, 3 и 5 дают 8 фриспинов.'},
- pot:{name:'Magic Potion',sub:'Загадочные карты превращаются',wl:'ORB',sl:'MOON',fsText:'фриспинов. Загадочных карт больше.',rules:'Три луны на барабанах 1, 3 и 5 дают 8 фриспинов.'}
+ gold:{name:'Gold Rush',sub:'Взрывные вайлды',wl:'TNT',sl:'GOLD',fsText:'фриспинов. Динамит расширяется на весь барабан и даёт x2.',rules:'Три самородка на барабанах 1, 3 и 5 дают 8 фриспинов.'},
+ pha:{name:'Pharaoh Gold',sub:'Расширяющийся символ',wl:'MASK',sl:'BOOK',fsText:'фриспинов. Перед началом выбирается особый символ.',rules:'Три книги где угодно дают 10 фриспинов.'},
+ neon:{name:'Neon Fruits',sub:'Серия побед',wl:'WILD',sl:'BONUS',fsText:'фриспинов. Множитель растёт с каждым выигрышем.',rules:'Выигрыши подряд повышают множитель.',fsStep:2},
+ dra:{name:'Dragon Pearl',sub:'Создание вайлдов',wl:'PEARL',sl:'INGOT',fsText:'фриспинов. Дракон выдыхает пламя.',rules:'Три слитка на барабанах 1, 3 и 5 дают 8 фриспинов.'},
+ cos:{name:'Cosmic Drift',sub:'Каскады',wl:'NOVA',sl:'COMET',fsText:'фриспинов. Множитель не сбрасывается.',rules:'Три кометы на барабанах 1, 3 и 5 дают 8 фриспинов.'},
+ pot:{name:'Magic Potion',sub:'Загадочные карты',wl:'ORB',sl:'MOON',fsText:'фриспинов. Карт больше.',rules:'Три луны на барабанах 1, 3 и 5 дают 8 фриспинов.'}
 };
 for(const id in SLOTS){const G=SLOTS[id],M=META[id];Object.assign(G,M);G.id=id;
  if(CAL[id]){G.pay=CAL[id].pay;G.base=CAL[id].base}
@@ -217,24 +217,24 @@ function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=nu
  for(let c=0;c<5;c++)for(let r=0;r<3;r++)setCell(c,r,mkS(drawSym(G,c,false)));
  $('#sov').classList.remove('on');hl([]);$('#swn').textContent='0';$('#smsg').textContent='Удачи!';hud()}
 
-// ================== ИСПРАВЛЕННОЕ ЛОББИ ==================
+// ================== ЛОББИ В 2 КОЛОНКИ ==================
 function buildLobby(){
  const L=$('#slobby'); if(!L) return;
  L.innerHTML='<h3 class="sh">Выберите слот</h3>';
  
- // Форсируем сетку инлайн-стилями, чтобы не зависеть от кэша index.html
+ // Форсируем сетку 2 колонки
  const grid = document.createElement('div');
  grid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;';
  
  const makeCard = (title, sub, iconHTML, bg, border, rtpColor, onclick) => {
    const d = document.createElement('div');
-   d.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:space-between; border-radius:20px; padding:12px 8px; text-align:center; cursor:pointer; background:${bg}; border:2px solid ${border}; box-shadow:0 12px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2); overflow:hidden; transition:transform .12s; position:relative;`;
+   d.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:space-between; border-radius:20px; padding:12px 6px; text-align:center; cursor:pointer; background:${bg}; border:2px solid ${border}; box-shadow:0 8px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2); overflow:hidden; transition:transform .12s; position:relative;`;
    d.onclick = onclick;
    d.innerHTML = `
-     <div style="height:80px; display:grid; place-items:center; margin-bottom:8px;">${iconHTML}</div>
-     <b style="display:block; color:#fff; font:700 14px var(--hd); text-shadow:0 2px 4px rgba(0,0,0,.8); line-height:1.2;">${title}</b>
-     <small style="display:block; color:#fff; opacity:.85; font-size:11px; margin:4px 0 10px; min-height:30px; text-shadow:0 1px 3px rgba(0,0,0,.8); line-height:1.2;">${sub}</small>
-     <em style="background:rgba(0,0,0,.5); color:${rtpColor}; padding:4px 10px; border-radius:10px; font-weight:800; font-size:11px; font-style:normal; border:1px solid ${rtpColor}40;">RTP 85%</em>
+     <div style="height:80px; display:grid; place-items:center; margin-bottom:8px; width:100%;">${iconHTML}</div>
+     <b style="display:block; color:#fff; font:700 12px var(--hd); text-shadow:0 2px 4px rgba(0,0,0,.8); line-height:1.2; min-height:30px;">${title}</b>
+     <small style="display:block; color:#fff; opacity:.85; font-size:10px; margin:2px 0 8px; text-shadow:0 1px 3px rgba(0,0,0,.8); line-height:1.2; min-height:30px;">${sub}</small>
+     <em style="background:rgba(0,0,0,.5); color:${rtpColor}; padding:3px 8px; border-radius:8px; font-weight:800; font-size:10px; font-style:normal; border:1px solid ${rtpColor}40;">RTP 85%</em>
    `;
    return d;
  };
@@ -252,7 +252,7 @@ function buildLobby(){
    if (id === 'cos') { bg = 'radial-gradient(70% 40% at 20% 20%,rgba(160,80,255,.45),transparent),radial-gradient(60% 40% at 90% 70%,rgba(34,211,238,.35),transparent),linear-gradient(180deg,#070720,#0c0c3a 60%,#05051a)'; border = '#a855f7'; }
    if (id === 'pot') { bg = 'linear-gradient(180deg,#1a0a2e 0,#3a1466 36%,#12062c 100%)'; border = '#c084fc'; }
 
-   const icon = `<svg class="ic" style="width:70px; height:70px; filter:drop-shadow(0 8px 10px rgba(0,0,0,.5));"><use href="#i-${G.ico(G.hero)}"/></svg>`;
+   const icon = `<svg class="ic" style="width:60px; height:60px; filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));"><use href="#i-${G.ico(G.hero)}"/></svg>`;
    const card = makeCard(G.name, G.sub, icon, bg, border, '#ffe9a0', () => openSlot(id));
    grid.appendChild(card);
  });
@@ -261,28 +261,26 @@ function buildLobby(){
  const gdCard = makeCard(
    "Gravedigger's Tip", 
    "1024 ways · сбор гробов", 
-   `<div style="font-size:56px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.6));">⚰️</div>`,
+   `<div style="font-size:46px; line-height:1; filter:drop-shadow(0 6px 8px rgba(0,0,0,.6));">⚰️</div>`,
    'radial-gradient(140% 60% at 50% 0%,#4b1f9e,#1a0d36 70%)',
    '#7b3fe4', '#9dff4a', openGravedigger
  );
- gdCard.style.gridColumn = '1 / -1';
  grid.appendChild(gdCard);
 
  // 3. Новые слоты (iframe)
  const newSlots = [
-   {id:'abyss',title:"Abyssal Tide",sub:'Глубины · сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)',border:'#22e5c8',file:'ABYSSALTIDE.html'},
-   {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Гробница · сбор урн',icon:'🏺',bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)',border:'#f59e0b',file:'PHARAOHSTOMB.html'},
-   {id:'neonheist',title:"Neon Heist",sub:'Взлом · сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)',border:'#ff2d95',file:'NEONHEIST.html'},
-   {id:'crazymix',title:"Crazy Mix",sub:'Смешивай и выигрывай',icon:'🎲',bg:'radial-gradient(140% 60% at 50% 0%,#41207a,#150a2b 70%)',border:'#ff3d81',file:'crazy-mix.html'}
+   {id:'abyss',title:"Abyssal Tide",sub:'Сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)',border:'#22e5c8',file:'ABYSSALTIDE.html'},
+   {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Сбор урн',icon:'🏺',bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)',border:'#f59e0b',file:'PHARAOHSTOMB.html'},
+   {id:'neonheist',title:"Neon Heist",sub:'Сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)',border:'#ff2d95',file:'NEONHEIST.html'},
+   {id:'crazymix',title:"Crazy Mix",sub:'Смешивай',icon:'🎲',bg:'radial-gradient(140% 60% at 50% 0%,#41207a,#150a2b 70%)',border:'#ff3d81',file:'crazy-mix.html'}
  ];
 
  newSlots.forEach(s => {
    const card = makeCard(
      s.title, s.sub,
-     `<div style="font-size:56px; line-height:1; filter:drop-shadow(0 8px 10px rgba(0,0,0,.6));">${s.icon}</div>`,
+     `<div style="font-size:46px; line-height:1; filter:drop-shadow(0 6px 8px rgba(0,0,0,.6));">${s.icon}</div>`,
      s.bg, s.border, '#ffe9a0', () => openSlotFrame(s.id, s.file)
    );
-   card.style.gridColumn = '1 / -1';
    grid.appendChild(card);
  });
 
