@@ -238,7 +238,8 @@ function buildLobby(){
  const newSlots=[
    {id:'abyss',title:"Abyssal Tide",sub:'Глубины · сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)',border:'#22e5c8',file:'ABYSSALTIDE.html'},
    {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Гробница · сбор урн',icon:'🏺',bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)',border:'#f59e0b',file:'PHARAOHSTOMB.html'},
-   {id:'neonheist',title:"Neon Heist",sub:'Взлом · сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)',border:'#ff2d95',file:'NEONHEIST.html'}
+   {id:'neonheist',title:"Neon Heist",sub:'Взлом · сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)',border:'#ff2d95',file:'NEONHEIST.html'},
+   {id:'crazymix',title:"Crazy Mix",sub:'Смешивай и выигрывай',icon:'🎲',bg:'radial-gradient(140% 60% at 50% 0%,#41207a,#150a2b 70%)',border:'#ff3d81',file:'crazy-mix.html'}
  ];
  newSlots.forEach(s=>{
    const d=document.createElement('div');

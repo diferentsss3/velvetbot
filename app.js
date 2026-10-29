@@ -10,7 +10,10 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
-const API_URL = 'https://cap-myself-stephen-jaguar.trycloudflare.com';
+// ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
+const API_URL = 'https://applications-indicator-agreement-assignment.trycloudflare.com';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
 const CFG0 = {
   rate: 87, wdMin: 5, flip: 97, ladder: 97, slot: 96, mines: 97, wheel: 93.33, crash: 97, maxBet: 10000,
   refDef: 50, refCap: 500,
@@ -19,7 +22,11 @@ const CFG0 = {
   botLink: 'https://t.me/velvetcasBot/app',
   yoo_rate: 1, yoo_min: 100, yoo_max: 50000, sbp_min: 500, yookassa_enabled: false
 };
-let S = { bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0 };
+
+let S = { 
+  user: {}, bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, 
+  refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0, wager_req: 0 
+};
 let selU = null;
 let dMethod = 'usd';
 let wMethod = 'crypto';
@@ -50,15 +57,21 @@ setInterval(loadFeed, 10000);
 async function syncMe() {
   const r = await api('/me');
   if (!r.ok) return;
+  S.user = r.user || {};
   S.bal = Number(r.user.balance) || 0;
   S.bets = r.user.bets; S.wins = r.user.wins || 0; S.best = r.user.best_win || 0;
   S.role = r.user.role; S.ban = r.user.banned;
   S.refCount = r.user.ref_count || 0; S.refDep = r.user.ref_dep || 0; S.refEarned = r.user.ref_earned || 0;
+  S.wager_req = r.user.wager_req || 0;
   S.isAdmin = !!r.admin;
   if (r.cfg) S.cfg = { ...CFG0, ...r.cfg };
+  
   render(); dUI(); wUI(); loadFeed();
+  
   if (S.isAdmin) { const adm = $('#adm'); if (adm) { adm.style.display = 'block'; adm.innerHTML = 'Админ-панель'; adm.onclick = () => openAdmin(); } }
+  
   updatePanels();
+  updateRankUI();
 }
 
 let tt;
@@ -77,12 +90,98 @@ function render() {
   if ($('#s2')) $('#s2').textContent = S.wins;
   if ($('#s3')) $('#s3').textContent = fmt(S.best);
   if ($('#hist')) $('#hist').innerHTML = S.hist.length ? S.hist.map(r=>`<div class="hr"><span>${r[0]}</span><b style="color:var(${r[1]>0?'--ok':'--bad'})">${r[1]>0?'+':''}${fmt(r[1])}</b></div>`).join('') : '<small style="color:var(--m)">Пока пусто</small>';
+  
   const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { first_name: 'Гость', id: 0, photo_url: null, username: '' };
   if ($('#un')) $('#un').textContent = [U.first_name, U.last_name].filter(Boolean).join(' ') || 'Игрок';
   if ($('#uid')) $('#uid').textContent = (U.username ? '@' + U.username + ' · ' : '') + 'ID ' + U.id;
   if ($('#av')) { if (U.photo_url) $('#av').innerHTML = `<img src="${U.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; else $('#av').textContent = (U.first_name || '?')[0].toUpperCase(); }
   if ($('#ref-code')) $('#ref-code').textContent = U.id ? ('ref_' + U.id) : '—';
 }
+
+// ================= ЗВАНИЯ И КЭШБЭК =================
+function getRankInfo(depRub) {
+  if (depRub >= 10000) return { name: 'Легенда', rate: 12, color: '#ffd23f', next: 100000, prev: 10000, perks: true };
+  if (depRub >= 5000) return { name: 'Аметист', rate: 10, color: '#c084fc', next: 10000, prev: 5000, perks: true };
+  if (depRub >= 1000) return { name: 'Прошка', rate: 7, color: '#4ade80', next: 5000, prev: 1000, perks: false };
+  if (depRub >= 100) return { name: 'Новичок', rate: 5, color: '#60a5fa', next: 1000, prev: 100, perks: false };
+  return { name: 'Без звания', rate: 0, color: '#9b93cf', next: 100, prev: 0, perks: false };
+}
+
+function updateRankUI() {
+  const dep = S.user.dep_rub || 0;
+  const r = getRankInfo(dep);
+
+  // Профиль
+  if ($('#rank-name')) {
+    $('#rank-name').textContent = r.name;
+    $('#rank-name').style.background = r.color;
+    $('#rank-name').style.color = '#000';
+    $('#rank-cashback').textContent = r.rate + '%';
+    
+    let pct = 0;
+    if (r.next > 0) {
+      if (dep >= r.next) pct = 100;
+      else pct = Math.min(100, Math.max(0, (dep - r.prev) / (r.next - r.prev) * 100));
+    }
+    $('#rank-progress').style.width = pct + '%';
+    $('#rank-progress').style.background = `linear-gradient(90deg, ${r.color}, #fff)`;
+    
+    $('#rank-current').textContent = fmt(dep) + ' ₽';
+    if (dep >= 10000) {
+      $('#rank-next').textContent = 'Максимальное звание';
+    } else {
+      $('#rank-next').textContent = 'До след.: ' + fmt(r.next - dep) + ' ₽';
+    }
+    
+    if (r.perks) $('#rank-perks').style.display = 'block';
+    else $('#rank-perks').style.display = 'none';
+  }
+
+  // Бонусы
+  if ($('#cb-rank-badge')) {
+    $('#cb-rank-badge').textContent = 'Ваш кэшбэк: ' + r.rate + '%';
+    $('#cb-rank-badge').style.background = r.color;
+    $('#cb-rank-badge').style.color = '#000';
+  }
+
+  // Проверка таймера кэшбэка
+  if ($('#cb-timer') && $('#cb-claim-btn')) {
+    const last = S.user.last_cashback || 0;
+    const next = last + 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    
+    if (now >= next - 1000 * 60 * 60) {
+      $('#cb-timer').textContent = 'Кэшбэк доступен!';
+      $('#cb-timer').style.color = 'var(--ok)';
+      $('#cb-claim-btn').disabled = false;
+      $('#cb-claim-btn').textContent = 'Забрать кэшбэк';
+    } else {
+      const left = next - now;
+      const d = Math.floor(left / (24*3600000));
+      const h = Math.floor((left % (24*3600000)) / 3600000);
+      $('#cb-timer').textContent = `Доступен через: ${d}д ${h}ч`;
+      $('#cb-timer').style.color = 'var(--m)';
+      $('#cb-claim-btn').disabled = true;
+      $('#cb-claim-btn').textContent = 'Уже получен';
+    }
+  }
+}
+
+if ($('#cb-claim-btn')) {
+  $('#cb-claim-btn').onclick = async () => {
+    const r = await api('/cashback/claim');
+    if (r.ok) {
+      toast(`+${fmt(r.amount)} монет! Отыграть: ${fmt(r.wager)}`, 'w');
+      syncMe();
+    } else {
+      if (r.error === 'time') toast('Кэшбэк еще не начислен', 'e');
+      else if (r.error === 'no_dep') toast('У вас не было депозитов за неделю', 'e');
+      else if (r.error === 'no_rank') toast('Нужно сделать первый депозит', 'e');
+      else toast('Ошибка', 'e');
+    }
+  };
+}
+// ===================================================
 
 // ---------- ДЕПОЗИТ ----------
 const dAmt = () => { const v = Math.round(parseFloat(String($('#dam').value).replace(',', '.')) * 100) / 100; return v > 0 ? v : 0; };
@@ -167,6 +266,15 @@ function wUI() {
   const rate = +S.cfg.rate || 87;
   const yooRate = +S.cfg.yoo_rate || 1;
   const sbpMin = +S.cfg.sbp_min || 500;
+
+  if (S.wager_req && S.wager_req > 0) {
+    if ($('#wager-info')) {
+      $('#wager-info').style.display = 'block';
+      $('#wager-left').textContent = fmt(S.wager_req);
+    }
+  } else {
+    if ($('#wager-info')) $('#wager-info').style.display = 'none';
+  }
 
   if (wMethod === 'crypto') {
     if ($('#wbadge')) $('#wbadge').textContent = 'CryptoBot';
@@ -257,7 +365,8 @@ if ($('#wdb')) {
         'max': 'Сумма больше максимальной',
         'pending': 'У вас уже есть заявка в обработке',
         'balance': 'Недостаточно средств',
-        'no_phone': 'Укажите телефон'
+        'no_phone': 'Укажите телефон',
+        'wager_required': 'Нужно отыграть вейджер!'
       };
       toast(errs[r.error] || 'Ошибка вывода', 'e');
     }
@@ -286,7 +395,7 @@ async function playGame(game, bet, params) {
   if (!alreadyDeducted && (!params || (params.action !== 'climb' && params.action !== 'cashout'))) {
       S.bets++; if (win > bet) S.wins++;
       S.best = Math.max(S.best || 0, Math.round((win - bet) * 100) / 100);
-      const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты' }[game] || game;
+      const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты', blackjack: 'Блэкджек' }[game] || game;
       S.hist.unshift([gn, Math.round((win - bet) * 100) / 100]); S.hist = S.hist.slice(0, 15);
   }
   render(); loadFeed();
@@ -299,7 +408,12 @@ $$('.bet[data-id]').forEach(d => {
   d.querySelectorAll('button').forEach(b => b.onclick = () => { const e = $('#' + i), v = +e.value || 0, k = b.dataset.k; e.value = k == 'h' ? Math.max(1, Math.floor(v / 2)) : k == 'd' ? Math.min(Math.floor(S.bal), v * 2) : Math.floor(S.bal); });
 });
 
-function tab(t) { $$('.tab').forEach(e => e.classList.toggle('on', e.id == 't-' + t)); $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.t == ('mwcfl'.includes(t) ? 'h' : t))); if(t == 'p') { dUI(); wUI(); } }
+function tab(t) { 
+  $$('.tab').forEach(e => e.classList.toggle('on', e.id == 't-' + t)); 
+  $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.t == ('mwcfl'.includes(t) ? 'h' : t))); 
+  if(t == 'p') { dUI(); wUI(); }
+  if(t == 'b') { loadGiveaways(); updateRankUI(); }
+}
 $$('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
 $$('.mc').forEach(c => c.onclick = () => {
   if (c.dataset.t === 'bj') { openBlackjack(); return; }
@@ -331,16 +445,12 @@ if ($('#pcb')) $('#pcb').onclick = async () => {
   }
 };
 
-
-// === ВВОД КОДА АВТОРА (РЕФЕРАЛА) ===
+// ---------- ВВОД РЕФ-КОДА АВТОРА ----------
 if ($('#ref-btn')) {
   $('#ref-btn').onclick = async () => {
     let code = $('#ref-input').value.trim();
     if (!code) return;
-    
-    // Если игрок ввел только цифры ID, скрипт сам добавит ref_
     if (!code.startsWith('ref_')) code = 'ref_' + code;
-    
     const r = await api('/ref/activate', { code });
     if (r.ok) {
       toast('Код успешно применён!', 'w');
@@ -355,12 +465,11 @@ if ($('#ref-btn')) {
   };
 }
 
-// === ЛИЧНЫЙ КОД АВТОРА (отображение, копирование, шаринг) ===
+// ---------- ЛИЧНЫЙ КОД АВТОРА ----------
 function getMyRefCode() {
   const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { id: 0 };
   return U.id ? ('ref_' + U.id) : '';
 }
-
 async function copyToClipboard(text) {
   try { await navigator.clipboard.writeText(text); return true; } 
   catch (e) {
@@ -373,49 +482,31 @@ async function copyToClipboard(text) {
     } catch (err) { return false; }
   }
 }
-
 if ($('#ref-code')) {
-  const U = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || { id: 0 };
-  $('#ref-code').textContent = U.id ? ('ref_' + U.id) : '—';
   $('#ref-code').onclick = async () => {
     const code = getMyRefCode(); if (!code) return;
     const ok = await copyToClipboard(code);
     toast(ok ? 'Код скопирован' : 'Ошибка', ok ? 'w' : 'e');
   };
 }
-
 if ($('#rcp')) {
   $('#rcp').onclick = async () => {
     const code = getMyRefCode(); if (!code) return;
     const ok = await copyToClipboard(code);
-    toast(ok ? 'Код скопирован' : 'Не удалось скопировать', ok ? 'w' : 'e');
+    toast(ok ? 'Код скопирован' : 'Ошибка', ok ? 'w' : 'e');
     h('light');
   };
 }
-
 if ($('#rsh')) {
   $('#rsh').onclick = () => {
     const code = getMyRefCode(); if (!code) return;
     const text = `Присоединяйся к Velvet! 🎰\n\nМой реферальный код: ${code}\n\nОткрой бота и отправь /start ${code}`;
-    if (tg && tg.openTelegramLink) {
-      tg.openTelegramLink('https://t.me/share/url?url=&text=' + encodeURIComponent(text));
-    } else if (navigator.share) {
-      navigator.share({ title: 'Velvet', text }).catch(() => {});
-    } else {
-      copyToClipboard(text).then(ok => toast(ok ? 'Текст скопирован' : 'Ошибка', ok ? 'w' : 'e'));
-    }
+    if (tg && tg.openTelegramLink) tg.openTelegramLink('https://t.me/share/url?url=&text=' + encodeURIComponent(text));
+    else if (navigator.share) navigator.share({ title: 'Velvet', text }).catch(() => {});
+    else copyToClipboard(text).then(ok => toast(ok ? 'Текст скопирован' : 'Ошибка', ok ? 'w' : 'e'));
   };
 }
 
-// Клик по самому коду тоже копирует (удобно)
-if ($('#ref-code')) {
-  $('#ref-code').onclick = async () => {
-    const code = getMyRefCode();
-    if (!code) return;
-    const ok = await copyToClipboard(code);
-    toast(ok ? 'Код скопирован' : 'Не удалось', ok ? 'w' : 'e');
-  };
-}
 // ---------- ПАНЕЛЬ БЛОГЕРА ----------
 async function updatePanels() {
   const show = S.isAdmin || S.role === 'blogger' || S.role === 'manager';
@@ -658,6 +749,18 @@ async function openAdmin() {
   }
 }
 
+// Поиск игрока по нику или ID
+if ($('#admin-search')) {
+  $('#admin-search').oninput = (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    const items = $('#ul').querySelectorAll('.ur');
+    items.forEach(el => {
+      const text = el.textContent.toLowerCase();
+      el.style.display = text.includes(q) ? 'block' : 'none';
+    });
+  };
+}
+
 async function resolveWd(id, action) {
   const note = $('#wanote')?.value || '';
   if (action === 'rejected' && !note) { toast('Напишите причину в поле ниже', 'e'); return; }
@@ -742,7 +845,13 @@ async function loadAdminSupport() {
   if (!r.ok) return;
   $('#admin-support-list').innerHTML = r.items.length ? r.items.map(x => `
     <div class="wr">
-      <div class="wh"><b>${x.name} (ID: ${x.uid})</b><em class="${x.status === 'open' ? 'role' : 'role ok'}">${x.status === 'open' ? 'Открыт' : 'Закрыт'}</em></div>
+      <div class="wh">
+        <b>${x.name} (ID: ${x.uid})</b>
+        <div style="display:flex; gap:5px; align-items:center;">
+          <em class="${x.status === 'open' ? 'role' : 'role ok'}">${x.status === 'open' ? 'Открыт' : 'Закрыт'}</em>
+          ${x.status === 'closed' ? `<button class="opt" style="min-height:24px;padding:0 8px;font-size:11px;color:var(--bad);border-color:rgba(255,84,112,.3);" onclick="window.deleteSupportTicket(${x.id})">Удалить</button>` : ''}
+        </div>
+      </div>
       <small>${new Date(x.created_at).toLocaleString('ru-RU')}</small>
       <div style="margin:10px 0; padding:10px; background:rgba(0,0,0,.3); border-radius:10px; font-size:13px;">${x.message}</div>
       ${x.reply ? `<div style="margin:10px 0; padding:10px; background:rgba(74,222,128,.1); border-left:3px solid var(--ok); border-radius:10px; font-size:13px;"><b>Ваш ответ:</b> ${x.reply}</div>` : `
@@ -753,11 +862,20 @@ async function loadAdminSupport() {
     </div>
   `).join('') : '<small style="color:var(--m)">Тикетов нет</small>';
 }
+
 window.replySupport = async (id) => {
   const reply = $(`#reply-${id}`)?.value; if (!reply) return;
   const r = await api('/admin/support/reply', { id, reply });
   if (r.ok) { toast('Ответ отправлен', 'w'); loadAdminSupport(); }
 };
+
+window.deleteSupportTicket = async (id) => {
+  if (!confirm('Удалить этот тикет навсегда?')) return;
+  const r = await api('/admin/support/delete', { id });
+  if (r.ok) { toast('Тикет удален', 'w'); loadAdminSupport(); }
+  else toast('Ошибка удаления', 'e');
+};
+
 if ($('#sup-reload')) $('#sup-reload').onclick = loadAdminSupport;
 
 // ---------- ОНЛАЙН ----------
@@ -775,48 +893,6 @@ async function updateOnline() {
 }
 updateOnline();
 setInterval(updateOnline, 15000);
-
-// ================= BLACKJACK =================
-let bjWrap = null;
-
-function openBlackjack() {
-  if (!bjWrap) {
-    bjWrap = document.createElement('div');
-    bjWrap.id = 'bj-wrap';
-    bjWrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0b0618;overflow:hidden;';
-    bjWrap.innerHTML = `<iframe id="bj-frame" src="blackjack.html" style="width:100%;height:100%;border:0;display:block;background:#0b0618;" allow="autoplay"></iframe>`;
-    document.body.appendChild(bjWrap);
-
-    const close = () => {
-      bjWrap.style.display = 'none';
-      syncMe();
-    };
-
-    window.addEventListener('message', (e) => {
-      if (e.data && e.data.type === 'bj-close') close();
-    });
-
-    const frame = document.getElementById('bj-frame');
-    frame.addEventListener('load', () => sendBjInit());
-  } else {
-    bjWrap.style.display = 'block';
-    sendBjInit();
-  }
-}
-
-function sendBjInit() {
-  const frame = document.getElementById('bj-frame');
-  if (!frame || !frame.contentWindow) return;
-  const tg = window.Telegram && window.Telegram.WebApp;
-  try {
-    frame.contentWindow.postMessage({
-      type: 'bj-init',
-      initData: (tg && tg.initData) || '',
-      apiUrl: API_URL
-    }, '*');
-  } catch (e) { console.error('bj init:', e); }
-}
-// ==============================================
 
 // ---------- Обёртки ----------
 const originalTab = tab;

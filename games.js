@@ -32,16 +32,18 @@ function mUI() {
 
 async function mClick(i) {
   if (!M || M.done || M.open.has(i)) return;
-  const res = await playGame('mines', M.b, { mines: M.m, picks: [...M.open, i] });
-  if (!res) return;
   
-  if (res.meta.hit != null) {
+  // Проверяем клетку без списания ставки
+  const r = await api('/bet', { game: 'mines', bet: 0, params: { mines: M.m, picks: [...M.open, i], action: 'check' } });
+  if (!r.ok) return;
+  
+  if (r.result.meta.hit != null) {
     cells[i].className = 'bomb'; 
     cells[i].innerHTML = ic('bomb');
     cells.forEach((c, k) => { if (k != i && !c.className) { c.className = 'dim'; c.innerHTML = ic('gem') } });
     toast('Мина! −' + fmt(M.b), 'e'); 
     M.done = true; 
-    if (res.newBalance !== undefined) S.bal = res.newBalance;
+    if (r.balance !== undefined) S.bal = r.balance;
     render();
     mEnd(); 
     return;
@@ -60,6 +62,47 @@ async function mClick(i) {
   mUI();
 }
 
+async function mCash() {
+  if (!M || M.done || !M.open.size) return;
+  
+  // Забираем выигрыш
+  const r = await api('/bet', { game: 'mines', bet: 0, params: { mines: M.m, picks: [...M.open], action: 'cashout', originalBet: M.b } });
+  if (!r.ok) return;
+  
+  M.done = true; 
+  if (r.balance !== undefined) S.bal = r.balance;
+  render();
+  toast('+' + fmt(r.result.win) + ' (Прибыль: +' + fmt(r.result.win - M.b) + ')', 'w'); 
+  mEnd();
+}
+
+function mEnd() {
+  $('#mc').disabled = false; 
+  $('#mb').disabled = false; 
+  $('#mbtn').textContent = 'Играть'; 
+  $('#mbtn').disabled = false; 
+  $('#mbtn').classList.remove('cash'); 
+}
+
+if ($('#mbtn')) {
+  $('#mbtn').onclick = async () => {
+    if (M && !M.done && M.open.size) { mCash(); return; }
+    const b = getBet('#mb'); 
+    if (!b) return;
+    
+    // Списываем ставку при старте
+    const r = await api('/bet', { game: 'mines', bet: b, params: { action: 'start' } });
+    if (!r.ok) return;
+    if (r.balance !== undefined) S.bal = r.balance;
+    render();
+    
+    M = { b, m: +$('#mc').value, open: new Set(), done: false };
+    cells.forEach(c => { c.className = ''; c.textContent = '?' });
+    $('#mc').disabled = true; 
+    $('#mb').disabled = true; 
+    mUI();
+  };
+}
 async function mCash() {
   if (!M || M.done || !M.open.size) return;
   const res = await playGame('mines', M.b, { mines: M.m, picks: [...M.open] });

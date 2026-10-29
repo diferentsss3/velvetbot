@@ -52,7 +52,7 @@ h1{font:700 26px/1 "Cormorant Garamond",serif;letter-spacing:.02em;color:var(--g
 .btn.small{flex:0 0 96px}
 [hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.loading{position:fixed;inset:0;display:grid;place-items:center;background:rgba(11,6,24,.92);z-index:100;font-size:14px;color:var(--gold)}
+.loading{position:fixed;inset:0;display:grid;place-items:center;background:rgba(11,6,24,.92);z-index:100;font-size:14px;color:var(--gold);text-align:center}
 .loading[hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
@@ -85,7 +85,6 @@ h1{font:700 26px/1 "Cormorant Garamond",serif;letter-spacing:.02em;color:var(--g
         <button class="btn small" id="clear">Сбросить</button>
         <button class="btn gold" id="deal">Раздать</button>
       </div>
-      <button class="btn" id="topup" hidden style="width:100%;margin-top:10px">Недостаточно средств — пополнить</button>
     </div>
     <div class="row" id="playUI" hidden>
       <button class="btn" id="stand">Стоп</button>
@@ -103,7 +102,9 @@ h1{font:700 26px/1 "Cormorant Garamond",serif;letter-spacing:.02em;color:var(--g
 <script>
 /* ================= ИНТЕГРАЦИЯ С КАЗИНО ================= */
 let INIT_DATA = '';
-let API_URL = 'https://accomplish-together-gateway-mic.trycloudflare.com';
+// ▼▼▼ ВСТАВЬТЕ СЮДА ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
+let API_URL = 'https://applications-indicator-agreement-assignment.trycloudflare.com';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 let ready = false;
 let syncRetries = 0;
 
@@ -119,57 +120,42 @@ async function apiCall(path, data = {}) {
 }
 
 async function initFromServer() {
-  if (!INIT_DATA) return;
+  if (!INIT_DATA) {
+    document.getElementById('loading').innerHTML = 'Ожидание Telegram...<br><small>Откройте через бота</small>';
+    return;
+  }
   const r = await apiCall('/me');
   if (r.ok && r.user) {
     bal = Number(r.user.balance) || 0;
     ready = true;
     renderBal();
-    $('#loading').hidden = true;
+    document.getElementById('loading').hidden = true;
     ui();
-  } else if (syncRetries < 2) {
+  } else {
     syncRetries++;
-    setTimeout(initFromServer, 800);
-  } else {
-    $('#loading').innerHTML = 'Не удалось получить баланс<br><small>Закройте и попробуйте снова</small>';
+    document.getElementById('loading').innerHTML = `Подключение к балансу...<br><small>Попытка ${syncRetries}</small>`;
+    setTimeout(initFromServer, 1500);
   }
-}
-
-async function syncServerBet(wager, totalWin) {
-  syncing = true;
-  ui();
-  const r = await apiCall('/bet', {
-    game: 'blackjack',
-    bet: wager,
-    params: { win: totalWin }
-  });
-  if (r.ok && typeof r.balance === 'number') {
-    bal = r.balance;
-    renderBal();
-  } else {
-    // Если сервер не ответил — перезапрашиваем баланс
-    const me = await apiCall('/me');
-    if (me.ok && me.user) { bal = Number(me.user.balance) || 0; renderBal(); }
-  }
-  syncing = false;
-  ui();
-  return r;
 }
 
 window.addEventListener('message', (e) => {
   if (!e.data || e.data.type !== 'bj-init') return;
   if (e.data.initData) INIT_DATA = e.data.initData;
   if (e.data.apiUrl) API_URL = e.data.apiUrl;
+  syncRetries = 0;
   initFromServer();
 });
 
-try { if (window.parent !== window) window.parent.postMessage({ type: 'bj-ready' }, '*'); } catch (e) {}
-
-const _tgInit = window.Telegram && window.Telegram.WebApp;
-if (_tgInit && _tgInit.initData) {
-  INIT_DATA = _tgInit.initData;
-  initFromServer();
-}
+// Резервный запрос, если Telegram.WebApp доступен внутри iframe
+setTimeout(() => {
+  if (!ready) {
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg && tg.initData && tg.initData !== '') {
+      INIT_DATA = tg.initData;
+      initFromServer();
+    }
+  }
+}, 1500);
 /* ===================================================== */
 
 const tg = window.Telegram && Telegram.WebApp;
@@ -184,7 +170,7 @@ const CHIPS = [[10,'#3b7be0'],[50,'#2fa36b'],[100,'#c8304b'],[500,'#7b3fd0']];
 
 let shoe = [], P = [], D = [];
 let bal = 0, bet = 0, wager = 0, lastBet = 0;
-let phase = 'bet', busy = false, dHidden = null, syncing = false;
+let phase = 'bet', busy = false, dHidden = null;
 
 function newShoe() {
   shoe = [];
@@ -245,27 +231,21 @@ function msg(t, cls, sub) {
 }
 
 function ui() {
-  if (!ready) {
-    $('betUI').hidden = true;
-    $('playUI').hidden = true;
-    $('doneUI').hidden = true;
-    return;
-  }
+  if (!ready) return;
   $('betUI').hidden = phase !== 'bet';
-  $('playUI').hidden = phase !== 'play' || busy || syncing;
-  $('doneUI').hidden = phase !== 'done' || busy || syncing;
+  $('playUI').hidden = phase !== 'play' || busy;
+  $('doneUI').hidden = phase !== 'done' || busy;
   $('bet').textContent = fmt(bet);
-  $('deal').disabled = bet <= 0 || busy || syncing || bet > bal;
+  $('deal').disabled = bet <= 0 || busy || bet > bal;
   $('clear').disabled = bet <= 0;
-  $('topup').hidden = !(phase === 'bet' && bal < 10 && bet === 0);
   $('chips').querySelectorAll('button').forEach(b => b.disabled = +b.dataset.v > bal - bet);
   $('dbl').disabled = !(P.length === 2 && bal >= wager);
-  $('again').disabled = lastBet > bal || lastBet <= 0 || syncing;
+  $('again').disabled = lastBet > bal || lastBet <= 0;
   $('again').textContent = 'Повторить · ' + fmt(lastBet);
 }
 
 async function deal() {
-  if (busy || syncing || bet <= 0 || bet > bal) return;
+  if (busy || bet <= 0 || bet > bal) return;
   busy = true;
   wager = lastBet = bet;
   bal -= wager;
@@ -283,7 +263,7 @@ async function deal() {
 }
 
 async function hit() {
-  if (busy || syncing) return;
+  if (busy) return;
   busy = true; ui();
   await give('P');
   busy = false;
@@ -294,13 +274,13 @@ async function hit() {
 }
 
 async function stand() {
-  if (busy || syncing || phase !== 'play') return;
+  if (busy || phase !== 'play') return;
   busy = true; ui();
   await finish();
 }
 
 async function dbl() {
-  if (busy || syncing || P.length !== 2 || bal < wager) return;
+  if (busy || P.length !== 2 || bal < wager) return;
   busy = true; ui();
   bal -= wager;
   renderBal();
@@ -338,7 +318,8 @@ async function finish() {
   msg(t, cls, net > 0 ? '+' + fmt(net) : net < 0 ? '−' + fmt(-net) : 'Ставка возвращена');
   buzz(net > 0 ? 'heavy' : 'light');
 
-  await syncServerBet(wager, pay);
+  const r = await apiCall('/bet', { game: 'blackjack', bet: wager, params: { win: pay } });
+  if (r.ok && typeof r.balance === 'number') { bal = r.balance; renderBal(); }
 
   bet = 0;
   busy = false;
@@ -366,9 +347,6 @@ $('change').onclick = () => {
   $('pS').hidden = $('dS').hidden = true;
   msg('');
   ui();
-};
-$('topup').onclick = () => {
-  if (window.parent !== window) window.parent.postMessage({ type: 'bj-close' }, '*');
 };
 $('back').onclick = () => {
   if (window.parent !== window) window.parent.postMessage({ type: 'bj-close' }, '*');
