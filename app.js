@@ -11,7 +11,7 @@ const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://referred-proof-pretty-maximize.trycloudflare.com';
+const API_URL = 'https://alto-donna-yeah-appreciated.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
