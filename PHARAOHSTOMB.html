@@ -225,7 +225,7 @@ const cellHTML=(s,v,extra)=>`<div class="cell ${extra||''}" data-s="${s}">${symS
 
 // СИНХРОНИЗАЦИЯ
 let INIT_DATA='';
-let API_URL='https://alto-donna-yeah-appreciated.trycloudflare.com';
+let API_URL='https://films-pts-rational-take.trycloudflare.com';
 let ready=false;
 async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return {ok:false}}}
 async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){balance=Number(r.user.balance)||0;ready=true;updUI();document.getElementById('loading').hidden=true}else{setTimeout(initFromServer,1000)}}
