@@ -2,9 +2,9 @@
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <title>Velvet</title>
-<meta name="theme-color" content="#07051f">
+<meta name="theme-color" content="#0a0612">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@600;700&family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 .online-badge { display: flex; align-items: center; gap: 6px; background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 12px; padding: 3px 8px; font-size: 12px; font-weight: 800; color: #4ade80; margin-left: 4px; }
@@ -240,11 +240,8 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 @keyframes cpop{0%{transform:scale(.6);filter:brightness(2.2)}60%{transform:scale(1.12)}100%{transform:none}}
 .cell.wn::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-100%);animation:swp 1s ease-in-out infinite}
 @keyframes swp{to{transform:translateX(100%)}}
-<!-- SECRET EVENT TIMER -->
-<div id="event-timer">
-  🔐 SECRET: <span id="ev-time">00:00:00</span>
-</div>
 
+/* SECRET EVENT */
 .safe-wrap { position: relative; padding: 20px 16px 10px; text-align: center; }
 .safe-box {
   width: 160px; height: 160px; margin: 0 auto 18px;
@@ -272,7 +269,6 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 }
 .safe-flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 9998; transition: opacity .3s; }
 .safe-flash.on { opacity: .85; }
-
 .safe-reward {
   display: none; margin: 0 0 14px; padding: 24px 16px;
   border-radius: 20px;
@@ -281,24 +277,18 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   text-align: center;
 }
 .safe-reward.on { display: block; animation: rewardIn .5s ease-out; }
-@keyframes rewardIn {
-  from { transform: scale(.5); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+@keyframes rewardIn { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .safe-reward-emoji { font-size: 64px; line-height: 1; margin-bottom: 8px; }
 .safe-reward-title { font: 700 14px var(--hd); color: #ffd24a; margin-bottom: 4px; letter-spacing: .05em; }
 .safe-reward-amount { font: 700 30px var(--hd); color: #fff; text-shadow: 0 0 20px rgba(255,210,74,.6); }
-
 .safe-table { display: grid; gap: 8px; margin-bottom: 12px; }
 .safe-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,.04); border: 1px solid var(--ln); border-radius: 12px; }
 .safe-row-emoji { font-size: 24px; line-height: 1; }
 .safe-row-info { flex: 1; text-align: left; }
 .safe-row-info b { display: block; font-size: 13px; color: #fff; }
 .safe-row-info small { color: var(--m); font-size: 11px; }
-
 .safe-feed { max-height: 260px; overflow-y: auto; }
 .safe-feed .hr { padding: 8px 0; font-size: 12.5px; }
-
 .safe-banner {
   display: none; margin: 0 0 14px; padding: 12px 14px;
   border-radius: 14px;
@@ -310,9 +300,115 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 .safe-banner.on { display: block; }
 .safe-banner b { display: block; color: #ffd24a; font: 700 14px var(--hd); margin-bottom: 2px; }
 .safe-banner small { color: #fff; font-size: 12px; }
-
 #nav-e { display: none; }
 #nav-e.on { display: flex; }
+#event-timer.on { display: flex !important; }
+
+/* ============================================================
+   VELVET CASINO — тема по концепту (золото + фиолетовый бархат)
+   ============================================================ */
+:root{
+  --bg:#0a0612; --ln:rgba(168,120,255,.22); --t:#f7f3ff; --m:#a79bc9; --g:#e8c46e;
+  --gold:linear-gradient(180deg,#fff0b8 0%,#f0c865 45%,#c8912f 100%);
+  --card:linear-gradient(180deg,rgba(40,20,80,.62),rgba(16,8,38,.78));
+}
+html{background:var(--bg)}
+body::before{
+  background:
+    radial-gradient(60% 34% at 85% -4%,rgba(139,61,255,.45),transparent 70%),
+    radial-gradient(50% 30% at -8% 40%,rgba(120,40,220,.30),transparent 70%),
+    radial-gradient(70% 40% at 100% 100%,rgba(90,40,200,.35),transparent 70%),
+    repeating-linear-gradient(115deg,rgba(255,255,255,.012) 0 2px,transparent 2px 22px),
+    linear-gradient(180deg,#0d0719,#080410);
+}
+header{background:rgba(10,6,18,.82);border-bottom:1px solid rgba(168,120,255,.18);padding-bottom:12px}
+h1{font:700 17px Cinzel,serif;letter-spacing:.16em;text-transform:uppercase;background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lg{
+  font-size:0;color:transparent;width:36px;height:30px;border-radius:0;box-shadow:none;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 48'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23fff0b8'/><stop offset='.5' stop-color='%23f0c865'/><stop offset='1' stop-color='%23b9852a'/></linearGradient></defs><path d='M4 14l14 12L32 6l14 20 14-12-6 28H10z' fill='url(%23g)' stroke='%237a5416' stroke-width='1.5' stroke-linejoin='round'/><rect x='10' y='38' width='44' height='6' rx='2' fill='url(%23g)' stroke='%237a5416' stroke-width='1.2'/><circle cx='4' cy='13' r='3.5' fill='%23fff0b8'/><circle cx='32' cy='5' r='3.5' fill='%23fff0b8'/><circle cx='60' cy='13' r='3.5' fill='%23fff0b8'/></svg>") center/contain no-repeat;
+  filter:drop-shadow(0 3px 8px rgba(240,200,101,.45));
+}
+.chip{background:linear-gradient(180deg,rgba(60,28,120,.7),rgba(24,12,56,.85));border:1px solid rgba(168,120,255,.45);box-shadow:0 4px 18px rgba(123,47,247,.28),inset 0 1px 0 rgba(255,255,255,.1);padding:4px 4px 4px 6px;border-radius:16px;gap:8px;font:700 15px Manrope,sans-serif}
+.chip::before{
+  width:26px;height:26px;border-radius:50%;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 4l6 5-6 11L6 9z' fill='%23d9b3ff' stroke='%23fff' stroke-width='1.2' stroke-linejoin='round'/><path d='M6 9h12M12 4v16' stroke='%23fff' stroke-opacity='.6' stroke-width='.8'/></svg>") center/62% no-repeat,radial-gradient(circle at 35% 30%,#a56bff,#4a14c2 70%);
+  box-shadow:0 0 12px rgba(139,61,255,.7),inset 0 0 0 2px rgba(255,255,255,.25);
+}
+.chip b{width:28px;height:28px;border-radius:9px;font:600 20px system-ui;background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(168,120,255,.4);color:#fff}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:20px;box-shadow:0 12px 30px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.07)}
+.sh{font:800 17px Manrope,sans-serif;margin:18px 4px 12px;color:#fff}
+.ttl{font:800 15px Manrope,sans-serif}
+.btn{background:var(--gold);color:#2b1a02;border:1px solid rgba(255,240,184,.6);font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:16px;box-shadow:0 10px 26px rgba(240,200,101,.28),inset 0 2px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(150,100,20,.35)}
+.btn.gold{background:var(--gold);color:#2b1a02}
+.btn.cash{background:linear-gradient(180deg,#8cf0b4,#22c55e);color:#04210f;border-color:rgba(255,255,255,.4)}
+input,select,textarea{background:rgba(8,4,20,.65);border:1px solid rgba(168,120,255,.28);border-radius:14px}
+input:focus,select:focus,textarea:focus{border-color:#f0c865;box-shadow:0 0 0 3px rgba(240,200,101,.2)}
+.bet button,.opt{background:linear-gradient(180deg,rgba(60,30,120,.55),rgba(24,12,56,.7));border:1px solid rgba(168,120,255,.3);color:#fff}
+.bet button:active,.opt:active{background:rgba(139,61,255,.45)}
+.opt.sel{border-color:#f0c865;background:rgba(139,61,255,.4);color:#fff}
+.seg button{background:rgba(8,4,20,.6);border:1px solid rgba(168,120,255,.25);color:var(--m)}
+.seg .sel{background:linear-gradient(180deg,#8b3dff,#5b1fd6);border-color:rgba(232,196,110,.8);color:#fff;box-shadow:0 4px 16px rgba(123,47,247,.5),inset 0 1px 0 rgba(255,255,255,.3)}
+
+.hero{border-radius:22px;min-height:150px;padding:18px 16px}
+.hero.p{background:radial-gradient(60% 90% at 88% 40%,rgba(192,77,255,.55),transparent 65%),linear-gradient(120deg,#1a0a3e 0%,#3a138f 55%,#6a22d9 100%);border:1px solid rgba(168,120,255,.5);box-shadow:0 16px 40px rgba(90,30,200,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+.hero.o{background:radial-gradient(60% 90% at 88% 40%,rgba(240,200,101,.45),transparent 65%),linear-gradient(120deg,#1d0f2e 0%,#4a1a6a 55%,#8a3a8a 100%);border:1px solid rgba(232,196,110,.45);box-shadow:0 16px 40px rgba(120,50,160,.35),inset 0 1px 0 rgba(255,255,255,.2)}
+.hero h2{font:800 clamp(18px,5.6vw,23px)/1.15 Manrope,sans-serif;text-transform:uppercase;background:linear-gradient(180deg,#fff,#e9dcff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{opacity:.8}
+.hero .art{filter:drop-shadow(0 14px 22px rgba(0,0,0,.55)) drop-shadow(0 0 22px rgba(192,77,255,.55))}
+.rw{background:rgba(0,0,0,.28);border:1px solid rgba(232,196,110,.35);border-radius:14px}
+.rw b{background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rw button,.hero.o .rw button{background:var(--gold);color:#2b1a02;border:1px solid rgba(255,240,184,.6);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:12px;box-shadow:0 4px 14px rgba(240,200,101,.4),inset 0 1px 0 rgba(255,255,255,.6)}
+
+.mc{background:var(--card);border:1px solid rgba(168,120,255,.3);border-radius:18px;padding:6px 6px 11px;box-shadow:0 10px 24px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08)}
+.mc:active{border-color:#f0c865}
+.mc .pn{border-radius:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.25)}
+.m1{background:radial-gradient(110% 80% at 50% 120%,#c07bff,transparent 62%),linear-gradient(145deg,#2a0d6e,#6a2bd9)}
+.m2{background:radial-gradient(110% 80% at 50% 120%,#ff8fcf,transparent 62%),linear-gradient(145deg,#4a0f6e,#a21fa0)}
+.m3{background:radial-gradient(110% 80% at 50% 120%,#7a9bff,transparent 62%),linear-gradient(145deg,#1a1a6e,#4a3ae0)}
+.m4{background:radial-gradient(110% 80% at 50% 120%,#ffd98a,transparent 62%),linear-gradient(145deg,#4a2a08,#c48a1a)}
+.m5{background:radial-gradient(110% 80% at 50% 120%,#7bf0c0,transparent 62%),linear-gradient(145deg,#0a3a44,#139a6a)}
+.m6{background:radial-gradient(110% 80% at 50% 120%,#ff9aa8,transparent 62%),linear-gradient(145deg,#5a0f2a,#d9304a)}
+.m7{background:radial-gradient(110% 80% at 50% 120%,#f3d98d,transparent 62%),linear-gradient(145deg,#2a1a4a,#6a4aa8)}
+.bd{background:linear-gradient(180deg,#ffe9a0,#d9a53a);color:#3a2500;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.fr{border-top:1px solid rgba(168,120,255,.15)}
+
+nav{background:rgba(12,7,26,.92);border:1px solid rgba(168,120,255,.28);border-radius:22px;box-shadow:0 -4px 30px rgba(0,0,0,.5),0 14px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+nav button{color:#8d82b3;border-radius:16px;position:relative}
+nav button span{filter:none;opacity:.9}
+nav .on{color:#c9a0ff;background:transparent;box-shadow:none}
+nav .on span{color:#e0c8ff;filter:drop-shadow(0 0 10px rgba(168,100,255,.95))}
+nav .on span .ic{transform:scale(1.12)}
+nav .on::after{content:"";position:absolute;bottom:3px;width:26px;height:3px;border-radius:3px;background:linear-gradient(90deg,#8b3dff,#c04dff);box-shadow:0 0 10px #a855f7}
+
+.stage{background:radial-gradient(90% 60% at 50% 0,rgba(139,61,255,.3),transparent 70%),linear-gradient(180deg,#160c3a,#0b0620);border:1px solid rgba(168,120,255,.3);border-radius:22px}
+.rtp{color:#f0c865;background:rgba(240,200,101,.1);border:1px solid rgba(240,200,101,.3)}
+.mult{background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 18px rgba(240,200,101,.35))}
+.info span{background:rgba(8,4,20,.55);border-color:rgba(168,120,255,.25)}
+#cv{background:linear-gradient(180deg,rgba(20,8,50,.8),rgba(8,4,24,.9));border:1px solid rgba(168,120,255,.25)}
+#grid{background:rgba(5,2,14,.55);border-color:rgba(168,120,255,.15)}
+.wheel canvas{box-shadow:0 0 0 5px rgba(240,200,101,.5),0 0 60px rgba(139,61,255,.6)}
+.ptr{background:var(--gold)}
+
+.safe-banner{background:linear-gradient(120deg,rgba(60,20,120,.8),rgba(120,50,200,.5));border:1px solid rgba(232,196,110,.7);border-radius:18px}
+.safe-banner b{background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent}
+.safe-row{background:rgba(8,4,20,.5);border-color:rgba(168,120,255,.25)}
+.safe-reward{background:linear-gradient(160deg,rgba(240,200,101,.15),rgba(139,61,255,.2));border-color:rgba(240,200,101,.6)}
+.safe-reward-title{color:#f0c865}
+#event-timer{border-color:rgba(232,196,110,.5)!important;background:rgba(240,200,101,.1)!important;color:#f0c865!important}
+
+.av{width:84px;height:84px;padding:3px;background:linear-gradient(180deg,#fff0b8,#c8912f);box-shadow:0 0 0 3px rgba(139,61,255,.55),0 0 34px rgba(139,61,255,.6)}
+.av img{border:3px solid #120a26}
+.big{background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 16px rgba(240,200,101,.3))}
+.role{background:rgba(255,255,255,.08);color:var(--m);border:1px solid rgba(168,120,255,.25)}
+.role.blogger{background:linear-gradient(135deg,#ec4899,#8b3dff);color:#fff;border:0}
+.role.manager{background:var(--gold);color:#3a2500;border:0}
+.st div{background:rgba(8,4,20,.55);border-color:rgba(168,120,255,.22)}
+.hr{border-bottom-color:rgba(168,120,255,.15)}
+.note{color:#8d82b3}
+#toast{background:rgba(14,8,32,.96);border-color:rgba(168,120,255,.4)}
+.sbar{background:rgba(10,5,26,.88);border:1px solid rgba(168,120,255,.25)}
+.sctl .spin{background:radial-gradient(circle at 35% 30%,#fff7d0,#f0c865 45%,#b9852a);box-shadow:0 8px 22px rgba(240,200,101,.55)}
+#slobby>div>div{border-radius:18px!important;box-shadow:0 10px 24px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.15)!important}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <radialGradient id="gB" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#7a7a99"/><stop offset=".5" stop-color="#26263f"/><stop offset="1" stop-color="#090914"/></radialGradient>
@@ -727,12 +823,12 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   
   <div class="input-wrap" style="position:relative; margin-bottom:8px;">
     <input id="wam" type="text" inputmode="numeric" autocomplete="off" placeholder="Количество монет" style="padding-right:50px; height:52px; font-size:18px;">
-    <button id="wmax" style="position:absolute; right:8px; top:6px; bottom:6px; background:var(--g); color:var(--bg); border-radius:8px; padding:0 10px; font-weight:800; font-size:12px;">MAX</button>
+    <button id="wmax" style="position:absolute; right:8px; top:6px; bottom:6px; background:linear-gradient(180deg,#fff0b8,#c8912f); color:#2b1a02; border-radius:8px; padding:0 10px; font-weight:800; font-size:12px;">MAX</button>
   </div>
 
   <div class="st" style="margin-bottom:14px; grid-template-columns:1fr;">
     <div style="background:linear-gradient(180deg, rgba(123,47,247,.2), rgba(123,47,247,.05)); border-color:rgba(123,47,247,.4); padding:16px;">
-      <b id="wusd" style="font-size:24px; color:var(--g); text-shadow:0 0 12px rgba(193,155,255,.4);">0.00</b>
+      <b id="wusd" style="font-size:24px; color:var(--g); text-shadow:0 0 12px rgba(240,200,101,.4);">0.00</b>
       <small id="wusd-label" style="font-size:12px; margin-top:4px;">$ к получению</small>
     </div>
   </div>
@@ -758,7 +854,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 <div class="card">
   <div class="shead"><b>Техподдержка</b></div>
   <p class="note" style="text-align:left;margin:0 0 10px">Напишите нам, если у вас возникли проблемы или вопросы.</p>
-  <textarea id="sup-msg" placeholder="Ваше сообщение..." style="width:100%; height:80px; background:rgba(255,255,255,.06); border:1px solid var(--ln); border-radius:13px; color:var(--t); padding:10px; margin-bottom:10px; resize:none; outline:none;"></textarea>
+  <textarea id="sup-msg" placeholder="Ваше сообщение..." style="width:100%; height:80px; background:rgba(8,4,20,.65); border:1px solid rgba(168,120,255,.28); border-radius:13px; color:var(--t); padding:10px; margin-bottom:10px; resize:none; outline:none;"></textarea>
   <button class="btn" id="sup-btn">Отправить</button>
   <div id="sup-history" style="margin-top:10px;"></div>
 </div> 
@@ -803,14 +899,14 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <div><label>Мин. депозит ($)</label><input id="gw-mindep" type="number" placeholder="0"></div>
 </div>
 <button class="btn" id="gw-create-btn" style="min-height:40px; font-size:14px; margin-top:10px;">Запустить розыгрыш</button>
-<button class="btn" id="gw-draw-btn" style="min-height:40px; font-size:14px; margin-top:10px; background:linear-gradient(135deg,#ef4444,#b91c1c);">⚡ Развести активные сейчас</button>
+<button class="btn" id="gw-draw-btn" style="min-height:40px; font-size:14px; margin-top:10px; background:linear-gradient(135deg,#ef4444,#b91c1c); color:#fff;">⚡ Развести активные сейчас</button>
 
  <div class="card">
   <div class="shead"><b>🔐 SECRET EVENT</b></div>
   <p class="note" style="text-align:left;margin:0 0 10px">Депозит от <b>10₽</b> → игрок получает ключ → открывает сейф → случайная награда (x0.5 – x10 + фикс). Вес легендарки растёт с суммой депозитов.</p>
   <label>Длительность, часов</label>
   <input id="secret-hours" type="number" value="48" style="margin-bottom:10px">
-  <button class="btn" id="btn-event" style="min-height:44px; font-size:14px; background:linear-gradient(135deg,#ffd24a,#e09a12);color:#3a2500">🚀 Запустить / Остановить</button>
+  <button class="btn" id="btn-event" style="min-height:44px; font-size:14px;">🚀 Запустить / Остановить</button>
 </div>
 
  <div class="card">
@@ -818,7 +914,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   <p class="note" style="text-align:left;margin:0 0 10px">Отправка сообщения всем пользователям бота. Поддерживается HTML разметка (например, <b>жирный</b>).</p>
   
   <label>Текст сообщения</label>
-  <textarea id="bc-msg" placeholder="Текст сообщения..." style="width:100%; height:80px; background:rgba(255,255,255,.06); border:1px solid var(--ln); border-radius:13px; color:var(--t); padding:10px; margin-bottom:10px; resize:none; outline:none;"></textarea>
+  <textarea id="bc-msg" placeholder="Текст сообщения..." style="width:100%; height:80px; background:rgba(8,4,20,.65); border:1px solid rgba(168,120,255,.28); border-radius:13px; color:var(--t); padding:10px; margin-bottom:10px; resize:none; outline:none;"></textarea>
   
   <label>Текст кнопки (необязательно)</label>
   <input id="bc-btn-text" placeholder="Например: 🎮 Открыть Velvet" style="margin-bottom:10px">
@@ -870,8 +966,8 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
     <div id="sev-timer" style="font:700 22px var(--hd);color:#ffd24a;margin-bottom:22px">—</div>
     <div class="safe-box" id="safe-box">🔒</div>
     <div id="sev-status" style="margin-top:16px;font:700 14px var(--hd);color:#fff;padding:0 10px">Загрузка...</div>
-    <button class="btn" id="sev-open" style="display:none;margin-top:14px;background:linear-gradient(135deg,#ffd24a,#e09a12);color:#3a2500;font-size:16px">🗝 ОТКРЫТЬ СЕЙФ</button>
-    <button class="btn" id="sev-dep" style="display:none;margin-top:14px;background:linear-gradient(135deg,#ff3c64,#ff9632);font-size:15px">💳 Пополнить от 10₽</button>
+    <button class="btn" id="sev-open" style="display:none;margin-top:14px;font-size:16px">🗝 ОТКРЫТЬ СЕЙФ</button>
+    <button class="btn" id="sev-dep" style="display:none;margin-top:14px;background:linear-gradient(135deg,#ff3c64,#ff9632);color:#fff;font-size:15px">💳 Пополнить от 10₽</button>
   </div>
 
   <div class="safe-reward" id="sev-reward-box">
@@ -882,7 +978,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   </div>
 
   <div class="card">
-    <div class="shead"><b>🎁 Возможные награды</b><i class="rtp" style="background:rgba(255,210,74,.2);color:#ffd24a">от 10₽</i></div>
+    <div class="shead"><b>🎁 Возможные награды</b><i class="rtp">от 10₽</i></div>
     <div class="safe-table" id="sev-table"></div>
     <p class="note" style="text-align:left;margin:6px 0 0;font-size:11.5px">💡 <b>Чем больше депозит — тем выше шанс на редкую награду!</b> Депозиты за ивент суммируются.</p>
   </div>
