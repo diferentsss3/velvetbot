@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cosmic Candy</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;900&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--ink:#1b0a3d;--pink:#ff8fd8;--cy:#8ee7ff;--lil:#c4a3ff;--yel:#ffe27a;--bone:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--ink);color:var(--bone);font-family:Rubik,system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.ft{font-family:Bungee,Impact,sans-serif}
+#app{position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+#bg{position:absolute;inset:0;width:100%;height:100%}
+.tw{animation:tw 3s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.25}to{opacity:1}}
+.orb{transform-box:fill-box;transform-origin:50% 50%;animation:fl 9s ease-in-out infinite alternate}
+@keyframes fl{from{transform:translateY(-10px) rotate(-4deg)}to{transform:translateY(12px) rotate(4deg)}}
+header{position:relative;text-align:center;padding-top:6px}
+.logo{display:inline-flex;flex-direction:column;align-items:center;line-height:.9}
+.logo small{font-family:Bungee;font-size:12px;letter-spacing:5px;color:var(--cy);-webkit-text-stroke:5px var(--ink);paint-order:stroke fill;text-shadow:0 3px 0 var(--ink)}
+.logo b{font-family:Bungee;font-size:32px;color:var(--pink);-webkit-text-stroke:8px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--ink),0 0 24px rgba(255,143,216,.9);letter-spacing:2px}
+#hud{position:relative;height:34px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 10px}
+#msg{font-weight:900;font-size:14px;text-shadow:0 2px 0 var(--ink),0 0 6px var(--ink);text-align:center}
+#msg.win{color:var(--yel);font-family:Bungee;font-size:17px}
+#msg.fs{color:var(--ink);font-family:Bungee;font-size:12px;background:linear-gradient(#fff0b0,#ffb703);border:3px solid var(--ink);border-radius:12px;box-shadow:0 3px 0 var(--ink);padding:2px 12px}
+#mult{font-family:Bungee;font-size:16px;color:var(--ink);background:linear-gradient(#ffd0f0,#ff8fd8);border:3px solid var(--ink);border-radius:12px;box-shadow:0 3px 0 var(--ink);padding:1px 12px}
+.bump{animation:bump .5s}@keyframes bump{40%{transform:scale(1.4) rotate(-4deg)}}
+main{position:relative;flex:1;min-height:0;display:flex;padding:14px 6px 4px}
+#frame{position:relative;flex:1;display:flex;padding:8px;border-radius:24px;background:linear-gradient(135deg,#ff8fd8,#8ee7ff 50%,#c4a3ff);border:4px solid var(--ink);box-shadow:0 0 36px rgba(142,231,255,.6),0 8px 0 rgba(0,0,0,.35)}
+#frame.fs{box-shadow:0 0 54px rgba(255,226,122,.95),0 8px 0 rgba(0,0,0,.35)}
+.plate{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:linear-gradient(#fff0b0,#ffb703);color:var(--ink);border:4px solid var(--ink);border-radius:12px;padding:2px 12px;font-family:Bungee;font-size:11px;white-space:nowrap;box-shadow:0 3px 0 var(--ink);z-index:6}
+#reels{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:3px;border-radius:16px;background:rgba(27,10,61,.92);padding:4px;border:3px solid var(--ink)}
+.col{display:grid;grid-template-rows:repeat(5,1fr);gap:3px;min-height:0;overflow:hidden}
+.cell{position:relative;min-height:0;padding:3%;display:flex;border-radius:10px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2)}
+.cell svg{width:100%;height:100%;display:block;overflow:visible}
+.cell.mv svg{filter:blur(1.5px);opacity:.75}
+.cell.win{background:rgba(255,226,122,.3);border-color:var(--yel);box-shadow:0 0 12px var(--yel)}
+.cell.win svg{animation:wig .5s ease-in-out infinite}
+.cell.pop svg{animation:pop .3s ease-in forwards}
+.cell.drop svg{animation:drop .38s cubic-bezier(.3,1.4,.5,1)}
+@keyframes wig{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.14) rotate(-5deg)}70%{transform:scale(1.14) rotate(5deg)}}
+@keyframes pop{to{transform:scale(0) rotate(90deg);opacity:0}}
+@keyframes drop{from{transform:translateY(-140%)}}
+footer{position:relative;padding:6px 12px 12px;background:linear-gradient(rgba(27,10,61,0),rgba(27,10,61,.95) 30%)}
+.stats{display:flex;gap:8px;margin-bottom:10px}
+.stat{flex:1;background:#2c1566;border:3px solid var(--ink);box-shadow:0 0 0 2px var(--lil),0 3px 0 var(--ink);border-radius:14px;padding:3px 8px;text-align:center}
+.stat span{display:block;font-size:10px;font-weight:900;letter-spacing:1px;opacity:.7}
+.stat b{font-family:Bungee;font-size:17px;color:var(--yel)}.stat.w b{color:var(--cy)}
+.ctl{display:flex;align-items:center;justify-content:center;gap:14px}
+.btn{border:4px solid var(--ink);border-radius:50%;box-shadow:0 5px 0 var(--ink);display:flex;align-items:center;justify-content:center;font-family:Bungee;color:var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.sm{width:50px;height:50px;font-size:26px;background:linear-gradient(#ffd0f0,#ff8fd8)}
+.btn.info{width:44px;height:44px;font-size:20px;background:linear-gradient(#d6f6ff,#8ee7ff)}
+.btn.spin{width:88px;height:88px;background:radial-gradient(circle at 35% 30%,#fff6c4,#ffd24d 60%,#e09a00)}
+.btn.spin svg{width:52px;height:52px}.btn.spin.go svg{animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.btn:disabled{filter:grayscale(.8) brightness(.6);pointer-events:none}
+.ov{position:absolute;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(12,4,32,.85);backdrop-filter:blur(3px);padding:20px}
+.ov.show{display:flex}
+.card{width:100%;max-width:380px;max-height:88%;overflow:auto;background:linear-gradient(#3b1d85,#241058);border:5px solid var(--ink);box-shadow:0 0 0 3px var(--pink),0 0 50px rgba(255,143,216,.5);border-radius:24px;padding:18px;text-align:center}
+.card h2{font-family:Bungee;font-size:26px;color:var(--yel);-webkit-text-stroke:7px var(--ink);paint-order:stroke fill;text-shadow:0 4px 0 var(--ink);margin-bottom:8px}
+.card p{font-size:12.5px;line-height:1.45;color:#e8dcff;margin:8px 0;text-align:left}
+.pt{display:grid;grid-template-columns:44px 1fr;gap:4px 10px;align-items:center;text-align:left}
+.pt svg{width:42px;height:42px}.pt .p{font-size:12px;font-weight:900}.pt i{font-style:normal;color:var(--yel);font-family:Bungee}
+.cta{background:linear-gradient(#d6ffe9,#6fe0a8);color:var(--ink);border:4px solid var(--ink);border-radius:16px;padding:10px 26px;font-family:Bungee;font-size:16px;box-shadow:0 5px 0 var(--ink);margin-top:8px}
+</style></head><body>
+<div id="app">
+<svg id="bg" viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="sp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b0a3d"/><stop offset=".5" stop-color="#34177a"/><stop offset="1" stop-color="#6a2a9a"/></linearGradient>
+<radialGradient id="n1"><stop offset="0" stop-color="#ff8fd8" stop-opacity=".55"/><stop offset="1" stop-color="#ff8fd8" stop-opacity="0"/></radialGradient>
+<radialGradient id="n2"><stop offset="0" stop-color="#8ee7ff" stop-opacity=".45"/><stop offset="1" stop-color="#8ee7ff" stop-opacity="0"/></radialGradient></defs>
+<rect width="480" height="900" fill="url(#sp)"/>
+<circle cx="90" cy="200" r="190" fill="url(#n1)"/><circle cx="410" cy="640" r="210" fill="url(#n2)"/>
+<g fill="#fff"><circle class="tw" cx="40" cy="80" r="2"/><circle class="tw" cx="150" cy="40" r="1.6" style="animation-delay:-1s"/><circle class="tw" cx="260" cy="110" r="2" style="animation-delay:-2s"/><circle class="tw" cx="360" cy="50" r="1.5" style="animation-delay:-.5s"/><circle class="tw" cx="450" cy="130" r="2" style="animation-delay:-1.5s"/><circle class="tw" cx="70" cy="420" r="1.8" style="animation-delay:-2.4s"/><circle class="tw" cx="440" cy="400" r="1.6" style="animation-delay:-.8s"/><circle class="tw" cx="30" cy="720" r="2" style="animation-delay:-1.2s"/><circle class="tw" cx="230" cy="820" r="1.6" style="animation-delay:-2.7s"/></g>
+<g class="orb"><circle cx="400" cy="90" r="36" fill="#ff8fd8" stroke="#1b0a3d" stroke-width="4"/><ellipse cx="400" cy="90" rx="58" ry="14" fill="none" stroke="#ffe27a" stroke-width="6" transform="rotate(-18 400 90)"/></g>
+<g class="orb" style="animation-delay:-3s"><circle cx="60" cy="800" r="30" fill="#8ee7ff" stroke="#1b0a3d" stroke-width="4"/><circle cx="50" cy="790" r="6" fill="#5fc4e8"/><circle cx="72" cy="810" r="4" fill="#5fc4e8"/></g>
+</svg>
+<header><div class="logo"><small>КОСМИЧЕСКИЕ</small><b>CANDY</b></div></header>
+<div id="hud"><div id="msg">Лови 8+ конфет!</div><div id="mult">x1</div></div>
+<main><div id="frame"><div class="plate">8+ ЛЮБЫХ • ТАМБЛ • ОРБЫ</div><div id="reels"></div></div></main>
+<footer>
+<div class="stats"><div class="stat"><span>БАЛАНС</span><b id="bal">0</b></div><div class="stat"><span>СТАВКА</span><b id="bet">0</b></div><div class="stat w"><span>ВЫИГРЫШ</span><b id="win">0</b></div></div>
+<div class="ctl"><button class="btn info" id="rules">i</button><button class="btn sm" id="minus">−</button>
+<button class="btn spin" id="spin"><svg viewBox="0 0 48 48"><path d="M24 9a15 15 0 1 0 14 20" fill="none" stroke="#1b0a3d" stroke-width="7" stroke-linecap="round"/><path d="M20 -1L38 10 20 21Z" fill="#1b0a3d" stroke="#1b0a3d" stroke-width="3" stroke-linejoin="round"/></svg></button>
+<button class="btn sm" id="plus">+</button><span style="width:44px"></span></div>
+</footer>
+<div class="ov" id="ov"><div class="card" id="card"></div></div>
+</div>
+<script>
+const I='#1b0a3d',st=(w=4)=>`stroke="${I}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+const gum=(c,d)=>`<path d="M14 84Q14 22 50 22Q86 22 86 84Z" fill="${c}" ${st(5)}/><rect x="10" y="80" width="80" height="12" rx="5" fill="${d}" ${st(4)}/><g fill="#fff" opacity=".85"><circle cx="34" cy="52" r="2.6"/><circle cx="52" cy="42" r="2.6"/><circle cx="66" cy="58" r="2.6"/><circle cx="44" cy="68" r="2.6"/><circle cx="62" cy="74" r="2.6"/></g><path d="M28 40Q34 30 44 28" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>`;
+const orbArt=v=>{const t='x'+v,f=t.length<=2?26:t.length===3?22:17;return `<circle cx="50" cy="50" r="42" fill="#ffd0f0" ${st(5)}/><circle cx="50" cy="50" r="34" fill="#ff5fc0"/><circle cx="50" cy="50" r="42" fill="none" stroke="#ffe27a" stroke-width="3" stroke-dasharray="6 6"/><path d="M28 36Q34 24 48 22" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/><text x="50" y="${50+f*.36}" text-anchor="middle" font-size="${f}" class="ft" fill="#fff" stroke="${I}" stroke-width="6" paint-order="stroke" stroke-linejoin="round">${t}</text>`};
+const ART={
+P:`<circle cx="50" cy="52" r="30" fill="#a56bff" ${st(5)}/><circle cx="38" cy="42" r="5" fill="#8a4de0"/><circle cx="60" cy="62" r="7" fill="#8a4de0"/><circle cx="62" cy="38" r="3.5" fill="#8a4de0"/><ellipse cx="50" cy="54" rx="46" ry="12" fill="none" stroke="${I}" stroke-width="13" transform="rotate(-20 50 54)"/><ellipse cx="50" cy="54" rx="46" ry="12" fill="none" stroke="#ffe27a" stroke-width="7" transform="rotate(-20 50 54)"/>`,
+L:`<rect x="46" y="62" width="8" height="34" rx="3" fill="#fff" ${st(4)}/><circle cx="50" cy="40" r="32" fill="#ff5fc0" ${st(5)}/><path d="M50 40m0 0a4 4 0 0 1 8 0a10 10 0 0 1-20 0a16 16 0 0 1 32 0a22 22 0 0 1-44 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>`,
+R:`<path d="M34 76L18 92V62Z M66 76L82 92V62Z" fill="#ff5a5f" ${st(4)}/><path d="M50 4Q78 26 72 76H28Q22 26 50 4Z" fill="#2fd9c4" ${st(5)}/><circle cx="50" cy="40" r="11" fill="#d6f6ff" ${st(4)}/><path d="M38 78Q50 98 62 78" fill="#ffb703" ${st(4)}/><path d="M36 28Q40 18 46 14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>`,
+M:`<path d="M64 6A44 44 0 1 0 92 66A34 34 0 1 1 64 6Z" fill="#ffe27a" ${st(5)}/><circle cx="34" cy="46" r="5" fill="#f5c542"/><circle cx="44" cy="72" r="4" fill="#f5c542"/><circle cx="26" cy="64" r="3" fill="#f5c542"/>`,
+S:`<polygon points="50,6 61,36 93,38 68,58 77,90 50,72 23,90 32,58 7,38 39,36" fill="#ffa63d" ${st(5)}/><path d="M40 34L50 16L58 34" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".75"/>`,
+B:gum('#4aa8ff','#2f7fd0'),G:gum('#4ade80','#27a85a'),D:gum('#ff5a7a','#d03a58'),
+U:`<ellipse cx="50" cy="62" rx="46" ry="18" fill="#cfd8e8" ${st(5)}/><path d="M26 56Q26 22 50 22Q74 22 74 56Z" fill="#8ee7ff" ${st(5)}/><circle cx="24" cy="64" r="4" fill="#ff5fc0" ${st(2.5)}/><circle cx="50" cy="70" r="4" fill="#ffe27a" ${st(2.5)}/><circle cx="76" cy="64" r="4" fill="#4ade80" ${st(2.5)}/><path d="M36 44Q40 32 48 30" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>`};
+const svgFor=o=>`<svg viewBox="0 0 100 100">${o.s==='O'?orbArt(o.v):ART[o.s]}</svg>`;
+const PAY={P:[5,15,50],L:[3,8,25],R:[2,5,15],M:[1.5,3,10],S:[1,2,8],B:[.8,1.5,5],G:[.5,1,3],D:[.4,.8,2]},TY=Object.keys(PAY);
+const BAG='PLLRRMMMSSSBBBBGGGGDDDD',BETS=[10,20,50,100,200,500],NC=6,NR=5;
+const ORBS=[[2,30],[3,20],[4,15],[5,10],[6,8],[8,6],[10,5],[15,3],[20,2],[25,1],[50,.5],[100,.2]];
+let bal=0,bi=1,fs=0,fsWin=0,inFS=false,gm=0,busy=false,uid=0,g=[],shown=[];
+const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),fmt=n=>Math.round(n).toLocaleString('ru-RU'),wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ================== ИНТЕГРАЦИЯ С VELVET ================== */
+let INIT_DATA='',API_URL='https://personals-tournaments-featuring-towers.trycloudflare.com',ready=false;
+async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return{ok:false}}}
+async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){bal=Number(r.user.balance)||0;ready=true;ui()}else setTimeout(initFromServer,1000)}
+async function syncServerBet(betAmount,winAmount){const r=await apiCall('/bet',{game:'slot',bet:betAmount,params:{win:winAmount,alreadyDeducted:true}});if(r.ok&&typeof r.balance==='number'){bal=r.balance;ui()}return r}
+window.addEventListener('message',e=>{if(!e.data||e.data.type!=='slot-init')return;if(e.data.initData)INIT_DATA=e.data.initData;if(e.data.apiUrl)API_URL=e.data.apiUrl;initFromServer()});
+const _tg=window.Telegram&&window.Telegram.WebApp;if(_tg){try{_tg.ready();_tg.expand()}catch(e){}}
+if(_tg&&_tg.initData){INIT_DATA=_tg.initData;initFromServer()}
+/* ========================================================== */
+
+function orbVal(){let t=0;ORBS.forEach(o=>t+=o[1]);let r=Math.random()*t;for(const[v,w]of ORBS){if((r-=w)<0)return v}return 2}
+const mk=()=>{const r=Math.random();if(r<.02)return{s:'O',v:orbVal(),id:++uid};if(r<.038)return{s:'U',id:++uid};return{s:BAG[rnd(BAG.length)],id:++uid}};
+const cells=[];
+for(let c=0;c<NC;c++){const col=document.createElement('div');col.className='col';cells[c]=[];shown[c]=[];for(let r=0;r<NR;r++){const d=document.createElement('div');d.className='cell';col.appendChild(d);cells[c][r]=d}$('reels').appendChild(col)}
+function draw(c,r,o,cls){const d=cells[c][r];d.className='cell'+(cls?' '+cls:'');d.innerHTML=svgFor(o)}
+function render(all){for(let c=0;c<NC;c++)for(let r=0;r<NR;r++){if(all||shown[c][r]!==g[c][r]){draw(c,r,g[c][r],all?'':'drop');shown[c][r]=g[c][r]}else cells[c][r].className='cell'}}
+function ui(m){$('bal').textContent=fmt(bal);$('bet').textContent=BETS[bi];$('frame').classList.toggle('fs',inFS);$('mult').textContent='x'+Math.max(m||0,inFS?gm:0,1)}
+function bump(){const m=$('mult');m.classList.remove('bump');void m.offsetWidth;m.classList.add('bump')}
+function setMsg(t,c){const m=$('msg');m.textContent=t;m.className=c||''}
+async function spin(){
+if(busy)return;
+if(!ready){setMsg('Подключение...');return}
+const wasFS=inFS;const bet=BETS[bi];
+if(!inFS){if(bal<bet){setMsg('Недостаточно средств');return}bal-=bet}else fs--;
+busy=true;$('spin').disabled=true;$('spin').classList.add('go');$('win').textContent=0;setMsg(inFS?`ФРИСПИНЫ: ${fs}`:'Летим за конфетами...',inFS?'fs':'');ui();
+g=[];for(let c=0;c<NC;c++){g[c]=[];for(let r=0;r<NR;r++)g[c][r]=mk()}
+await Promise.all([...Array(NC).keys()].map(c=>new Promise(res=>{const t=setInterval(()=>{for(let r=0;r<NR;r++)draw(c,r,{s:BAG[rnd(BAG.length)]},'mv')},70);setTimeout(()=>{clearInterval(t);for(let r=0;r<NR;r++){draw(c,r,g[c][r],'drop');shown[c][r]=g[c][r]}res()},450+c*200)})));
+let total=0,tumbles=0;
+for(;;){const cnt={};g.forEach(col=>col.forEach(o=>{cnt[o.s]=(cnt[o.s]||0)+1}));
+const win=TY.filter(t=>cnt[t]>=8);if(!win.length)break;
+let w=0;win.forEach(t=>{const n=cnt[t];w+=PAY[t][n>=12?2:n>=10?1:0]*bet});
+total+=w;tumbles++;$('win').textContent=fmt(total);setMsg(`+${fmt(w)}`+(tumbles>1?`  (тамбл ${tumbles})`:''),'win');
+g.forEach((col,c)=>col.forEach((o,r)=>{if(win.includes(o.s))cells[c][r].classList.add('win')}));await wait(800);
+g.forEach((col,c)=>col.forEach((o,r)=>{if(win.includes(o.s)){cells[c][r].classList.remove('win');cells[c][r].classList.add('pop')}}));await wait(330);
+for(let c=0;c<NC;c++){const keep=g[c].filter(o=>!win.includes(o.s));g[c]=[...Array(NR-keep.length)].map(()=>mk()).concat(keep)}
+render();await wait(650)}
+const orbs=[];g.forEach((col,c)=>col.forEach((o,r)=>{if(o.s==='O')orbs.push([c,r,o.v])}));
+const sum=orbs.reduce((a,o)=>a+o[2],0);if(inFS)gm+=sum;
+const m=inFS?Math.max(gm,1):Math.max(sum,1);
+if(orbs.length&&(total>0||inFS)){orbs.forEach(([c,r])=>cells[c][r].classList.add('win'));ui(m);bump()}
+if(total>0&&m>1){setMsg(`МНОЖИТЕЛЬ x${m}!`,'win');await wait(1000);total*=m;$('win').textContent=fmt(total)}
+const sc=g.flat().filter(o=>o.s==='U').length;let trig=0;
+if(sc>=4){total+=bet*(sc>=6?20:sc===5?5:3);trig=inFS?5:10}else if(inFS&&sc>=3)trig=5;
+if(trig)g.forEach((col,c)=>col.forEach((o,r)=>{if(o.s==='U')cells[c][r].classList.add('win')}));
+bal+=total;if(inFS)fsWin+=total;$('win').textContent=fmt(total);
+if(trig){fs+=trig;if(!inFS){inFS=true;gm=0}setMsg(`НЛО! +${trig} фриспинов`,'fs')}
+else if(total)setMsg('ИТОГО '+fmt(total)+'!','win');else setMsg(inFS?`ФРИСПИНЫ: ${fs}`:'Мимо, пробуем снова',inFS?'fs':'');
+if(inFS&&fs===0&&!trig){setMsg('Фриспины окончены: '+fmt(fsWin),'win');inFS=false;fsWin=0;gm=0}
+ui();await syncServerBet(wasFS?0:bet,total);await wait(total?1200:350);
+busy=false;$('spin').disabled=false;$('spin').classList.remove('go');if(inFS&&fs>0)spin()}
+function rules(){let h='<h2>ПРАВИЛА</h2><div class="pt">';for(const k of TY)h+=`${svgFor({s:k})}<div class="p">8-9 <i>x${PAY[k][0]}</i> · 10-11 <i>x${PAY[k][1]}</i> · 12+ <i>x${PAY[k][2]}</i></div>`;
+h+=`${svgFor({s:'O',v:10})}<div class="p">ОРБ МНОЖИТЕЛЬ: x2…x100. Если есть выигрыш, сумма орбов на поле умножает общий выигрыш</div>${svgFor({s:'U'})}<div class="p">4+ НЛО: выплата x3/x5/x20 и 10 фриспинов (3+ во фриспинах: +5)</div></div><p><b>Выигрыш в любом месте:</b> 8 и более одинаковых символов на поле, соединять их не нужно. Числа — множитель ставки.</p><p><b>Тамблы:</b> выигрышные символы исчезают, остальные падают, а сверху появляются новые. Пока есть выигрыш, тамблы продолжаются.</p><p><b>Фриспины:</b> множители орбов накапливаются и не сбрасываются до конца бонуса.</p><button class="cta" id="ok">ОК</button>`;
+$('card').innerHTML=h;$('ov').classList.add('show');$('ok').onclick=()=>$('ov').classList.remove('show')}
+$('spin').onclick=spin;$('rules').onclick=rules;
+$('plus').onclick=()=>{if(!busy&&!inFS&&bi<BETS.length-1){bi++;ui()}};
+$('minus').onclick=()=>{if(!busy&&!inFS&&bi>0){bi--;ui()}};
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();spin()}});
+g=[];for(let c=0;c<NC;c++){g[c]=[];for(let r=0;r<NR;r++)g[c][r]={s:BAG[rnd(BAG.length)],id:++uid}}render(true);ui();
+</script></body></html>

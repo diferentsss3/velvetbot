@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Velvet Jazz</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--c:min(17vw,116px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:inherit;margin:0;user-select:none;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;background:radial-gradient(ellipse at 50% 0,#d81b7a 0,#5a0b45 50%,#1a0420 100%);font-family:Georgia,'Times New Roman',serif;color:#ffe9b0;display:flex;flex-direction:column;align-items:center;padding:8px;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;top:0;bottom:0;width:7vw;z-index:0;background:repeating-linear-gradient(90deg,#8e0f1f 0 10px,#b3172b 10px 22px,#6d0a18 22px 28px)}
+body::before{left:0;border-radius:0 0 60% 0}body::after{right:0;border-radius:0 0 0 60%}
+h1{z-index:1;font-size:clamp(28px,6vw,48px);letter-spacing:3px;background:linear-gradient(#fff3b0,#f2b01e 60%,#b8760a);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 3px 0 #5b1030);margin:2px 0 6px;text-align:center}
+.frame{z-index:1;position:relative;border:9px dotted #ffe082;border-radius:10px;padding:6px;background:#3a0a2a;box-shadow:0 0 24px #ffb30088;animation:bulb 1.2s steps(2) infinite}
+@keyframes bulb{50%{border-color:#ff9800}}
+#reels{display:flex;gap:4px;background:#c9a227}
+.reel{display:flex;flex-direction:column;background:linear-gradient(#f4752a,#d94a12)}
+.cell{width:var(--c);height:var(--c);display:flex;align-items:center;justify-content:center;position:relative;transition:opacity .2s}
+.spin .cell{filter:blur(2.5px)}
+.stop .cell{animation:drop .22s ease-out}
+@keyframes drop{from{transform:translateY(-35%)}to{transform:none}}
+.L{font-weight:900;font-size:calc(var(--c)*.74);-webkit-text-stroke:2px #2b0b3a;paint-order:stroke fill;text-shadow:3px 3px 0 rgba(0,0,0,.35);line-height:1}
+.E{font-size:calc(var(--c)*.6);filter:drop-shadow(3px 4px 2px rgba(0,0,0,.5))}
+.badge{width:90%;height:78%;border-radius:50%/42%;border:3px solid #ffd54f;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:calc(var(--c)*.19);line-height:1.1;color:#ffd54f;text-shadow:1px 2px 0 #000;box-shadow:0 0 10px #ffd54f88,inset 0 0 12px #0006;text-align:center;letter-spacing:1px}
+.badge.s{background:radial-gradient(#ff5545,#b71c1c)}
+.badge.w{background:radial-gradient(#b05bd8,#4a148c);font-size:calc(var(--c)*.26)}
+.badge small{font-size:calc(var(--c)*.28)}
+.win{animation:pulse .45s infinite alternate;background:rgba(255,235,130,.4);box-shadow:inset 0 0 0 3px #fff3b0;z-index:2}
+@keyframes pulse{to{transform:scale(1.07)}}
+.dim .cell:not(.win){opacity:.4}
+#msg{z-index:1;min-height:26px;margin:6px 0 4px;font-size:clamp(14px,3.4vw,19px);text-align:center;color:#fff3b0;text-shadow:0 2px 0 #000}
+.bar{z-index:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;background:#14081c;border:2px solid #6d2a7a;border-radius:14px;padding:8px 10px;width:calc(var(--c)*5 + 46px);max-width:100%}
+.box{display:flex;flex-direction:column;align-items:center;min-width:80px;font-size:11px;letter-spacing:1px;color:#c9a0e0}
+.box b{font-size:clamp(15px,3.6vw,20px);color:#fff3b0;letter-spacing:0}
+.win-box{flex:1;min-width:120px}.win-box b{font-size:clamp(24px,6vw,36px);color:#ffd54f;text-shadow:0 0 12px #ff9800}
+button{font-family:inherit;cursor:pointer;border:2px solid #6d2a7a;background:#2a1138;color:#ffe9b0;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700}
+button.on{background:#ff9800;color:#2b0b3a;border-color:#ffd54f}
+button:active{transform:scale(.95)}
+.bet{display:flex;align-items:center;gap:6px}
+.bet button{width:32px;height:32px;padding:0;font-size:18px}
+#spin{width:78px;height:78px;border-radius:50%;background:radial-gradient(#ff7043,#c2185b);border:4px solid #ffd54f;font-size:15px;letter-spacing:1px;box-shadow:0 0 14px #ff9800}
+#spin:disabled{filter:grayscale(.7);opacity:.7}
+.modal{position:fixed;inset:0;background:#000b;z-index:10;display:none;align-items:center;justify-content:center;padding:14px}
+.modal.show{display:flex}
+.modal>div{background:#25102f;border:3px solid #ffd54f;border-radius:14px;max-width:520px;max-height:90vh;overflow:auto;padding:16px;font-size:14px;line-height:1.5}
+table{width:100%;border-collapse:collapse;margin:8px 0}td,th{padding:3px 6px;text-align:center;border-bottom:1px solid #5a2a6a}
+td .cell{width:44px;height:44px;margin:auto;--c:44px}
+.big{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;pointer-events:none;font-size:clamp(40px,12vw,90px);font-weight:900;color:#ffd54f;text-shadow:0 4px 0 #b71c1c,0 0 30px #ff9800;text-align:center;animation:pop .6s infinite alternate}
+@keyframes pop{to{transform:scale(1.1)}}
+</style></head><body>
+<h1>♪ VELVET JAZZ ♪</h1>
+<div class="frame"><div id="reels"></div></div>
+<div id="msg">Нажми СПИН — 25 линий, 3+ скаттера = 10 фриспинов ×2</div>
+<div class="bar">
+ <div class="box">БАЛАНС<b id="bal"></b></div>
+ <div class="box win-box">ВЫИГРЫШ<b id="win">0</b></div>
+ <div class="box">СТАВКА<div class="bet"><button id="m">−</button><b id="bet"></b><button id="p">+</button></div></div>
+ <button id="turbo">ТУРБО</button><button id="auto">АВТО</button><button id="info">i</button><button id="snd" class="on">♪</button>
+ <button id="spin">СПИН</button>
+</div>
+<div class="big" id="big"></div>
+<div class="modal" id="modal"><div id="pt"></div></div>
+<script>
+const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const LINES=[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[1,0,0,0,1],[1,2,2,2,1],[0,0,1,2,2],[2,2,1,0,0],[1,2,1,0,1],[1,0,1,2,1],[0,1,1,1,0],[2,1,1,1,2],[0,1,0,1,0],[2,1,2,1,2],[1,1,0,1,1],[1,1,2,1,1],[0,0,2,0,0],[2,2,0,2,2],[0,2,2,2,0],[2,0,0,0,2],[1,0,2,0,1],[1,2,0,2,1],[0,2,0,2,0],[2,0,2,0,2]];
+const PAY=[[5,10,25],[5,10,30],[5,15,40],[10,25,60],[10,30,80],[15,50,150],[20,75,250],[30,100,500]];
+const SC=[5,20,100];
+const COL=['#8e44ad','#27ae60','#e91e8c','#f1c40f','#3498db'],NM=['10','J','Q','K','A'],EM=['🎺','🎻','🎷'];
+const W=[14,14,12,11,10,7,5,4,3,3],bets=[25,50,100,250,500,1000,2500];
+let bal=0,bi=3,turbo=false,auto=0,busy=false,fs=0,fsWin=0,snd=true,ctx=null;
+const fmt=n=>Math.round(n).toLocaleString('ru-RU');
+function html(id){
+ if(id<5)return `<span class="L" style="color:${COL[id]}">${NM[id]}</span>`;
+ if(id<8)return `<span class="E">${EM[id-5]}</span>`;
+ if(id==8)return `<div class="badge w">WILD<small>🎤</small></div>`;
+ return `<div class="badge s">VELVET<br>JAZZ</div>`}
+function rnd(r){const w=W.map((v,i)=>i==8&&(r==0||r==4)?0:v);let x=Math.random()*w.reduce((a,b)=>a+b);for(let i=0;i<10;i++){if((x-=w[i])<0)return i}return 0}
+const reelsEl=$('#reels');
+for(let r=0;r<5;r++){const d=document.createElement('div');d.className='reel';for(let k=0;k<3;k++){const c=document.createElement('div');c.className='cell';d.appendChild(c)}reelsEl.appendChild(d)}
+const reels=[...reelsEl.children],cells=reels.map(r=>[...r.children]);
+cells.forEach((c,r)=>c.forEach(x=>x.innerHTML=html(rnd(r))));
+function upd(){$('#bal').textContent=fmt(bal);$('#bet').textContent=fmt(bets[bi])}upd();
+function msg(t){$('#msg').textContent=t}
+function beep(f,d=.08,t='triangle',v=.07){if(!snd)return;try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+d)}catch(e){}}
+async function chime(n){for(let i=0;i<n;i++){beep([392,494,587,740,880][i%5],.18);await sleep(90)}}
+
+/* ================== ИНТЕГРАЦИЯ С VELVET ================== */
+let INIT_DATA='',API_URL='https://personals-tournaments-featuring-towers.trycloudflare.com',ready=false;
+async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return{ok:false}}}
+async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){bal=Number(r.user.balance)||0;ready=true;upd()}else setTimeout(initFromServer,1000)}
+async function syncServerBet(betAmount,winAmount){const r=await apiCall('/bet',{game:'slot',bet:betAmount,params:{win:winAmount,alreadyDeducted:true}});if(r.ok&&typeof r.balance==='number'){bal=r.balance;upd()}return r}
+window.addEventListener('message',e=>{if(!e.data||e.data.type!=='slot-init')return;if(e.data.initData)INIT_DATA=e.data.initData;if(e.data.apiUrl)API_URL=e.data.apiUrl;initFromServer()});
+const _tg=window.Telegram&&window.Telegram.WebApp;if(_tg){try{_tg.ready();_tg.expand()}catch(e){}}
+if(_tg&&_tg.initData){INIT_DATA=_tg.initData;initFromServer()}
+/* ========================================================== */
+
+function evalG(g,bet){
+ const lb=bet/25,wins=[];let tot=0;
+ LINES.forEach((ln,li)=>{let base=-1,n=0;
+  for(let i=0;i<5;i++){const s=g[i][ln[i]];if(s==9)break;if(s==8){n++;continue}if(base<0)base=s;if(s==base)n++;else break}
+  if(n>=3){const p=PAY[base<0?7:base][n-3]*lb;wins.push({li,n,p});tot+=p}});
+ const sc=[];g.forEach((c,i)=>c.forEach((s,j)=>{if(s==9)sc.push([i,j])}));
+ let sp=0;if(sc.length>=3){sp=SC[Math.min(sc.length,5)-3]*bet;tot+=sp}
+ return{wins,tot,sc,sp}}
+function clearWins(){reelsEl.classList.remove('dim');cells.flat().forEach(c=>c.classList.remove('win'));$('#big').style.display='none'}
+async function countUp(to){const el=$('#win');const steps=to>bets[bi]*10?30:12;for(let i=1;i<=steps;i++){el.textContent=fmt(to*i/steps);await sleep(30)}el.textContent=fmt(to)}
+async function spin(){
+ if(busy)return;
+ if(!ready){msg('Подключение...');return}
+ const bet=bets[bi],free=fs>0;
+ if(!free){if(bal<bet){msg('Недостаточно средств');return}bal-=bet}else fs--;
+ busy=true;$('#spin').disabled=true;clearWins();$('#win').textContent='0';upd();
+ if(free)msg(`ФРИСПИН ×2 — осталось ${fs}`);else msg('Удачи!');
+ const g=[0,1,2,3,4].map(r=>[rnd(r),rnd(r),rnd(r)]);
+ const iv=reels.map((rl,r)=>{rl.classList.remove('stop');rl.classList.add('spin');return setInterval(()=>cells[r].forEach(c=>c.innerHTML=html(rnd(r)==8?4:rnd(r))),70)});
+ for(let r=0;r<5;r++){
+  await sleep(turbo?140:(r?360:650));
+  clearInterval(iv[r]);cells[r].forEach((c,k)=>c.innerHTML=html(g[r][k]));
+  reels[r].classList.remove('spin');reels[r].classList.add('stop');beep(180+r*20,.06,'square',.04)}
+ const res=evalG(g,bet),mult=free?2:1,win=res.tot*mult;
+ if(win>0){
+  bal+=win;if(free)fsWin+=win;
+  res.wins.forEach(w=>{for(let i=0;i<w.n;i++)cells[i][LINES[w.li][i]].classList.add('win')});
+  res.sc.forEach(([i,j])=>cells[i][j].classList.add('win'));
+  reelsEl.classList.add('dim');
+  const x=win/bet;
+  msg(`${res.wins.length?res.wins.length+' лин. ':''}${res.sp?'скаттер ':''}${mult>1?'×2 ':''}— ${fmt(win)}`);
+  chime(x>=20?5:x>=5?3:2);
+  if(x>=20){const b=$('#big');b.innerHTML=(x>=100?'MEGA WIN':'BIG WIN')+'<br>'+fmt(win);b.style.display='flex'}
+  await countUp(win);upd();
+  await sleep(x>=20?1800:900);$('#big').style.display='none';
+ }else await sleep(250);
+ if(res.sc.length>=3){const add=free?5:10;fs+=add;msg(`🎷 ФРИСПИНЫ +${add}! Все выигрыши ×2`);chime(5);await sleep(1600)}
+ else if(free&&fs==0){msg(`Бонус завершён. Выиграно во фриспинах: ${fmt(fsWin)}`);fsWin=0;await sleep(1800)}
+ await syncServerBet(free?0:bet, win);
+ busy=false;$('#spin').disabled=false;
+ if(fs>0)return spin();
+ if(auto>0){auto--;setAuto();return spin()}
+}
+function setAuto(){const b=$('#auto');b.textContent=auto?'АВТО '+auto:'АВТО';b.classList.toggle('on',auto>0)}
+$('#spin').onclick=()=>spin();
+$('#m').onclick=()=>{if(!busy&&bi>0){bi--;upd();beep(300)}};
+$('#p').onclick=()=>{if(!busy&&bi<bets.length-1){bi++;upd();beep(400)}};
+$('#turbo').onclick=e=>{turbo=!turbo;e.target.classList.toggle('on',turbo)};
+$('#snd').onclick=e=>{snd=!snd;e.target.classList.toggle('on',snd)};
+$('#auto').onclick=()=>{const o=[0,10,25,50];auto=o[(o.indexOf(auto)+1)%4]||0;if(auto&&!busy){auto--;setAuto();spin()}else setAuto()};
+document.addEventListener('keydown',e=>{if(e.code=='Space'){e.preventDefault();spin()}});
+$('#info').onclick=()=>{
+ let t='<h3>ТАБЛИЦА ВЫПЛАТ</h3><table><tr><th></th><th>×3</th><th>×4</th><th>×5</th></tr>';
+ for(let i=7;i>=0;i--)t+=`<tr><td><div class="cell">${html(i)}</div></td>${PAY[i].map(v=>`<td>${v}x</td>`).join('')}</tr>`;
+ t+=`<tr><td><div class="cell">${html(9)}</div></td>${SC.map(v=>`<td>${v}x*</td>`).join('')}</tr></table>
+ <p>Выплаты — множитель ставки на линию (ставка ÷ 25), слева направо по 25 линиям. *Скаттер платит в любом месте от общей ставки.</p>
+ <p><b>WILD</b> (барабаны 2–4) заменяет все символы, кроме скаттера.<br><b>3+ СКАТТЕРА</b> — 10 фриспинов, все выигрыши ×2, ретриггер +5.</p>
+ <p style="color:#c9a0e0">Пробел — спин.</p><button onclick="$('#modal').classList.remove('show')">Закрыть</button>`;
+ $('#pt').innerHTML=t;$('#modal').classList.add('show')};
+$('#modal').onclick=e=>{if(e.target.id=='modal')e.target.classList.remove('show')};
+</script></body></html>

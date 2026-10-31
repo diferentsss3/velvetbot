@@ -11,7 +11,7 @@ const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://films-pts-rational-take.trycloudflare.com';
+const API_URL = 'https://personals-tournaments-featuring-towers.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
@@ -26,7 +26,7 @@ const CFG0 = {
 let S = { 
   user: {}, bal: 0, bets: 0, wins: 0, best: 0, hist: [], role: 'player', isAdmin: false, 
   refCount: 0, refDep: 0, refEarned: 0, cfg: CFG0, ban: 0, wager_req: 0,
-  event: { active: false, end: 0 }
+  secret: { active: false, end: 0, keyReady: false, opened: false }
 };
 let selU = null;
 let dMethod = 'usd';
@@ -68,9 +68,11 @@ async function syncMe() {
   S.isAdmin = !!r.admin;
   if (r.cfg) S.cfg = { ...CFG0, ...r.cfg };
   
-  if (r.event) {
-    S.event = r.event;
-    startEventTimer();
+  if (r.event && r.event.secret) {
+    S.secret = r.event.secret;
+    renderSecretEvent();
+    updateSecretTimer();
+    loadSecretFeed();
   }
   
   render(); dUI(); wUI(); loadFeed();
@@ -81,35 +83,207 @@ async function syncMe() {
   updateRankUI();
 }
 
-function startEventTimer() {
-  clearInterval(evInterval);
-  const el = $('#event-timer');
-  const timeEl = $('#ev-time');
+// ================== SECRET EVENT ==================
+let sevInterval = null;
+
+function renderSecretEvent() {
+  const ev = S.secret || { active: false };
   
-  if (!S.event || !S.event.active) {
-    if (el) el.style.display = 'none';
+  // Показать/скрыть nav кнопку
+  const navBtn = $('#nav-e');
+  if (navBtn) navBtn.style.display = ev.active ? 'flex' : 'none';
+  
+  // Header таймер
+  const hdr = $('#event-timer');
+  if (hdr) hdr.classList.toggle('on', !!ev.active);
+  
+  // Баннер в профиле
+  const banner = $('#user-x2-banner');
+  if (banner) banner.classList.toggle('on', !!(ev.active && ev.keyReady && !ev.opened));
+  
+  // Состояние сейфа
+  const box = $('#safe-box');
+  const openBtn = $('#sev-open');
+  const depBtn = $('#sev-dep');
+  const status = $('#sev-status');
+  if (!box) return;
+  
+  if (!ev.active) {
+    if (status) { status.textContent = 'Ивент закончен'; status.style.color = 'var(--m)'; }
+    if (openBtn) openBtn.style.display = 'none';
+    if (depBtn) depBtn.style.display = 'none';
+    box.classList.remove('ready', 'opening');
     return;
   }
-
-  if (el) el.style.display = 'flex';
   
-  evInterval = setInterval(() => {
-    const now = Date.now();
-    const left = S.event.end - now;
-    
+  if (ev.opened) {
+    if (status) { status.textContent = '✅ Вы уже открыли свой сейф'; status.style.color = 'var(--ok)'; }
+    if (openBtn) openBtn.style.display = 'none';
+    if (depBtn) depBtn.style.display = 'none';
+    box.classList.remove('ready');
+    box.textContent = '✅';
+  } else if (ev.keyReady) {
+    if (status) { status.textContent = '🗝 У вас есть ключ! Нажмите на сейф'; status.style.color = '#ffd24a'; }
+    if (openBtn) openBtn.style.display = 'block';
+    if (depBtn) depBtn.style.display = 'none';
+    box.classList.add('ready');
+    box.textContent = '🔐';
+  } else {
+    if (status) { status.textContent = 'Сделайте депозит от 10₽ — получите ключ'; status.style.color = 'var(--m)'; }
+    if (openBtn) openBtn.style.display = 'none';
+    if (depBtn) depBtn.style.display = 'block';
+    box.classList.remove('ready');
+    box.textContent = '🔒';
+  }
+  
+  // Таблица наград
+  const table = $('#sev-table');
+  if (table) {
+    const tiers = [
+      { emoji:'🥉', title:'Бронза',   sub:'x0.5 + 10' },
+      { emoji:'🥈', title:'Серебро',  sub:'x1.0 + 25' },
+      { emoji:'🥇', title:'Золото',   sub:'x2.0 + 50' },
+      { emoji:'💎', title:'Платина',  sub:'x5.0 + 150' },
+      { emoji:'🌟', title:'ЛЕГЕНДА',  sub:'x10 + 500' },
+    ];
+    table.innerHTML = tiers.map(t => `
+      <div class="safe-row">
+        <div class="safe-row-emoji">${t.emoji}</div>
+        <div class="safe-row-info"><b>${t.title}</b><small>${t.sub} к депозиту</small></div>
+      </div>
+    `).join('');
+  }
+}
+
+function updateSecretTimer() {
+  clearInterval(sevInterval);
+  const ev = S.secret;
+  if (!ev || !ev.active) return;
+  const tick = () => {
+    const left = ev.end - Date.now();
+    const el = $('#sev-timer');
+    const hdr = $('#ev-time');
     if (left <= 0) {
-      clearInterval(evInterval);
-      if (el) el.style.display = 'none';
+      clearInterval(sevInterval);
+      if (el) el.textContent = 'Закончился';
+      if (hdr) hdr.textContent = '00:00:00';
       syncMe();
       return;
     }
-    
     const h = Math.floor(left / 3600000);
     const m = Math.floor((left % 3600000) / 60000);
     const s = Math.floor((left % 60000) / 1000);
-    if (timeEl) timeEl.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-  }, 1000);
+    const txt = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    if (el) el.textContent = txt;
+    if (hdr) hdr.textContent = txt;
+  };
+  tick();
+  sevInterval = setInterval(tick, 1000);
 }
+
+async function loadSecretEvent() {
+  const r = await api('/event/status');
+  if (!r.ok) return;
+  S.secret = {
+    active: r.active,
+    end: r.end,
+    keyReady: !!r.keyReady,
+    opened: !!r.opened,
+    depCoins: r.depCoins || 0,
+    rewardId: r.rewardId || ''
+  };
+  renderSecretEvent();
+  updateSecretTimer();
+  loadSecretFeed();
+}
+
+async function loadSecretFeed() {
+  const el = $('#sev-feed');
+  if (!el) return;
+  const r = await api('/event/feed');
+  if (!r.ok || !r.items) return;
+  if (!r.items.length) {
+    el.innerHTML = '<small style="color:var(--m)">Пока никто не открыл сейф</small>';
+    return;
+  }
+  el.innerHTML = r.items.map(x => `
+    <div class="hr" style="border-color:rgba(255,255,255,.05)">
+      <span>${x.emoji} ${x.name}</span>
+      <b style="color:#ffd24a">+${fmt(x.amount)}</b>
+    </div>
+  `).join('');
+}
+
+async function openSafe() {
+  const box = $('#safe-box');
+  const btn = $('#sev-open');
+  if (!box || !btn || btn.disabled) return;
+  if (!S.secret || !S.secret.keyReady || S.secret.opened) return;
+  
+  btn.disabled = true;
+  btn.textContent = 'Открываем...';
+  box.classList.add('opening');
+  
+  const flash = document.createElement('div');
+  flash.className = 'safe-flash';
+  document.body.appendChild(flash);
+  
+  const r = await api('/event/open-safe');
+  
+  setTimeout(() => {
+    flash.classList.add('on');
+    setTimeout(() => { flash.classList.remove('on'); setTimeout(() => flash.remove(), 400); }, 200);
+  }, 850);
+  
+  setTimeout(() => {
+    box.classList.remove('opening', 'ready');
+    
+    if (r.ok) {
+      const rb = $('#sev-reward-box');
+      if (rb) {
+        rb.classList.add('on');
+        $('#sev-emoji').textContent = r.emoji;
+        $('#sev-title').textContent = r.title;
+        $('#sev-amount').textContent = '+' + fmt(r.amount);
+        $('#sev-mult').textContent = `База: ${fmt(r.basis)} × ${r.mult} + ${r.flat}`;
+      }
+      box.textContent = r.emoji;
+      
+      toast(`${r.emoji} ${r.title}! +${fmt(r.amount)} монет`, 'w');
+      if (r.amount >= 1000) h('heavy');
+      
+      S.bal = r.balance;
+      S.secret.keyReady = false;
+      S.secret.opened = true;
+      render();
+      renderSecretEvent();
+      loadSecretFeed();
+      const banner = $('#user-x2-banner');
+      if (banner) banner.classList.remove('on');
+    } else {
+      toast('Ошибка открытия', 'e');
+      if (r.error === 'no_key') toast('Уже открыто или нет ключа', 'e');
+      if (r.error === 'inactive') toast('Ивент неактивен', 'e');
+    }
+    
+    btn.disabled = false;
+    btn.textContent = '🗝 ОТКРЫТЬ СЕЙФ';
+  }, 1500);
+}
+
+// Кнопки
+if ($('#safe-box')) $('#safe-box').onclick = () => { if (S.secret && S.secret.keyReady) openSafe(); };
+if ($('#sev-open')) $('#sev-open').onclick = () => openSafe();
+if ($('#sev-dep')) $('#sev-dep').onclick = () => {
+  dMethod = 'rub';
+  tab('p');
+  setTimeout(() => {
+    $$('#dmethod button').forEach(z => z.classList.toggle('sel', z.dataset.m === 'rub'));
+    if ($('#dam')) $('#dam').value = 10;
+    dUI();
+  }, 100);
+};
+// ==================================================
 
 let tt;
 function toast(m, k) { const e = $('#toast'); if (!e) return; e.textContent = m; e.className = 'on ' + (k || ''); clearTimeout(tt); tt = setTimeout(() => e.className = '', 2200); }
@@ -235,11 +409,22 @@ function dUI() {
     if ($('#dcoins')) $('#dcoins').textContent = fmt(Math.floor(amt * S.cfg.rate));
   } else {
     const rate = +S.cfg.yoo_rate || 1;
-    const min = +S.cfg.yoo_min || 100;
+    const isSecretActive = S.secret && S.secret.active;
+    const min = isSecretActive ? 10 : (+S.cfg.yoo_min || 100);
     const max = +S.cfg.yoo_max || 50000;
-    if ($('#dbadge')) $('#dbadge').textContent = 'ЮKassa';
+    if ($('#dbadge')) {
+      $('#dbadge').textContent = isSecretActive ? '🔐 SECRET · 10₽' : 'ЮKassa';
+      if (isSecretActive) $('#dbadge').style.background = 'linear-gradient(135deg,#ffd24a,#e09a12)';
+      else $('#dbadge').style.background = '';
+    }
     if ($('#dlabel')) $('#dlabel').textContent = 'Сумма пополнения, ₽';
-    if ($('#dmin')) $('#dmin').textContent = 'От ' + fmt(min) + ' до ' + fmt(max) + ' ₽';
+    if ($('#dmin')) {
+      if (isSecretActive) {
+        $('#dmin').innerHTML = 'От <b style="color:#ffd24a">10</b> до ' + fmt(max) + ' ₽ · <span style="color:#ffd24a">🎭 SECRET EVENT</span>';
+      } else {
+        $('#dmin').textContent = 'От ' + fmt(min) + ' до ' + fmt(max) + ' ₽';
+      }
+    }
     if ($('#dnote')) $('#dnote').innerHTML = 'Оплата картой через ЮKassa. Курс: <b>1 ₽ = ' + rate + ' монет</b>';
     if ($('#dcoins')) $('#dcoins').textContent = fmt(Math.floor(amt * rate));
   }
@@ -275,7 +460,8 @@ if ($('#dbtn')) {
       } else toast('Ошибка создания счёта', 'e');
     } else {
       if (!S.cfg.yookassa_enabled) { toast('Оплата картой временно недоступна', 'e'); return; }
-      const min = +S.cfg.yoo_min || 100;
+      const isSecretActive = S.secret && S.secret.active;
+      const min = isSecretActive ? 10 : (+S.cfg.yoo_min || 100);
       const max = +S.cfg.yoo_max || 50000;
       if (amt < min || amt > max) { toast('Сумма от ' + fmt(min) + ' до ' + fmt(max) + ' ₽', 'e'); return; }
       const r = await api('/yookassa/create', { rub: amt });
@@ -333,7 +519,7 @@ function wUI() {
     if ($('#wphone-box')) $('#wphone-box').style.display = 'block';
   }
 
-  const x2Banner = $('#user-x2-banner');
+const x2Banner = $('#user-x2-banner');
   if (x2Banner && S.user) {
     const hasUsed = S.user.used_x2_dep || 0;
     if (S.event && S.event.active && !hasUsed) {
@@ -502,6 +688,7 @@ function tab(t) {
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.t == ('mwcfl'.includes(t) ? 'h' : t))); 
   if(t == 'p') { dUI(); wUI(); }
   if(t == 'b') { loadGiveaways(); updateRankUI(); }
+  if(t == 'e') { loadSecretEvent(); }
 }
 $$('nav button').forEach(b => b.onclick = () => tab(b.dataset.t));
 $$('.mc').forEach(c => c.onclick = () => {
@@ -945,10 +1132,11 @@ if ($('#aps')) {
 
 if ($('#btn-event')) {
   $('#btn-event').onclick = async () => {
-    const r = await api('/admin/toggle-event');
+    const hours = +($('#secret-hours')?.value) || 48;
+    const r = await api('/admin/toggle-secret', { hours });
     if (r.ok) {
-      toast(r.active ? 'Ивент включен на 24 часа!' : 'Ивент выключен', 'w');
-      syncMe(); 
+      toast(r.active ? `🔐 SECRET EVENT запущен на ${r.hours}ч!` : 'Ивент остановлен', 'w');
+      syncMe();
     } else {
       toast('Ошибка', 'e');
     }

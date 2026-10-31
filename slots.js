@@ -269,11 +269,22 @@ function buildLobby(){
 
  // 3. Новые слоты (iframe)
  const newSlots = [
-   {id:'abyss',title:"Abyssal Tide",sub:'Сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)',border:'#22e5c8',file:'ABYSSALTIDE.html'},
-   {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Сбор урн',icon:'🏺',bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)',border:'#f59e0b',file:'PHARAOHSTOMB.html'},
-   {id:'neonheist',title:"Neon Heist",sub:'Сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)',border:'#ff2d95',file:'NEONHEIST.html'},
-   {id:'crazymix',title:"Crazy Mix",sub:'Смешивай',icon:'🎲',bg:'radial-gradient(140% 60% at 50% 0%,#41207a,#150a2b 70%)',border:'#ff3d81',file:'crazy-mix.html'}
- ];
+  {id:'abyss',    title:"Abyssal Tide",   sub:'Сбор сундуков',     icon:'🌊', bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)', border:'#22e5c8', file:'ABYSSALTIDE.html'},
+  {id:'pharaoh',  title:"Pharaoh's Tomb", sub:'Сбор урн',          icon:'🏺', bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)', border:'#f59e0b', file:'PHARAOHSTOMB.html'},
+  {id:'neonheist',title:"Neon Heist",     sub:'Сбор хранилищ',     icon:'💎', bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)', border:'#ff2d95', file:'NEONHEIST.html'},
+  {id:'crazymix', title:"Crazy Mix",      sub:'Смешивай',          icon:'🎲', bg:'radial-gradient(140% 60% at 50% 0%,#41207a,#150a2b 70%)', border:'#ff3d81', file:'crazy-mix.html'},
+
+  // 👇 НОВЫЕ
+  {id:'goldbandit', title:"Gold Bandit", sub:'Ветки ×24 · фриспины', icon:'💰', bg:'radial-gradient(140% 60% at 50% 0%,#8a3a14,#2a1608 70%)', border:'#ffc61a', file:'gold-rush-bandit-slot.html'},
+  {id:'kraken',     title:"Kraken Deep", sub:'Кластеры · каскады',    icon:'🐙', bg:'radial-gradient(140% 60% at 50% 0%,#0e2a5c,#050a1a 70%)', border:'#22e5c8', file:'kraken-deep-slot.html'},
+  {id:'cosmic',     title:"Cosmic Candy", sub:'8+ символов · тамблы', icon:'🍬', bg:'radial-gradient(140% 60% at 50% 0%,#34177a,#1b0a3d 70%)', border:'#ff8fd8', file:'cosmic-candy-slot.html'},
+  {id:'luckypanda',   title:"Lucky Panda Bao",    sub:'Панда-респины',    icon:'🐼', bg:'radial-gradient(140% 60% at 50% 0%,#b3122a,#5a0a18 70%)', border:'#ffd24d', file:'luckypanda.html'},
+  {id:'neonfruit',    title:"Neon Fruit Wheel",   sub:'Колесо ×500',      icon:'🍒', bg:'radial-gradient(140% 60% at 50% 0%,#2a0b4d,#12001f 70%)', border:'#ff2d95', file:'neonfruit.html'},
+  {id:'pharaohcats',  title:"Pharaoh Cats",       sub:'WILD до x10',      icon:'🐱', bg:'radial-gradient(140% 60% at 50% 0%,#2a0f4a,#0a0612 70%)', border:'#fde047', file:'pharaohcats.html'},
+  {id:'secret',   title:"Secret Files",   sub:'243 линии · секреты',     icon:'🕵️', bg:'radial-gradient(140% 60% at 50% 0%,#1c2350,#070a18 70%)', border:'#ffb703', file:'secret-files-slot.html'},
+  {id:'jazz',     title:"Velvet Jazz",    sub:'25 линий · джаз',         icon:'🎷', bg:'radial-gradient(140% 60% at 50% 0%,#d81b7a,#1a0420 70%)', border:'#f2b01e', file:'velvet-jazz.html'},
+  {id:'viking',   title:"Viking Thunder", sub:'10 линий · бонус грома',  icon:'⚡', bg:'radial-gradient(140% 60% at 50% 0%,#34508f,#050b22 70%)', border:'#7fd1ff', file:'viking-thunder-slot.html'}
+];
 
  newSlots.forEach(s => {
    const card = makeCard(

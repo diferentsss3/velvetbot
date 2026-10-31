@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pharaoh Cats</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;900&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--ink:#0a0612;--bone:#e8e8ff;--green:#22e5c8;--orange:#ff7a1a;--pink:#ff2d95;--purple:#7c3aed;--gold:#fde047;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--ink);color:var(--bone);font-family:Rubik,system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.ft{font-family:Bungee,Impact,sans-serif}
+#app{position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+#bg{position:absolute;inset:0;width:100%;height:100%}
+.fog{position:absolute;left:-30%;width:160%;height:200px;pointer-events:none;background:radial-gradient(ellipse at center,rgba(253,224,71,.14),rgba(253,224,71,0) 65%);filter:blur(6px);animation:dr 16s ease-in-out infinite alternate}
+@keyframes dr{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+header{position:relative;text-align:center;padding-top:6px}
+.logo{display:inline-flex;flex-direction:column;align-items:center;line-height:.9}
+.logo small{font-family:Bungee;font-size:14px;letter-spacing:3px;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill;text-shadow:0 3px 0 var(--ink)}
+.logo b{font-family:Bungee;font-size:38px;color:var(--gold);-webkit-text-stroke:8px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--ink),0 0 24px rgba(255,45,149,.8);letter-spacing:4px}
+#msg{position:relative;height:30px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;text-shadow:0 2px 0 var(--ink);text-align:center}
+#msg.win{color:var(--green);font-size:19px;font-family:Bungee}
+#msg.fs{color:var(--ink);font-family:Bungee;font-size:13px;background:linear-gradient(#fde047,#f59e0b);border:3px solid var(--ink);border-radius:12px;box-shadow:0 3px 0 var(--ink);width:fit-content;margin:0 auto;padding:0 14px;height:28px}
+main{position:relative;flex:1;min-height:0;display:flex;padding:16px 8px 4px}
+#frame{position:relative;flex:1;display:flex;padding:8px;border-radius:22px;background:linear-gradient(#2a1258,#150a24);border:5px solid var(--ink);box-shadow:0 0 0 3px var(--gold),0 0 44px rgba(34,229,200,.4),0 8px 0 rgba(0,0,0,.35)}
+#frame.fs{box-shadow:0 0 0 3px var(--green),0 0 54px rgba(34,229,200,.8),0 8px 0 rgba(0,0,0,.35)}
+.plate{position:absolute;top:-17px;left:50%;transform:translateX(-50%);background:linear-gradient(#fde047,#f59e0b);color:var(--ink);border:4px solid var(--ink);border-radius:12px;padding:2px 14px;font-family:Bungee;font-size:12px;white-space:nowrap;box-shadow:0 3px 0 var(--ink);z-index:6}
+.corner{position:absolute;width:28px;height:28px;top:-10px;z-index:6}.corner.l{left:-4px}.corner.r{right:-4px}
+#reels{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;border-radius:14px;overflow:hidden;background:var(--ink);padding:3px}
+.col{display:grid;grid-template-rows:repeat(3,1fr);gap:3px;min-height:0;border-radius:8px;background:linear-gradient(#1a0e33,#0f0524);overflow:hidden}
+.cell{position:relative;min-height:0;padding:5%;display:flex;border-bottom:1px solid rgba(255,255,255,.05)}
+.cell svg{width:100%;height:100%;display:block;overflow:visible}
+.cell.mv svg{filter:blur(1.6px);opacity:.8}
+.cell.win{background:radial-gradient(circle,rgba(34,229,200,.32),rgba(34,229,200,0) 70%)}
+.cell.win svg{animation:wig .55s ease-in-out infinite}
+.cell.land svg{animation:land .3s ease-out}
+@keyframes wig{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.12) rotate(-4deg)}70%{transform:scale(1.12) rotate(4deg)}}
+@keyframes land{0%{transform:scale(1.25)}100%{transform:scale(1)}}
+.m{position:absolute;right:3%;top:3%;background:var(--pink);border:3px solid var(--ink);border-radius:10px;padding:0 5px;font-family:Bungee;font-size:12px;color:var(--bone);box-shadow:0 2px 0 var(--ink)}
+footer{position:relative;padding:6px 12px 12px;background:linear-gradient(rgba(10,6,18,0),rgba(10,6,18,.94) 30%)}
+.stats{display:flex;gap:8px;margin-bottom:10px}
+.stat{flex:1;background:#1a0e33;border:3px solid var(--ink);box-shadow:0 0 0 2px var(--purple),0 3px 0 var(--ink);border-radius:14px;padding:3px 8px;text-align:center}
+.stat span{display:block;font-size:10px;font-weight:900;letter-spacing:1px;opacity:.7}
+.stat b{font-family:Bungee;font-size:17px;color:var(--gold)}.stat.w b{color:var(--green)}
+.ctl{display:flex;align-items:center;justify-content:center;gap:14px}
+.btn{border:4px solid var(--ink);border-radius:50%;box-shadow:0 5px 0 var(--ink);display:flex;align-items:center;justify-content:center;font-family:Bungee;color:var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.sm{width:50px;height:50px;font-size:26px;background:linear-gradient(#ff8fb4,#e0245e);color:var(--bone)}
+.btn.info{width:44px;height:44px;font-size:20px;background:linear-gradient(#c4b5fd,#7c3aed);color:var(--bone)}
+.btn.spin{width:86px;height:86px;background:radial-gradient(circle at 35% 30%,#a7f3d0,#22e5c8 60%,#0d9488)}
+.btn.spin svg{width:52px;height:52px}.btn.spin.go svg{animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.btn:disabled{filter:grayscale(.8) brightness(.6);pointer-events:none}
+.ov{position:absolute;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(5,2,12,.8);backdrop-filter:blur(3px);padding:20px}
+.ov.show{display:flex}
+.card{width:100%;max-width:380px;max-height:88%;overflow:auto;background:linear-gradient(#2a1258,#150a24);border:5px solid var(--ink);box-shadow:0 0 0 3px var(--gold),0 0 50px rgba(253,224,71,.4);border-radius:24px;padding:18px;text-align:center}
+.card h2{font-family:Bungee;font-size:26px;color:var(--green);-webkit-text-stroke:7px var(--ink);paint-order:stroke fill;text-shadow:0 4px 0 var(--ink);margin-bottom:8px}
+.card p{font-size:12.5px;line-height:1.45;color:#d9d4ff;margin:8px 0}
+.pt{display:grid;grid-template-columns:44px 1fr;gap:4px 10px;align-items:center;text-align:left}
+.pt svg{width:42px;height:42px}.pt .p{font-size:12px;font-weight:900}.pt i{font-style:normal;color:var(--gold);font-family:Bungee}
+.cta{background:linear-gradient(#a7f3d0,#22e5c8);color:var(--ink);border:4px solid var(--ink);border-radius:16px;padding:10px 26px;font-family:Bungee;font-size:16px;box-shadow:0 5px 0 var(--ink);margin-top:8px}
+</style></head><body>
+<div id="app">
+<svg id="bg" viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a0f4a"/><stop offset=".45" stop-color="#1a0838"/><stop offset="1" stop-color="#0a0612"/></linearGradient>
+<radialGradient id="gp"><stop offset="0" stop-color="#ff2d95" stop-opacity=".5"/><stop offset="1" stop-color="#ff2d95" stop-opacity="0"/></radialGradient>
+<radialGradient id="gg"><stop offset="0" stop-color="#fde047" stop-opacity=".45"/><stop offset="1" stop-color="#fde047" stop-opacity="0"/></radialGradient></defs>
+<rect width="480" height="900" fill="url(#sky)"/>
+<g fill="#e8e8ff"><circle cx="40" cy="60" r="1.5"/><circle cx="120" cy="40" r="1.8"/><circle cx="200" cy="90" r="1.2"/><circle cx="290" cy="50" r="1.5"/><circle cx="440" cy="60" r="1.3"/><circle cx="70" cy="170" r="1.6"/><circle cx="160" cy="140" r="1.1"/><circle cx="250" cy="150" r="1.4"/><circle cx="20" cy="300" r="1.2"/><circle cx="455" cy="320" r="1.3"/></g>
+<circle cx="370" cy="130" r="150" fill="url(#gp)"/><circle cx="90" cy="220" r="130" fill="url(#gg)"/>
+<circle cx="370" cy="130" r="40" fill="#fde047" stroke="#0a0612" stroke-width="4"/><circle cx="358" cy="120" r="7" fill="#f59e0b"/><circle cx="384" cy="144" r="5" fill="#f59e0b"/>
+<g fill="#0f0524" stroke="#0a0612" stroke-width="3"><path d="M-20 720 L110 560 L240 720Z"/><path d="M150 720 L330 500 L510 720Z"/><path d="M330 720 L430 610 L530 720Z"/></g>
+<g stroke="#22e5c8" stroke-width="2.5" fill="none" opacity=".7"><path d="M110 560 L-20 720"/><path d="M330 500 L150 720"/><path d="M430 610 L330 720"/></g>
+<path d="M0 720 Q120 690 240 715 T480 705 V900 H0Z" fill="#150a24" stroke="#0a0612" stroke-width="3"/>
+<g stroke="#22e5c8" opacity=".3" fill="none" stroke-width="1.5"><path d="M0 800 H480"/><path d="M0 835 H480"/><path d="M0 875 H480"/><path d="M60 780 L20 900"/><path d="M180 780 L140 900"/><path d="M300 780 L330 900"/><path d="M420 780 L460 900"/></g>
+</svg>
+<div class="fog" style="bottom:25%"></div><div class="fog" style="bottom:4%;animation-direction:alternate-reverse"></div>
+<header><div class="logo"><small>PHARAOH</small><b>CATS</b></div></header>
+<div id="msg">Крути и срывай клад!</div>
+<main><div id="frame"><div class="plate">5 ЛИНИЙ • WILD ДО x10</div>
+<svg class="corner l" viewBox="0 0 100 100"><polygon points="50,8 92,50 50,92 8,50" fill="#fde047" stroke="#0a0612" stroke-width="6"/><polygon points="50,26 74,50 50,74 26,50" fill="#0a0612"/><circle cx="50" cy="50" r="7" fill="#ff2d95"/></svg>
+<svg class="corner r" viewBox="0 0 100 100"><polygon points="50,8 92,50 50,92 8,50" fill="#fde047" stroke="#0a0612" stroke-width="6"/><polygon points="50,26 74,50 50,74 26,50" fill="#0a0612"/><circle cx="50" cy="50" r="7" fill="#ff2d95"/></svg>
+<div id="reels"></div></div></main>
+<footer>
+<div class="stats"><div class="stat"><span>БАЛАНС</span><b id="bal">0</b></div><div class="stat"><span>СТАВКА</span><b id="bet">0</b></div><div class="stat w"><span>ВЫИГРЫШ</span><b id="win">0</b></div></div>
+<div class="ctl"><button class="btn info" id="rules">i</button><button class="btn sm" id="minus">−</button>
+<button class="btn spin" id="spin"><svg viewBox="0 0 48 48"><path d="M24 9a15 15 0 1 0 14 20" fill="none" stroke="#0a0612" stroke-width="7" stroke-linecap="round"/><path d="M20 -1 L38 10 L20 21Z" fill="#0a0612" stroke="#0a0612" stroke-width="3" stroke-linejoin="round"/></svg></button>
+<button class="btn sm" id="plus">+</button><span style="width:44px"></span></div>
+</footer>
+<div class="ov" id="ov"><div class="card" id="card"></div></div>
+</div>
+<script>
+const I='#0a0612',st=(w=4)=>`stroke="${I}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+const L=(t,c,f)=>`<text x="50" y="${50+f*.36}" text-anchor="middle" font-size="${f}" class="ft" fill="${c}" stroke="${I}" stroke-width="10" paint-order="stroke" stroke-linejoin="round">${t}</text>`;
+const eyes=(y)=>`<ellipse cx="39" cy="${y}" rx="6" ry="7" fill="#fff" ${st(3)}/><ellipse cx="61" cy="${y}" rx="6" ry="7" fill="#fff" ${st(3)}/><rect x="38" y="${y-5}" width="3" height="10" rx="1.5" fill="${I}"/><rect x="60" y="${y-5}" width="3" height="10" rx="1.5" fill="${I}"/>`;
+const ART={
+C:`<path d="M20 44L8 90 32 82 36 54Z" fill="#22e5c8" ${st()}/><path d="M80 44L92 90 68 82 64 54Z" fill="#22e5c8" ${st()}/><path d="M22 40L24 8 46 26Z" fill="#ff9f43" ${st()}/><path d="M78 40L76 8 54 26Z" fill="#ff9f43" ${st()}/><ellipse cx="50" cy="54" rx="29" ry="26" fill="#ffb86b" ${st()}/><path d="M22 36Q50 16 78 36L76 45Q50 28 24 45Z" fill="#fde047" ${st(3)}/><circle cx="50" cy="25" r="5" fill="#ff2d95" ${st(3)}/>${eyes(55)}<path d="M31 52L20 46M69 52L80 46" stroke="${I}" stroke-width="3.5" stroke-linecap="round"/><path d="M46 65H54L50 70Z" fill="#ff2d95" ${st(2)}/><path d="M50 70Q44 77 38 73M50 70Q56 77 62 73" fill="none" ${st(2.5)}/><path d="M28 82Q50 98 72 82" fill="none" stroke="${I}" stroke-width="10" stroke-linecap="round"/><path d="M28 82Q50 98 72 82" fill="none" stroke="#fde047" stroke-width="5" stroke-linecap="round"/>`,
+P:`<path d="M16 38Q50 4 84 38L90 92 66 86V62H34V86L10 92Z" fill="#fde047" ${st()}/><path d="M22 52L16 84M30 48L26 78M78 52L84 84M70 48L74 78" stroke="#22e5c8" stroke-width="4" stroke-linecap="round"/><path d="M33 40V20L46 32ZM67 40V20L54 32Z" fill="#a78bfa" ${st(3)}/><ellipse cx="50" cy="56" rx="22" ry="22" fill="#a78bfa" ${st()}/><circle cx="50" cy="26" r="5" fill="#ff2d95" ${st(3)}/>${eyes(54)}<path d="M46 63H54L50 68Z" fill="#ff2d95" ${st(2)}/><path d="M50 68Q45 74 40 71M50 68Q55 74 60 71" fill="none" ${st(2.5)}/><rect x="45" y="77" width="10" height="15" rx="3" fill="#22e5c8" ${st(3)}/>`,
+E:`<path d="M8 50Q50 10 92 50Q50 90 8 50Z" fill="#fff" ${st(5)}/><circle cx="50" cy="50" r="17" fill="#22e5c8" ${st(4)}/><circle cx="50" cy="50" r="8" fill="${I}"/><circle cx="45" cy="45" r="3" fill="#fff"/><path d="M10 36Q50 -4 90 36" fill="none" stroke="${I}" stroke-width="12" stroke-linecap="round"/><path d="M10 36Q50 -4 90 36" fill="none" stroke="#fde047" stroke-width="6" stroke-linecap="round"/><path d="M44 72Q42 90 28 92M62 70Q72 84 88 78" fill="none" stroke="${I}" stroke-width="10" stroke-linecap="round"/><path d="M44 72Q42 90 28 92M62 70Q72 84 88 78" fill="none" stroke="#ff2d95" stroke-width="4" stroke-linecap="round"/>`,
+B:`<circle cx="50" cy="12" r="9" fill="#fde047" ${st(3)}/><path d="M16 50L4 44M16 66L2 70M84 50L96 44M84 66L98 70" stroke="${I}" stroke-width="5" stroke-linecap="round"/><path d="M50 30C22 30 12 58 20 80C28 96 72 96 80 80C88 58 78 30 50 30Z" fill="#22e5c8" ${st(5)}/><path d="M50 38V92" stroke="${I}" stroke-width="4"/><path d="M26 58Q50 66 74 58" fill="none" stroke="${I}" stroke-width="3.5"/><path d="M30 66Q38 82 46 66ZM54 66Q62 82 70 66Z" fill="#ff2d95"/><circle cx="50" cy="28" r="10" fill="#7c3aed" ${st(4)}/>`,
+A:L('A','#ff2d95',66),K:L('K','#22e5c8',66),Q:L('Q','#a78bfa',66),J:L('J','#ff9f43',66),T:L('10','#fde047',54),
+W:`<g fill="none" stroke-linecap="round"><g stroke="${I}" stroke-width="17"><ellipse cx="50" cy="30" rx="13" ry="17"/><path d="M50 47V74M32 58H68"/></g><g stroke="#fde047" stroke-width="9"><ellipse cx="50" cy="30" rx="13" ry="17"/><path d="M50 47V74M32 58H68"/></g></g><rect x="12" y="80" width="76" height="17" rx="5" fill="#ff2d95" ${st()}/><text x="50" y="94" text-anchor="middle" font-size="12" class="ft" fill="${I}">WILD</text>`,
+X:`<path d="M50 6L92 76H8Z" fill="#fde047" ${st(5)}/><path d="M50 6L92 76H50Z" fill="#f59e0b"/><path d="M50 6L92 76H8Z" fill="none" ${st(5)}/><path d="M22 56H78M34 36H66" stroke="${I}" stroke-width="2.5" opacity=".5"/><ellipse cx="50" cy="54" rx="13" ry="8" fill="#fff" ${st(3)}/><circle cx="50" cy="54" r="5" fill="#22e5c8" stroke="${I}" stroke-width="2"/><text x="50" y="96" text-anchor="middle" font-size="11" class="ft" fill="#22e5c8" stroke="${I}" stroke-width="4" paint-order="stroke">SPINS</text>`};
+const svg=k=>`<svg viewBox="0 0 100 100">${ART[k]}</svg>`;
+const PAY={C:[10,40,200],P:[8,25,100],E:[5,15,60],B:[4,10,40],A:[2,6,20],K:[2,6,20],Q:[1,4,12],J:[1,4,12],T:[1,3,10]};
+const strip='CCPPEEEBBBAAAKKKQQQJJJTTTTWXXW'.split('');
+const LINES=[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2]];
+const BETS=[10,20,50,100,200,500];
+
+// === ИНТЕГРАЦИЯ С VELVET APP ===
+let INIT_DATA='',API_URL='https://personals-tournaments-featuring-towers.trycloudflare.com',ready=false;
+async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return{ok:false}}}
+async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){bal=Number(r.user.balance)||0;ready=true;ui()}else setTimeout(initFromServer,1000)}
+async function syncServerBet(betAmount,winAmount){const r=await apiCall('/bet',{game:'slot',bet:betAmount,params:{win:winAmount,alreadyDeducted:true}});if(r.ok&&typeof r.balance==='number'){bal=r.balance;ui()}return r}
+window.addEventListener('message',e=>{if(!e.data||e.data.type!=='slot-init')return;if(e.data.initData)INIT_DATA=e.data.initData;if(e.data.apiUrl)API_URL=e.data.apiUrl;initFromServer()});
+const _tg=window.Telegram&&window.Telegram.WebApp;if(_tg){try{_tg.ready();_tg.expand()}catch(e){}}
+if(_tg&&_tg.initData){INIT_DATA=_tg.initData;initFromServer()}
+// === КОНЕЦ ИНТЕГРАЦИИ ===
+
+let bal=10000,bi=1,fs=0,fsWin=0,busy=false,grid=[];
+const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),fmt=n=>Math.round(n).toLocaleString('ru-RU');
+function mk(){const s=strip[rnd(strip.length)];let m=1;if(s==='W'){const a=fs?[2,3,5,10]:[2,2,3,5];m=a[rnd(a.length)]}return{s,m}}
+const cells=[];
+for(let c=0;c<5;c++){const col=document.createElement('div');col.className='col';cells[c]=[];for(let r=0;r<3;r++){const d=document.createElement('div');d.className='cell';col.appendChild(d);cells[c][r]=d}$('reels').appendChild(col)}
+function draw(d,o,cls){d.className='cell'+(cls?' '+cls:'');d.innerHTML=svg(o.s)+(o.s==='W'?`<span class="m">x${o.m}</span>`:'')}
+function ui(){$('bal').textContent=fmt(bal);$('bet').textContent=BETS[bi];$('frame').classList.toggle('fs',!!fs)}
+function setMsg(t,c){const m=$('msg');m.textContent=t;m.className=c||''}
+for(let c=0;c<5;c++){grid[c]=[];for(let r=0;r<3;r++){grid[c][r]=mk();draw(cells[c][r],grid[c][r])}}
+function evaluate(bet){const per=bet/5;let total=0;const hit=new Set();
+for(const Ln of LINES){const line=Ln.map((r,c)=>grid[c][r]);let base=null;for(const o of line){if(o.s==='X')break;if(o.s!=='W'){base=o.s;break}}if(!base)base=line.every(o=>o.s==='W')?'C':null;if(!base)continue;let n=0,mult=1;for(const o of line){if(o.s===base||o.s==='W'){n++;if(o.s==='W')mult*=o.m}else break}if(n<3)continue;total+=PAY[base][n-3]*per*mult;for(let c=0;c<n;c++)hit.add(c+','+Ln[c])}
+let sc=0;grid.forEach((col,c)=>col.forEach((o,r)=>{if(o.s==='X'){sc++;hit.add(c+','+r)}}));
+let add=0;if(sc>=3){total+=bet*({3:2,4:10,5:50}[Math.min(sc,5)]);add=fs?5:8}
+return{total,hit,add}}
+async function spin(){
+  if(busy)return;
+  const bet=BETS[bi];
+  if(!ready){setMsg('Подключение...');return}
+  const wasFS=fs>0;
+  if(!fs){if(bal<bet){setMsg('Недостаточно кредитов');return}bal-=bet}else fs--;
+  busy=true;$('spin').disabled=true;$('spin').classList.add('go');$('win').textContent=0;
+  setMsg(fs?`ФРИСПИНЫ: ${fs} · ВЫИГРАНО ${fmt(fsWin)}`:'Удачи!',fs?'fs':'');ui();
+  const fin=[];for(let c=0;c<5;c++){fin[c]=[];for(let r=0;r<3;r++)fin[c][r]=mk()}
+  await Promise.all([0,1,2,3,4].map(c=>new Promise(res=>{const t=setInterval(()=>{for(let r=0;r<3;r++){draw(cells[c][r],mk(),'mv')}},70);setTimeout(()=>{clearInterval(t);for(let r=0;r<3;r++)draw(cells[c][r],fin[c][r],'land');res()},550+c*280)})));
+  grid=fin;const e=evaluate(bet);
+  e.hit.forEach(k=>{const[c,r]=k.split(',');cells[c][r].classList.add('win')});
+  if(e.total){bal+=e.total;if(fs||e.add)fsWin+=e.total;$('win').textContent=fmt(e.total);setMsg('ВЫИГРЫШ '+fmt(e.total)+'!','win')}else setMsg(fs?`ФРИСПИНЫ: ${fs} · ВЫИГРАНО ${fmt(fsWin)}`:'Без выигрыша',fs?'fs':'');
+  if(e.add){fs+=e.add;setMsg(`+${e.add} ФРИСПИНОВ!`,'win')}
+  else if(!fs&&fsWin){setMsg('Фриспины окончены: '+fmt(fsWin),'win');fsWin=0}
+  ui();
+  await syncServerBet(wasFS?0:bet,e.total);
+  await new Promise(r=>setTimeout(r,e.total?1300:350));
+  busy=false;$('spin').disabled=false;$('spin').classList.remove('go');if(fs)spin()}
+function rules(){let h='<h2>ПРАВИЛА</h2><div class="pt">';for(const k in PAY)h+=`${svg(k)}<div class="p">3 <i>${PAY[k][0]}</i> · 4 <i>${PAY[k][1]}</i> · 5 <i>${PAY[k][2]}</i></div>`;
+h+=`${svg('W')}<div class="p">WILD заменяет всё, кроме SPINS, и множит выигрыш линии на x2–x10</div>${svg('X')}<div class="p">3+ SPINS: выплата и 8 фриспинов (повтор +5)</div></div><p>Числа — множитель ставки на линию (ставка / 5). 5 линий.</p><button class="cta" id="ok">ОК</button>`;
+$('card').innerHTML=h;$('ov').classList.add('show');$('ok').onclick=()=>$('ov').classList.remove('show')}
+$('spin').onclick=spin;$('rules').onclick=rules;
+$('plus').onclick=()=>{if(!busy&&!fs&&bi<BETS.length-1){bi++;ui()}};
+$('minus').onclick=()=>{if(!busy&&!fs&&bi>0){bi--;ui()}};
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();spin()}});
+ui();
+</script></body></html>

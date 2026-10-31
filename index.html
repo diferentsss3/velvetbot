@@ -240,6 +240,79 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 @keyframes cpop{0%{transform:scale(.6);filter:brightness(2.2)}60%{transform:scale(1.12)}100%{transform:none}}
 .cell.wn::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-100%);animation:swp 1s ease-in-out infinite}
 @keyframes swp{to{transform:translateX(100%)}}
+<!-- SECRET EVENT TIMER -->
+<div id="event-timer">
+  🔐 SECRET: <span id="ev-time">00:00:00</span>
+</div>
+
+.safe-wrap { position: relative; padding: 20px 16px 10px; text-align: center; }
+.safe-box {
+  width: 160px; height: 160px; margin: 0 auto 18px;
+  border-radius: 24px;
+  background: radial-gradient(circle at 30% 25%, #ffe9a8, #c9a13a 40%, #6b4a10 80%, #3a2408);
+  display: grid; place-items: center;
+  font-size: 72px; line-height: 1;
+  box-shadow: 0 0 0 8px rgba(139,61,255,.35), 0 20px 40px rgba(0,0,0,.6), inset 0 -12px 20px rgba(0,0,0,.4), inset 0 12px 20px rgba(255,255,255,.2);
+  cursor: pointer; transition: transform .15s;
+  user-select: none;
+}
+.safe-box:active { transform: scale(.96); }
+.safe-box.ready { animation: safeGlow 1.6s ease-in-out infinite; }
+.safe-box.opening { animation: safeOpen 1.4s ease-out forwards; pointer-events: none; }
+@keyframes safeGlow {
+  0%,100% { box-shadow: 0 0 0 8px rgba(139,61,255,.35), 0 0 40px 8px rgba(255,210,74,.3), 0 20px 40px rgba(0,0,0,.6), inset 0 -12px 20px rgba(0,0,0,.4), inset 0 12px 20px rgba(255,255,255,.2); }
+  50% { box-shadow: 0 0 0 12px rgba(139,61,255,.6), 0 0 60px 16px rgba(255,210,74,.7), 0 20px 40px rgba(0,0,0,.6), inset 0 -12px 20px rgba(0,0,0,.4), inset 0 12px 20px rgba(255,255,255,.2); }
+}
+@keyframes safeOpen {
+  0% { transform: rotate(0) scale(1); }
+  30% { transform: rotate(-8deg) scale(1.08); }
+  50% { transform: rotate(8deg) scale(1.12); filter: brightness(1.4); }
+  70% { transform: rotate(-4deg) scale(1.05); }
+  100% { transform: rotate(0) scale(1); filter: brightness(2.5); }
+}
+.safe-flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 9998; transition: opacity .3s; }
+.safe-flash.on { opacity: .85; }
+
+.safe-reward {
+  display: none; margin: 0 0 14px; padding: 24px 16px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(255,210,74,.15), rgba(139,61,255,.15));
+  border: 2px solid rgba(255,210,74,.5);
+  text-align: center;
+}
+.safe-reward.on { display: block; animation: rewardIn .5s ease-out; }
+@keyframes rewardIn {
+  from { transform: scale(.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.safe-reward-emoji { font-size: 64px; line-height: 1; margin-bottom: 8px; }
+.safe-reward-title { font: 700 14px var(--hd); color: #ffd24a; margin-bottom: 4px; letter-spacing: .05em; }
+.safe-reward-amount { font: 700 30px var(--hd); color: #fff; text-shadow: 0 0 20px rgba(255,210,74,.6); }
+
+.safe-table { display: grid; gap: 8px; margin-bottom: 12px; }
+.safe-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,.04); border: 1px solid var(--ln); border-radius: 12px; }
+.safe-row-emoji { font-size: 24px; line-height: 1; }
+.safe-row-info { flex: 1; text-align: left; }
+.safe-row-info b { display: block; font-size: 13px; color: #fff; }
+.safe-row-info small { color: var(--m); font-size: 11px; }
+
+.safe-feed { max-height: 260px; overflow-y: auto; }
+.safe-feed .hr { padding: 8px 0; font-size: 12.5px; }
+
+.safe-banner {
+  display: none; margin: 0 0 14px; padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, rgba(255,60,100,.2), rgba(255,210,74,.2));
+  border: 1px solid #ffd24a;
+  text-align: center; cursor: pointer;
+  animation: pulse-glow 1.5s infinite;
+}
+.safe-banner.on { display: block; }
+.safe-banner b { display: block; color: #ffd24a; font: 700 14px var(--hd); margin-bottom: 2px; }
+.safe-banner small { color: #fff; font-size: 12px; }
+
+#nav-e { display: none; }
+#nav-e.on { display: flex; }
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <radialGradient id="gB" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#7a7a99"/><stop offset=".5" stop-color="#26263f"/><stop offset="1" stop-color="#090914"/></radialGradient>
@@ -619,10 +692,10 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
  <div class="card">
   <div class="shead"><b>Пополнение</b><i class="rtp" id="dbadge">CryptoBot</i></div>
   
-  <div id="user-x2-banner" style="display:none; background:linear-gradient(90deg, rgba(255,60,100,.2), rgba(255,150,50,.2)); border:1px solid #ff8a9b; border-radius:12px; padding:10px; margin-bottom:12px; text-align:center;">
-    <b style="color:#ff8a9b; font-size:14px;">🔥 ИВЕНТ x2!</b><br>
-    <small style="color:#fff;">Ваш первый депозит будет удвоен!</small>
-  </div>
+  <div id="user-x2-banner" class="safe-banner" onclick="tab('e')">
+  <b>🔐 SECRET EVENT</b>
+  <small>У вас есть неоткрытый сейф! Нажмите чтобы открыть →</small>
+</div>
 
   <div class="seg" id="dmethod" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
     <button data-m="usd" class="sel">💎 Крипта ($)</button>
@@ -733,10 +806,12 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 <button class="btn" id="gw-draw-btn" style="min-height:40px; font-size:14px; margin-top:10px; background:linear-gradient(135deg,#ef4444,#b91c1c);">⚡ Развести активные сейчас</button>
 
  <div class="card">
-  <div class="shead"><b>Ивенты</b></div>
-  <p class="note" style="text-align:left;margin:0 0 10px">Ивент "x2 Депозит" удваивает первый депозит каждого игрока в течение 24 часов.</p>
-  <button class="btn" id="btn-event" style="min-height:44px; font-size:14px;">Загрузка...</button>
- </div>
+  <div class="shead"><b>🔐 SECRET EVENT</b></div>
+  <p class="note" style="text-align:left;margin:0 0 10px">Депозит от <b>10₽</b> → игрок получает ключ → открывает сейф → случайная награда (x0.5 – x10 + фикс). Вес легендарки растёт с суммой депозитов.</p>
+  <label>Длительность, часов</label>
+  <input id="secret-hours" type="number" value="48" style="margin-bottom:10px">
+  <button class="btn" id="btn-event" style="min-height:44px; font-size:14px; background:linear-gradient(135deg,#ffd24a,#e09a12);color:#3a2500">🚀 Запустить / Остановить</button>
+</div>
 
  <div class="card">
   <div class="shead"><b>Рассылка</b></div>
@@ -789,6 +864,36 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
   </div>
  </div>
 </section>
+<section class="tab" id="t-e">
+  <div class="safe-wrap">
+    <div style="font:700 12px var(--hd);color:var(--m);margin-bottom:6px;letter-spacing:.08em">⏳ ИВЕНТ ЗАКОНЧИТСЯ ЧЕРЕЗ</div>
+    <div id="sev-timer" style="font:700 22px var(--hd);color:#ffd24a;margin-bottom:22px">—</div>
+    <div class="safe-box" id="safe-box">🔒</div>
+    <div id="sev-status" style="margin-top:16px;font:700 14px var(--hd);color:#fff;padding:0 10px">Загрузка...</div>
+    <button class="btn" id="sev-open" style="display:none;margin-top:14px;background:linear-gradient(135deg,#ffd24a,#e09a12);color:#3a2500;font-size:16px">🗝 ОТКРЫТЬ СЕЙФ</button>
+    <button class="btn" id="sev-dep" style="display:none;margin-top:14px;background:linear-gradient(135deg,#ff3c64,#ff9632);font-size:15px">💳 Пополнить от 10₽</button>
+  </div>
+
+  <div class="safe-reward" id="sev-reward-box">
+    <div class="safe-reward-emoji" id="sev-emoji">🌟</div>
+    <div class="safe-reward-title" id="sev-title">—</div>
+    <div class="safe-reward-amount" id="sev-amount">+0</div>
+    <div style="margin-top:8px;font-size:11.5px;color:var(--m)" id="sev-mult"></div>
+  </div>
+
+  <div class="card">
+    <div class="shead"><b>🎁 Возможные награды</b><i class="rtp" style="background:rgba(255,210,74,.2);color:#ffd24a">от 10₽</i></div>
+    <div class="safe-table" id="sev-table"></div>
+    <p class="note" style="text-align:left;margin:6px 0 0;font-size:11.5px">💡 <b>Чем больше депозит — тем выше шанс на редкую награду!</b> Депозиты за ивент суммируются.</p>
+  </div>
+
+  <div class="card">
+    <div class="shead"><b>📜 Последние открытия</b></div>
+    <div class="safe-feed" id="sev-feed"><small style="color:var(--m)">Загрузка...</small></div>
+  </div>
+
+  <p class="note" style="margin-top:4px">🎭 SECRET EVENT · 1 ключ на игрока · Награда начисляется на баланс</p>
+</section>
 </main>
 
 <nav>
@@ -796,6 +901,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
  <button data-t="s"><span><svg class="ic"><use href="#i-slotm"/></svg></span>Слоты</button>
  <button data-t="b"><span><svg class="ic"><use href="#i-gift"/></svg></span>Бонусы</button>
  <button data-t="p"><span><svg class="ic"><use href="#i-user"/></svg></span>Профиль</button>
+ <button data-t="e" id="nav-e"><span><svg class="ic"><use href="#i-gift"/></svg></span>Ивент</button>
 </nav>
 
 <script src="app.js"></script>

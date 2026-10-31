@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Neon Fruit Wheel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;900&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--ink:#12001f;--pink:#ff2d95;--cy:#22e5c8;--yel:#ffe14d;--pur:#7c3aed;--bone:#fff1fb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--ink);color:var(--bone);font-family:Rubik,system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.ft{font-family:Bungee,Impact,sans-serif}
+#app{position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+#bg{position:absolute;inset:0;width:100%;height:100%}
+.glow{animation:gl 2.4s ease-in-out infinite alternate}
+@keyframes gl{from{opacity:.55}to{opacity:1}}
+header{position:relative;text-align:center;padding-top:6px}
+.logo{display:inline-flex;flex-direction:column;align-items:center;line-height:.9}
+.logo small{font-family:Bungee;font-size:13px;letter-spacing:5px;color:var(--cy);text-shadow:0 0 8px var(--cy),0 0 18px var(--cy)}
+.logo b{font-family:Bungee;font-size:34px;color:#fff;-webkit-text-stroke:2px var(--pink);text-shadow:0 0 10px var(--pink),0 0 26px var(--pink),0 0 44px var(--pink);letter-spacing:3px}
+#hud{position:relative;height:34px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 10px}
+#msg{font-weight:900;font-size:14px;text-shadow:0 0 8px var(--pink);text-align:center}
+#msg.win{color:var(--yel);font-family:Bungee;font-size:18px;text-shadow:0 0 10px var(--yel)}
+#msg.fs{color:var(--ink);font-family:Bungee;font-size:12px;background:linear-gradient(#ffe97a,#ff9f1c);border:3px solid var(--ink);border-radius:12px;padding:2px 12px;box-shadow:0 0 14px var(--yel)}
+#tag{font-family:Bungee;font-size:12px;color:var(--cy);border:2px solid var(--cy);border-radius:10px;padding:2px 10px;box-shadow:0 0 10px var(--cy),inset 0 0 8px rgba(34,229,200,.4);white-space:nowrap}
+main{position:relative;flex:1;min-height:0;display:flex;padding:22px 16px 8px}
+#frame{position:relative;flex:1;display:flex;padding:12px;border-radius:26px;background:linear-gradient(#2a0b4d,#12001f);border:4px solid var(--ink);box-shadow:0 0 0 3px var(--pink),0 0 36px rgba(255,45,149,.6),inset 0 0 30px rgba(124,58,237,.35)}
+.marq{position:absolute;left:-10px;top:-10px;width:calc(100% + 20px);height:calc(100% + 20px);pointer-events:none;z-index:5;filter:drop-shadow(0 0 5px #ffe14d)}
+.marq rect{x:5px;y:5px;width:calc(100% - 10px);height:calc(100% - 10px);rx:28px;fill:none;stroke:#ffe14d;stroke-width:7;stroke-dasharray:0 18;stroke-linecap:round;animation:chase 1.2s linear infinite}
+@keyframes chase{to{stroke-dashoffset:-18}}
+#reels{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-radius:16px;background:#07000f;border:3px solid var(--pur);padding:8px}
+.col{display:grid;grid-template-rows:repeat(3,1fr);gap:8px;min-height:0;border-radius:12px}
+.col.xw{box-shadow:0 0 0 3px var(--yel),0 0 22px var(--yel)}
+.cell{position:relative;min-height:0;padding:7%;display:flex;border-radius:12px;background:linear-gradient(#2b1052,#16062c);border:2px solid #4b2a8a;box-shadow:inset 0 0 14px rgba(124,58,237,.4)}
+.cell svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 0 6px rgba(255,45,149,.55))}
+.cell.mv svg{filter:blur(1.6px);opacity:.75}
+.cell.win{border-color:var(--yel);box-shadow:0 0 18px var(--yel),inset 0 0 18px rgba(255,225,77,.45)}
+.cell.win svg{animation:wig .5s ease-in-out infinite}
+.cell.drop svg{animation:drop .35s cubic-bezier(.3,1.4,.5,1)}
+@keyframes wig{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.12) rotate(-4deg)}70%{transform:scale(1.12) rotate(4deg)}}
+@keyframes drop{from{transform:translateY(-130%)}}
+footer{position:relative;padding:6px 12px 12px;background:linear-gradient(rgba(18,0,31,0),rgba(18,0,31,.95) 30%)}
+.stats{display:flex;gap:8px;margin-bottom:10px}
+.stat{flex:1;background:#1b0b33;border:2px solid var(--pur);box-shadow:0 0 12px rgba(124,58,237,.6);border-radius:12px;padding:3px 8px;text-align:center}
+.stat span{display:block;font-size:10px;font-weight:900;letter-spacing:1px;opacity:.7}
+.stat b{font-family:Bungee;font-size:17px;color:var(--yel);text-shadow:0 0 8px rgba(255,225,77,.7)}.stat.w b{color:var(--cy);text-shadow:0 0 8px rgba(34,229,200,.7)}
+.ctl{display:flex;align-items:center;justify-content:center;gap:14px}
+.btn{border:4px solid var(--ink);border-radius:50%;box-shadow:0 5px 0 var(--ink);display:flex;align-items:center;justify-content:center;font-family:Bungee;color:var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.sm{width:50px;height:50px;font-size:26px;background:linear-gradient(#ff8fd0,#e0187a);color:#fff}
+.btn.info{width:44px;height:44px;font-size:20px;background:linear-gradient(#a7f3e6,#22e5c8)}
+.btn.spin{width:88px;height:88px;background:radial-gradient(circle at 35% 30%,#fff7b0,#ffe14d 60%,#e0a800);box-shadow:0 5px 0 var(--ink),0 0 24px rgba(255,225,77,.7)}
+.btn.spin svg{width:52px;height:52px}.btn.spin.go svg{animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.btn:disabled{filter:grayscale(.8) brightness(.6);pointer-events:none}
+.ov{position:absolute;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(8,0,16,.88);backdrop-filter:blur(3px);padding:20px}
+.ov.show{display:flex}
+.card{width:100%;max-width:380px;max-height:92%;overflow:auto;background:linear-gradient(#2a0b4d,#12001f);border:4px solid var(--pink);box-shadow:0 0 36px rgba(255,45,149,.6);border-radius:22px;padding:18px;text-align:center}
+.card h2{font-family:Bungee;font-size:24px;color:var(--yel);text-shadow:0 0 12px var(--yel);margin-bottom:8px}
+.card p{font-size:12.5px;line-height:1.45;color:#f0d8ff;margin:8px 0;text-align:left}
+.pt{display:grid;grid-template-columns:44px 1fr;gap:4px 10px;align-items:center;text-align:left}
+.pt svg{width:42px;height:42px}.pt .p{font-size:12px;font-weight:900}.pt i{font-style:normal;color:var(--yel);font-family:Bungee}
+.cta{background:linear-gradient(#b8ffe3,#22e5c8);color:var(--ink);border:4px solid var(--ink);border-radius:14px;padding:10px 26px;font-family:Bungee;font-size:16px;box-shadow:0 5px 0 var(--ink);margin-top:8px}
+.wwrap{position:relative;width:min(280px,70vw);aspect-ratio:1;margin:18px auto 8px}
+#wsvg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 14px rgba(255,45,149,.7))}
+.ptr{position:absolute;left:50%;top:-14px;transform:translateX(-50%);width:40px;height:40px;z-index:2}
+#wres{font-family:Bungee;font-size:20px;color:var(--cy);text-shadow:0 0 10px var(--cy);min-height:28px}
+</style></head><body>
+<div id="app">
+<svg id="bg" viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12001f"/><stop offset=".6" stop-color="#2a0b4d"/><stop offset="1" stop-color="#4a0f5c"/></linearGradient>
+<linearGradient id="sn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe14d"/><stop offset="1" stop-color="#ff2d95"/></linearGradient>
+<clipPath id="cl"><rect x="150" y="560" width="180" height="90"/></clipPath></defs>
+<rect width="480" height="900" fill="url(#sk)"/>
+<g clip-path="url(#cl)"><circle cx="240" cy="650" r="90" fill="url(#sn)"/><g fill="#2a0b4d"><rect x="150" y="600" width="180" height="4"/><rect x="150" y="616" width="180" height="6"/><rect x="150" y="634" width="180" height="8"/></g></g>
+<g class="glow" stroke="#ff2d95" stroke-width="2" fill="none"><path d="M0 650H480M0 670H480M0 695H480M0 725H480M0 760H480M0 805H480M0 860H480"/><path d="M240 650L-200 900M240 650L-60 900M240 650L60 900M240 650L170 900M240 650L240 900M240 650L310 900M240 650L420 900M240 650L540 900M240 650L680 900"/></g>
+<g class="glow" fill="none" stroke="#22e5c8" stroke-width="3" stroke-linecap="round"><path d="M50 90L70 90M90 90L120 90"/><circle cx="410" cy="110" r="22"/></g>
+<g fill="#fff" opacity=".7"><circle cx="40" cy="200" r="1.5"/><circle cx="440" cy="230" r="1.5"/><circle cx="120" cy="320" r="1.2"/><circle cx="380" cy="400" r="1.5"/></g>
+</svg>
+<header><div class="logo"><small>РЕТРО</small><b>NEON FRUIT</b></div></header>
+<div id="hud"><div id="msg">Крути неоновые фрукты!</div><div id="tag">КОЛЕСО</div></div>
+<main><div id="frame"><svg class="marq"><rect/></svg><div id="reels"></div></div></main>
+<footer>
+<div class="stats"><div class="stat"><span>БАЛАНС</span><b id="bal">0</b></div><div class="stat"><span>СТАВКА</span><b id="bet">0</b></div><div class="stat w"><span>ВЫИГРЫШ</span><b id="win">0</b></div></div>
+<div class="ctl"><button class="btn info" id="rules">i</button><button class="btn sm" id="minus">−</button>
+<button class="btn spin" id="spin"><svg viewBox="0 0 48 48"><path d="M24 9a15 15 0 1 0 14 20" fill="none" stroke="#12001f" stroke-width="7" stroke-linecap="round"/><path d="M20 -1L38 10 20 21Z" fill="#12001f" stroke="#12001f" stroke-width="3" stroke-linejoin="round"/></svg></button>
+<button class="btn sm" id="plus">+</button><span style="width:44px"></span></div>
+</footer>
+<div class="ov" id="ov"><div class="card" id="card"></div></div>
+<div class="ov" id="wov"><div class="card"><h2>КОЛЕСО УДАЧИ</h2><div class="wwrap"><svg class="ptr" viewBox="-20 -20 40 40"><path d="M-14 -14L14 -14L0 16Z" fill="#fff" stroke="#12001f" stroke-width="4" stroke-linejoin="round"/></svg><svg id="wsvg" viewBox="-110 -110 220 220"></svg></div><div id="wres"></div></div></div>
+</div>
+<script>
+const I='#12001f',st=(w=4)=>`stroke="${I}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+const ART={
+S:`<text x="50" y="86" text-anchor="middle" font-size="96" class="ft" fill="#ff2d4a" stroke="${I}" stroke-width="10" paint-order="stroke" stroke-linejoin="round">7</text><text x="50" y="86" text-anchor="middle" font-size="96" class="ft" fill="none" stroke="#fff" stroke-width="2" opacity=".6">7</text>`,
+R:`<rect x="6" y="26" width="88" height="48" rx="7" fill="#1a1a1a" ${st(5)}/><rect x="12" y="32" width="76" height="36" rx="4" fill="none" stroke="#ffe14d" stroke-width="3"/><text x="50" y="62" text-anchor="middle" font-size="28" class="ft" fill="#ffe14d">BAR</text>`,
+B:`<circle cx="50" cy="10" r="6" fill="#ffe14d" ${st(3.5)}/><path d="M50 12Q32 14 32 46Q32 64 16 76H84Q68 64 68 46Q68 14 50 12Z" fill="#ffe14d" ${st(5)}/><circle cx="50" cy="84" r="9" fill="#f59e0b" ${st(4)}/><path d="M40 30Q38 44 36 54" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".75"/>`,
+M:`<path d="M6 30H94A44 44 0 0 1 6 30Z" fill="#ff4d6d" ${st(5)}/><path d="M12 36H88A38 38 0 0 1 12 36Z" fill="none" stroke="#3ddc6a" stroke-width="5"/><ellipse cx="34" cy="48" rx="3" ry="5" fill="${I}"/><ellipse cx="50" cy="56" rx="3" ry="5" fill="${I}"/><ellipse cx="66" cy="48" rx="3" ry="5" fill="${I}"/><path d="M6 30H94" ${st(5)}/>`,
+P:`<path d="M52 12Q60 4 70 8" fill="none" ${st(8)}/><path d="M52 12Q60 4 70 8" fill="none" stroke="#3ddc6a" stroke-width="3.5" stroke-linecap="round"/><g fill="#9b5cff" ${st(4)}><circle cx="34" cy="34" r="15"/><circle cx="66" cy="34" r="15"/><circle cx="50" cy="52" r="15"/><circle cx="34" cy="70" r="15"/><circle cx="66" cy="70" r="15"/><circle cx="50" cy="86" r="12"/></g><circle cx="29" cy="29" r="4" fill="#fff" opacity=".7"/>`,
+L:`<path d="M8 54Q8 26 50 26Q92 26 92 54Q92 80 50 80Q8 80 8 54Z" fill="#ffe14d" ${st(5)}/><path d="M92 54L98 46M8 54L2 46" ${st(4)}/><path d="M72 22Q86 14 90 28Q80 34 72 28Z" fill="#3ddc6a" ${st(3.5)}/><path d="M24 44Q32 36 44 36" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>`,
+C:`<path d="M30 72Q34 32 62 12M70 68Q68 36 62 12" fill="none" ${st(9)}/><path d="M30 72Q34 32 62 12M70 68Q68 36 62 12" fill="none" stroke="#3ddc6a" stroke-width="4" stroke-linecap="round"/><path d="M62 14Q80 4 92 16Q78 26 62 14Z" fill="#3ddc6a" ${st(3.5)}/><circle cx="30" cy="74" r="19" fill="#ff2d4a" ${st(5)}/><circle cx="70" cy="72" r="19" fill="#ff2d4a" ${st(5)}/><circle cx="23" cy="66" r="5" fill="#fff" opacity=".7"/><circle cx="63" cy="64" r="5" fill="#fff" opacity=".7"/>`,
+W:`<polygon points="50,6 61,36 93,38 68,58 77,90 50,72 23,90 32,58 7,38 39,36" fill="#ffe14d" ${st(5)}/><rect x="16" y="40" width="68" height="20" rx="6" fill="#ff2d95" ${st(4)}/><text x="50" y="55" text-anchor="middle" font-size="13" class="ft" fill="#fff">WILD</text>`,
+Q:`<circle cx="50" cy="54" r="40" fill="#ff2d95" ${st(5)}/><path d="M50 54V14A40 40 0 0 1 84.6 34Z M50 54L84.6 74A40 40 0 0 1 50 94Z M50 54L15.4 74A40 40 0 0 1 15.4 34Z" fill="#ffe14d"/><circle cx="50" cy="54" r="40" fill="none" ${st(5)}/><circle cx="50" cy="54" r="9" fill="#fff" ${st(4)}/><path d="M42 4L58 4L50 18Z" fill="#fff" ${st(3.5)}/>`};
+const svg=k=>`<svg viewBox="0 0 100 100">${ART[k]}</svg>`;
+const PAY={S:100,R:50,B:25,M:15,P:10,L:8,C:5},SYM=Object.keys(PAY);
+const BAG='CCCCCLLLLPPPMMMBBRRS',BETS=[10,20,50,100,200,500];
+const LINES=[[1,1,1],[0,0,0],[2,2,2],[0,1,2],[2,1,0]];
+const SEG=[5,10,5,25,10,5,50,10,5,100,25,500],WTS={5:40,10:30,25:15,50:8,100:5,500:2};
+
+// === ИНТЕГРАЦИЯ С VELVET APP ===
+let INIT_DATA='',API_URL='https://personals-tournaments-featuring-towers.trycloudflare.com',ready=false;
+async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return{ok:false}}}
+async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){bal=Number(r.user.balance)||0;ready=true;ui()}else setTimeout(initFromServer,1000)}
+async function syncServerBet(betAmount,winAmount){const r=await apiCall('/bet',{game:'slot',bet:betAmount,params:{win:winAmount,alreadyDeducted:true}});if(r.ok&&typeof r.balance==='number'){bal=r.balance;ui()}return r}
+window.addEventListener('message',e=>{if(!e.data||e.data.type!=='slot-init')return;if(e.data.initData)INIT_DATA=e.data.initData;if(e.data.apiUrl)API_URL=e.data.apiUrl;initFromServer()});
+const _tg=window.Telegram&&window.Telegram.WebApp;if(_tg){try{_tg.ready();_tg.expand()}catch(e){}}
+if(_tg&&_tg.initData){INIT_DATA=_tg.initData;initFromServer()}
+// === КОНЕЦ ИНТЕГРАЦИИ ===
+
+let bal=10000,bi=1,busy=false,g=[],lock=[false,false,false];
+const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),fmt=n=>Math.round(n).toLocaleString('ru-RU'),wait=ms=>new Promise(r=>setTimeout(r,ms));
+const mk=()=>{const r=Math.random();if(r<.075)return{s:'W'};if(r<.115)return{s:'Q'};return{s:BAG[rnd(BAG.length)]}};
+const cells=[],colEls=[];
+for(let c=0;c<3;c++){const col=document.createElement('div');col.className='col';colEls[c]=col;cells[c]=[];for(let r=0;r<3;r++){const d=document.createElement('div');d.className='cell';col.appendChild(d);cells[c][r]=d}$('reels').appendChild(col)}
+function draw(c,r,o,cls){const d=cells[c][r];d.className='cell'+(cls?' '+cls:'');d.innerHTML=svg(o.s)}
+function ui(){$('bal').textContent=fmt(bal);$('bet').textContent=BETS[bi];colEls.forEach((e,c)=>e.classList.toggle('xw',lock[c]))}
+function setMsg(t,c){const m=$('msg');m.textContent=t;m.className=c||''}
+const rollCols=cs=>Promise.all(cs.map((c,i)=>new Promise(res=>{const t=setInterval(()=>{for(let r=0;r<3;r++)draw(c,r,{s:BAG[rnd(BAG.length)]},'mv')},70);setTimeout(()=>{clearInterval(t);for(let r=0;r<3;r++)draw(c,r,g[c][r],'drop');res()},500+i*260)})));
+function lines(bet){let w=0;const hit=new Set(),per=bet/5;
+for(const Ln of LINES){const l=Ln.map((r,c)=>g[c][r]);const b=l.find(o=>o.s!=='W');const base=b?b.s:'S';let n=0;for(const o of l){if(o.s===base||o.s==='W')n++;else break}
+let p=0;if(n===3)p=PAY[base]||0;else if(n===2&&base==='C')p=2;if(!p)continue;w+=p*per;for(let c=0;c<n;c++)hit.add(c+','+Ln[c])}return{w,hit}}
+function buildWheel(){const R=100;let h='';SEG.forEach((v,i)=>{const a0=i*30*Math.PI/180,a1=(i+1)*30*Math.PI/180;const x0=R*Math.sin(a0),y0=-R*Math.cos(a0),x1=R*Math.sin(a1),y1=-R*Math.cos(a1);const col=v>=100?'#ffe14d':i%2?'#ff2d95':'#22e5c8';h+=`<path d="M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${col}" stroke="${I}" stroke-width="3"/><text transform="rotate(${i*30+15}) translate(0,-66)" text-anchor="middle" font-size="${v>=100?16:15}" class="ft" fill="${I}">x${v}</text>`});
+h+=`<circle r="15" fill="${I}"/><circle r="8" fill="#ffe14d"/>`;$('wsvg').innerHTML=h}
+buildWheel();
+async function wheelSpin(){const w=$('wsvg');w.style.transition='none';w.style.transform='rotate(0deg)';void w.getBoundingClientRect();
+const vals=Object.keys(WTS);let t=0;vals.forEach(v=>t+=WTS[v]);let r=Math.random()*t,val=+vals[0];for(const v of vals){if((r-=WTS[v])<0){val=+v;break}}
+const idx=SEG.map((v,i)=>v===val?i:-1).filter(i=>i>=0);const i=idx[rnd(idx.length)];
+const target=360*5+(360-(i*30+15))+(rnd(16)-8);
+w.style.transition='transform 5s cubic-bezier(.12,.6,.1,1)';w.style.transform=`rotate(${target}deg)`;await wait(5300);return val}
+async function spin(){
+  if(busy)return;
+  const bet=BETS[bi];
+  if(!ready){setMsg('Подключение...');return}
+  if(bal<bet){setMsg('Недостаточно кредитов');return}
+  bal-=bet;busy=true;$('spin').disabled=true;$('spin').classList.add('go');$('win').textContent=0;lock=[false,false,false];setMsg('Крутим неон...');ui();
+  g=[];for(let c=0;c<3;c++){g[c]=[];for(let r=0;r<3;r++)g[c][r]=mk()}
+  await rollCols([0,1,2]);
+  let respins=0;
+  for(;;){const nw=[];for(let c=0;c<3;c++)if(!lock[c]&&g[c].some(o=>o.s==='W'))nw.push(c);if(!nw.length)break;
+  nw.forEach(c=>{lock[c]=true;for(let r=0;r<3;r++){g[c][r]={s:'W'};draw(c,r,g[c][r],'drop')}});ui();
+  setMsg('WILD РАСТЁТ НА ВЕСЬ БАРАБАН!','win');await wait(1000);
+  if(respins>=3||lock.every(Boolean))break;
+  respins++;setMsg(`РЕСПИН ${respins}`,'win');const fr=[0,1,2].filter(c=>!lock[c]);
+  fr.forEach(c=>{for(let r=0;r<3;r++)g[c][r]=mk()});await rollCols(fr)}
+  const e=lines(bet);let total=e.w;e.hit.forEach(k=>{const[c,r]=k.split(',');cells[c][r].classList.add('win')});
+  bal+=total;$('win').textContent=fmt(total);
+  if(total)setMsg('ВЫИГРЫШ '+fmt(total)+'!','win');else setMsg('Пусто, крути ещё');
+  ui();
+  const sc=g.flat().filter(o=>o.s==='Q').length;
+  if(sc>=3){await wait(900);const n=Math.min(sc-2,3);g.forEach((col,c)=>col.forEach((o,r)=>{if(o.s==='Q')cells[c][r].classList.add('win')}));
+  setMsg(`КОЛЕСО УДАЧИ! СПИНОВ: ${n}`,'fs');await wait(1400);
+  $('wres').textContent='';$('wov').classList.add('show');let sum=0;
+  for(let i=0;i<n;i++){$('wres').textContent=n>1?`СПИН ${i+1} ИЗ ${n}`:'';const v=await wheelSpin();const p=v*bet;sum+=p;$('wres').textContent=`x${v} = ${fmt(p)}`;await wait(1800)}
+  $('wov').classList.remove('show');bal+=sum;total+=sum;$('win').textContent=fmt(total);setMsg('БОНУС КОЛЕСА: '+fmt(sum),'win');ui();await wait(900)}
+  await wait(total?700:250);
+  await syncServerBet(bet,total);
+  busy=false;$('spin').disabled=false;$('spin').classList.remove('go')}
+function rules(){let h='<h2>ПРАВИЛА</h2><div class="pt">';for(const k of SYM)h+=`${svg(k)}<div class="p">3 в линии: <i>x${PAY[k]}</i> ставки на линию</div>`;
+h+=`<div></div><div class="p">2 вишни слева направо: <i>x2</i></div>${svg('W')}<div class="p">WILD заменяет все символы, кроме колеса. Появившись, он растёт на весь барабан и даёт респин остальных барабанов (до 3 подряд)</div>${svg('Q')}<div class="p">3+ КОЛЕСА: колесо удачи с множителями до x500 ставки (3 символа дают 1 спин, 4 — 2, 5+ — 3)</div></div><p><b>Линии:</b> 5 линий (3 горизонтали и 2 диагонали), ставка делится на 5. Числа — множитель ставки на линию.</p><button class="cta" id="ok">ОК</button>`;
+$('card').innerHTML=h;$('ov').classList.add('show');$('ok').onclick=()=>$('ov').classList.remove('show')}
+$('spin').onclick=spin;$('rules').onclick=rules;
+$('plus').onclick=()=>{if(!busy&&bi<BETS.length-1){bi++;ui()}};
+$('minus').onclick=()=>{if(!busy&&bi>0){bi--;ui()}};
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();spin()}});
+for(let c=0;c<3;c++){g[c]=[];for(let r=0;r<3;r++){g[c][r]={s:BAG[rnd(BAG.length)]};draw(c,r,g[c][r])}}ui();
+</script></body></html>
