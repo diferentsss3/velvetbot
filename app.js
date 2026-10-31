@@ -11,7 +11,7 @@ const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://personals-tournaments-featuring-towers.trycloudflare.com';
+const API_URL = 'https://sculpture-latter-teaches-sodium.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
@@ -20,7 +20,7 @@ const CFG0 = {
   blogger_max_bonus: 10000, blogger_max_uses: 1000, blogger_dep_share: 10,
   manager_max_bonus: 50000, manager_max_uses: 5000, manager_dep_share: 15,
   botLink: 'https://t.me/velvetcasBot/app',
-  yoo_rate: 1, yoo_min: 100, yoo_max: 50000, sbp_min: 500, yookassa_enabled: false
+  yoo_rate: 1, yoo_min: 10, yoo_max: 50000, sbp_min: 500, yookassa_enabled: false
 };
 
 let S = { 
@@ -410,7 +410,7 @@ function dUI() {
   } else {
     const rate = +S.cfg.yoo_rate || 1;
     const isSecretActive = S.secret && S.secret.active;
-    const min = isSecretActive ? 10 : (+S.cfg.yoo_min || 100);
+    const min = isSecretActive ? 10 : (+S.cfg.yoo_min || 10);
     const max = +S.cfg.yoo_max || 50000;
     if ($('#dbadge')) {
       $('#dbadge').textContent = isSecretActive ? '🔐 SECRET · 10₽' : 'ЮKassa';
