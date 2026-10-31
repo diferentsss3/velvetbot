@@ -11,7 +11,7 @@ const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://sculpture-latter-teaches-sodium.trycloudflare.com';
+const API_URL = 'https://thursday-seating-anymore-mainland.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {

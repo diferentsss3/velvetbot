@@ -108,7 +108,7 @@ const LINES=[[1,1,1],[0,0,0],[2,2,2],[0,1,2],[2,1,0]];
 const SEG=[5,10,5,25,10,5,50,10,5,100,25,500],WTS={5:40,10:30,25:15,50:8,100:5,500:2};
 
 // === ИНТЕГРАЦИЯ С VELVET APP ===
-let INIT_DATA='',API_URL='https://sculpture-latter-teaches-sodium.trycloudflare.com',ready=false;
+let INIT_DATA='',API_URL='https://thursday-seating-anymore-mainland.trycloudflare.com',ready=false;
 async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return{ok:false}}}
 async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){bal=Number(r.user.balance)||0;ready=true;ui()}else setTimeout(initFromServer,1000)}
 async function syncServerBet(betAmount,winAmount){const r=await apiCall('/bet',{game:'slot',bet:betAmount,params:{win:winAmount,alreadyDeducted:true}});if(r.ok&&typeof r.balance==='number'){bal=r.balance;ui()}return r}
