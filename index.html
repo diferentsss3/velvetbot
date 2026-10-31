@@ -408,7 +408,37 @@ nav .on::after{content:"";position:absolute;bottom:3px;width:26px;height:3px;bor
 #toast{background:rgba(14,8,32,.96);border-color:rgba(168,120,255,.4)}
 .sbar{background:rgba(10,5,26,.88);border:1px solid rgba(168,120,255,.25)}
 .sctl .spin{background:radial-gradient(circle at 35% 30%,#fff7d0,#f0c865 45%,#b9852a);box-shadow:0 8px 22px rgba(240,200,101,.55)}
-#slobby>div>div{border-radius:18px!important;box-shadow:0 10px 24px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.15)!important}
+
+/* ============================================================
+   КАРТОЧКИ СЛОТОВ (лобби) — разметку строит slots.js → buildLobby()
+   ============================================================ */
+.sc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.sc{--ac:#c19bff;--ag:#c19bff55;position:relative;border-radius:22px;padding:2px;cursor:pointer;outline:0;
+  background:linear-gradient(155deg,var(--ac) 0%,rgba(255,255,255,.14) 38%,var(--ac) 100%);
+  box-shadow:0 12px 26px rgba(0,0,0,.5),0 0 22px var(--ag);
+  transition:transform .14s ease,box-shadow .14s ease;-webkit-tap-highlight-color:transparent}
+.sc:active{transform:scale(.965)}
+.sc:focus-visible{box-shadow:0 0 0 3px #fff,0 0 22px var(--ag)}
+.sc-in{position:relative;display:flex;flex-direction:column;height:100%;border-radius:20px;overflow:hidden;background:#0c0618}
+.sc-art{position:relative;height:108px;display:grid;place-items:center;background:var(--bg)}
+.sc-art::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 58%,var(--ag),transparent 62%)}
+.sc-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 42%),linear-gradient(0deg,rgba(12,6,24,.85),rgba(12,6,24,0) 38%)}
+.sc-ico{position:relative;z-index:1;width:70px;height:70px;display:grid;place-items:center;border-radius:50%;font-size:38px;line-height:1;
+  background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.24),rgba(0,0,0,.4));
+  box-shadow:inset 0 0 0 2px var(--ac),0 8px 18px rgba(0,0,0,.5),0 0 22px var(--ag)}
+.sc-ico .ic{width:50px;height:50px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+.sc-tag{position:absolute;top:9px;left:9px;z-index:2;font:800 10px/1 Manrope,system-ui,sans-serif;color:#2b1a02;padding:4px 8px;border-radius:8px;
+  background:linear-gradient(180deg,#fff0b8,#e0a93a);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.sc-info{flex:1;display:flex;flex-direction:column;gap:3px;padding:10px 10px 11px;text-align:center;
+  background:linear-gradient(180deg,rgba(26,13,56,.96),#0c0618)}
+.sc-t{font:800 13.5px/1.15 Manrope,system-ui,sans-serif;color:#fff}
+.sc-s{font:600 11px/1.25 Manrope,system-ui,sans-serif;color:var(--m);min-height:27px}
+.sc-row{display:flex;gap:6px;align-items:center;margin-top:6px}
+.sc-rtp{flex:none;font:800 10.5px/1 Manrope,system-ui,sans-serif;color:#ffe9a0;background:rgba(240,200,101,.12);border:1px solid rgba(240,200,101,.32);padding:6px 7px;border-radius:9px}
+.sc-go{flex:1;height:28px;display:grid;place-items:center;border-radius:10px;font:800 12px/1 Manrope,system-ui,sans-serif;color:#2b1a02;
+  background:linear-gradient(180deg,#fff0b8,#f0c865 48%,#c8912f);border:1px solid rgba(255,240,184,.7);
+  box-shadow:0 4px 10px rgba(240,200,101,.28),inset 0 1px 0 rgba(255,255,255,.65),inset 0 -2px 0 rgba(150,100,20,.3)}
+@media(max-width:360px){.sc-art{height:96px}.sc-ico{width:62px;height:62px}.sc-t{font-size:12.5px}}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <radialGradient id="gB" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#7a7a99"/><stop offset=".5" stop-color="#26263f"/><stop offset="1" stop-color="#090914"/></radialGradient>

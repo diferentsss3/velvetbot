@@ -217,86 +217,83 @@ function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=nu
  for(let c=0;c<5;c++)for(let r=0;r<3;r++)setCell(c,r,mkS(drawSym(G,c,false)));
  $('#sov').classList.remove('on');hl([]);$('#swn').textContent='0';$('#smsg').textContent='Удачи!';hud()}
 
-// ================== ЛОББИ В 2 КОЛОНКИ ==================
+// ================== ЛОББИ (стили .sc-* лежат в index.html) ==================
 function buildLobby(){
  const L=$('#slobby'); if(!L) return;
- L.innerHTML='<h3 class="sh">Выберите слот</h3>';
- 
- // Форсируем сетку 2 колонки
- const grid = document.createElement('div');
- grid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;';
- 
- const makeCard = (title, sub, iconHTML, bg, border, rtpColor, onclick) => {
-   const d = document.createElement('div');
-   d.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:space-between; border-radius:20px; padding:12px 6px; text-align:center; cursor:pointer; background:${bg}; border:2px solid ${border}; box-shadow:0 8px 20px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.2); overflow:hidden; transition:transform .12s; position:relative;`;
-   d.onclick = onclick;
-   d.innerHTML = `
-     <div style="height:80px; display:grid; place-items:center; margin-bottom:8px; width:100%;">${iconHTML}</div>
-     <b style="display:block; color:#fff; font:700 12px var(--hd); text-shadow:0 2px 4px rgba(0,0,0,.8); line-height:1.2; min-height:30px;">${title}</b>
-     <small style="display:block; color:#fff; opacity:.85; font-size:10px; margin:2px 0 8px; text-shadow:0 1px 3px rgba(0,0,0,.8); line-height:1.2; min-height:30px;">${sub}</small>
-     <em style="background:rgba(0,0,0,.5); color:${rtpColor}; padding:3px 8px; border-radius:8px; font-weight:800; font-size:10px; font-style:normal; border:1px solid ${rtpColor}40;">RTP 85%</em>
-   `;
-   return d;
+ L.innerHTML='';
+
+ const rtpText=()=>'RTP '+(Number(window.S&&S.cfg&&S.cfg.slot)||85)+'%';
+ const em=c=>'<span>'+c+'</span>';
+
+ const mk=e=>{
+  const d=document.createElement('div');
+  d.className='sc';
+  d.setAttribute('role','button');
+  d.tabIndex=0;
+  d.style.setProperty('--ac',e.ac);
+  d.style.setProperty('--ag',e.ac+'55');
+  d.style.setProperty('--bg',e.bg);
+  d.innerHTML=
+   '<div class="sc-in">'+
+    '<div class="sc-art">'+
+     (e.tag?'<span class="sc-tag">'+e.tag+'</span>':'')+
+     '<div class="sc-ico">'+e.icon+'</div>'+
+    '</div>'+
+    '<div class="sc-info">'+
+     '<div class="sc-t"></div><div class="sc-s"></div>'+
+     '<div class="sc-row"><span class="sc-rtp">'+rtpText()+'</span><span class="sc-go">Играть</span></div>'+
+    '</div>'+
+   '</div>';
+  d.querySelector('.sc-t').textContent=e.title;
+  d.querySelector('.sc-s').textContent=e.sub;
+  d.onclick=e.go;
+  d.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();e.go()}};
+  return d};
+
+ // --- фирменные слоты ---
+ const look={
+  cat:{ac:'#6fe05a',bg:'linear-gradient(180deg,#7ec8f5 0,#c9ecff 42%,#6fcf5a 43%,#3b9a3a)',tag:'Хит'},
+  gold:{ac:'#f59e0b',bg:'linear-gradient(180deg,#ffd9a0 0,#f4a259 28%,#c0662b 29%,#7a3d1c 62%,#4a2310)'},
+  pha:{ac:'#fbbf24',bg:'linear-gradient(180deg,#1c5b8c 0,#52b6dc 26%,#f3d98f 27%,#dcae5c 60%,#a8742e)'},
+  neon:{ac:'#22e3ff',bg:'linear-gradient(180deg,#0a0420,#1a0638 50%,#0c0324)'},
+  dra:{ac:'#ff3b30',bg:'linear-gradient(180deg,#4a0c18 0,#9a1624 30%,#2e0a12 31%,#14050b)'},
+  cos:{ac:'#a855f7',bg:'radial-gradient(70% 40% at 20% 20%,rgba(160,80,255,.5),transparent),radial-gradient(60% 40% at 90% 70%,rgba(34,211,238,.35),transparent),linear-gradient(180deg,#070720,#0c0c3a 60%,#05051a)'},
+  pot:{ac:'#c084fc',bg:'linear-gradient(180deg,#1a0a2e 0,#3a1466 40%,#12062c)'}
  };
+ const own=Object.keys(SLOTS).map(id=>{
+  const G=SLOTS[id],l=look[id]||{ac:'#c19bff',bg:'linear-gradient(180deg,#3a1d6e,#1d0f3a)'};
+  return{title:G.name,sub:G.sub,ac:l.ac,bg:l.bg,tag:l.tag,
+   icon:'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg>',go:()=>openSlot(id)}});
+ own.push({title:"Gravedigger's Tip",sub:'1024 ways · сбор гробов',ac:'#9dff4a',tag:'Хит',
+  bg:'radial-gradient(140% 70% at 50% 0%,#4b1f9e,#1a0d36 72%)',icon:em('⚰️'),go:openGravedigger});
 
- // 1. Старые слоты
- Object.keys(SLOTS).forEach(id => {
-   const G = SLOTS[id];
-   let bg = 'linear-gradient(180deg,#3a1d6e,#1d0f3a)';
-   let border = '#7b3fe4';
-   if (id === 'cat') { bg = 'linear-gradient(180deg,#7ec8f5 0,#c9ecff 40%,#6fcf5a 41%,#3b9a3a)'; border = '#3b9a3a'; }
-   if (id === 'gold') { bg = 'linear-gradient(180deg,#ffd9a0 0,#f4a259 28%,#c0662b 29%,#7a3d1c 62%,#4a2310 100%)'; border = '#f59e0b'; }
-   if (id === 'pha') { bg = 'linear-gradient(180deg,#1c5b8c 0,#52b6dc 26%,#f3d98f 27%,#dcae5c 60%,#a8742e 100%)'; border = '#fbbf24'; }
-   if (id === 'neon') { bg = 'linear-gradient(180deg,#0a0420,#1a0638 45%,#0c0324)'; border = '#22e3ff'; }
-   if (id === 'dra') { bg = 'linear-gradient(180deg,#4a0c18 0,#9a1624 28%,#2e0a12 29%,#14050b 100%)'; border = '#ff3b30'; }
-   if (id === 'cos') { bg = 'radial-gradient(70% 40% at 20% 20%,rgba(160,80,255,.45),transparent),radial-gradient(60% 40% at 90% 70%,rgba(34,211,238,.35),transparent),linear-gradient(180deg,#070720,#0c0c3a 60%,#05051a)'; border = '#a855f7'; }
-   if (id === 'pot') { bg = 'linear-gradient(180deg,#1a0a2e 0,#3a1466 36%,#12062c 100%)'; border = '#c084fc'; }
+ // --- слоты в iframe ---
+ const frames=[
+  {id:'abyss',title:'Abyssal Tide',sub:'Сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 70% at 50% 0%,#0c4a6e,#04121f 72%)',ac:'#22e5c8',file:'ABYSSALTIDE.html'},
+  {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Сбор урн',icon:'🏺',bg:'radial-gradient(140% 70% at 50% 0%,#4a2f16,#160c04 72%)',ac:'#f59e0b',file:'PHARAOHSTOMB.html'},
+  {id:'neonheist',title:'Neon Heist',sub:'Сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 70% at 50% 0%,#2a1258,#0a0612 72%)',ac:'#ff2d95',file:'NEONHEIST.html'},
+  {id:'crazymix',title:'Crazy Mix',sub:'Смешивай',icon:'🎲',bg:'radial-gradient(140% 70% at 50% 0%,#41207a,#150a2b 72%)',ac:'#ff3d81',file:'crazy-mix.html'},
+  {id:'goldbandit',title:'Gold Bandit',sub:'Ветки ×24 · фриспины',icon:'💰',bg:'radial-gradient(140% 70% at 50% 0%,#8a3a14,#2a1608 72%)',ac:'#ffc61a',file:'gold-rush-bandit-slot.html',tag:'Новинка'},
+  {id:'kraken',title:'Kraken Deep',sub:'Кластеры · каскады',icon:'🐙',bg:'radial-gradient(140% 70% at 50% 0%,#0e2a5c,#050a1a 72%)',ac:'#22e5c8',file:'kraken-deep-slot.html',tag:'Новинка'},
+  {id:'cosmic',title:'Cosmic Candy',sub:'8+ символов · тамблы',icon:'🍬',bg:'radial-gradient(140% 70% at 50% 0%,#34177a,#1b0a3d 72%)',ac:'#ff8fd8',file:'cosmic-candy-slot.html',tag:'Новинка'},
+  {id:'luckypanda',title:'Lucky Panda Bao',sub:'Панда-респины',icon:'🐼',bg:'radial-gradient(140% 70% at 50% 0%,#b3122a,#5a0a18 72%)',ac:'#ffd24d',file:'luckypanda.html',tag:'Новинка'},
+  {id:'neonfruit',title:'Neon Fruit Wheel',sub:'Колесо ×500',icon:'🍒',bg:'radial-gradient(140% 70% at 50% 0%,#2a0b4d,#12001f 72%)',ac:'#ff2d95',file:'neonfruit.html',tag:'Новинка'},
+  {id:'pharaohcats',title:'Pharaoh Cats',sub:'WILD до x10',icon:'🐱',bg:'radial-gradient(140% 70% at 50% 0%,#2a0f4a,#0a0612 72%)',ac:'#fde047',file:'pharaohcats.html',tag:'Новинка'},
+  {id:'secret',title:'Secret Files',sub:'243 линии · секреты',icon:'🕵️',bg:'radial-gradient(140% 70% at 50% 0%,#1c2350,#070a18 72%)',ac:'#ffb703',file:'secret-files-slot.html'},
+  {id:'jazz',title:'Velvet Jazz',sub:'25 линий · джаз',icon:'🎷',bg:'radial-gradient(140% 70% at 50% 0%,#d81b7a,#1a0420 72%)',ac:'#f2b01e',file:'velvet-jazz.html'},
+  {id:'viking',title:'Viking Thunder',sub:'10 линий · бонус грома',icon:'⚡',bg:'radial-gradient(140% 70% at 50% 0%,#34508f,#050b22 72%)',ac:'#7fd1ff',file:'viking-thunder-slot.html'}
+ ].map(s=>({title:s.title,sub:s.sub,ac:s.ac,bg:s.bg,tag:s.tag,icon:em(s.icon),go:()=>openSlotFrame(s.id,s.file)}));
 
-   const icon = `<svg class="ic" style="width:60px; height:60px; filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));"><use href="#i-${G.ico(G.hero)}"/></svg>`;
-   const card = makeCard(G.name, G.sub, icon, bg, border, '#ffe9a0', () => openSlot(id));
-   grid.appendChild(card);
- });
-
- // 2. Gravedigger's Tip
- const gdCard = makeCard(
-   "Gravedigger's Tip", 
-   "1024 ways · сбор гробов", 
-   `<div style="font-size:46px; line-height:1; filter:drop-shadow(0 6px 8px rgba(0,0,0,.6));">⚰️</div>`,
-   'radial-gradient(140% 60% at 50% 0%,#4b1f9e,#1a0d36 70%)',
-   '#7b3fe4', '#9dff4a', openGravedigger
- );
- grid.appendChild(gdCard);
-
- // 3. Новые слоты (iframe)
- const newSlots = [
-  {id:'abyss',    title:"Abyssal Tide",   sub:'Сбор сундуков',     icon:'🌊', bg:'radial-gradient(140% 60% at 50% 0%,#0c4a6e,#04121f 70%)', border:'#22e5c8', file:'ABYSSALTIDE.html'},
-  {id:'pharaoh',  title:"Pharaoh's Tomb", sub:'Сбор урн',          icon:'🏺', bg:'radial-gradient(140% 60% at 50% 0%,#4a2f16,#160c04 70%)', border:'#f59e0b', file:'PHARAOHSTOMB.html'},
-  {id:'neonheist',title:"Neon Heist",     sub:'Сбор хранилищ',     icon:'💎', bg:'radial-gradient(140% 60% at 50% 0%,#2a1258,#0a0612 70%)', border:'#ff2d95', file:'NEONHEIST.html'},
-  {id:'crazymix', title:"Crazy Mix",      sub:'Смешивай',          icon:'🎲', bg:'radial-gradient(140% 60% at 50% 0%,#41207a,#150a2b 70%)', border:'#ff3d81', file:'crazy-mix.html'},
-
-  // 👇 НОВЫЕ
-  {id:'goldbandit', title:"Gold Bandit", sub:'Ветки ×24 · фриспины', icon:'💰', bg:'radial-gradient(140% 60% at 50% 0%,#8a3a14,#2a1608 70%)', border:'#ffc61a', file:'gold-rush-bandit-slot.html'},
-  {id:'kraken',     title:"Kraken Deep", sub:'Кластеры · каскады',    icon:'🐙', bg:'radial-gradient(140% 60% at 50% 0%,#0e2a5c,#050a1a 70%)', border:'#22e5c8', file:'kraken-deep-slot.html'},
-  {id:'cosmic',     title:"Cosmic Candy", sub:'8+ символов · тамблы', icon:'🍬', bg:'radial-gradient(140% 60% at 50% 0%,#34177a,#1b0a3d 70%)', border:'#ff8fd8', file:'cosmic-candy-slot.html'},
-  {id:'luckypanda',   title:"Lucky Panda Bao",    sub:'Панда-респины',    icon:'🐼', bg:'radial-gradient(140% 60% at 50% 0%,#b3122a,#5a0a18 70%)', border:'#ffd24d', file:'luckypanda.html'},
-  {id:'neonfruit',    title:"Neon Fruit Wheel",   sub:'Колесо ×500',      icon:'🍒', bg:'radial-gradient(140% 60% at 50% 0%,#2a0b4d,#12001f 70%)', border:'#ff2d95', file:'neonfruit.html'},
-  {id:'pharaohcats',  title:"Pharaoh Cats",       sub:'WILD до x10',      icon:'🐱', bg:'radial-gradient(140% 60% at 50% 0%,#2a0f4a,#0a0612 70%)', border:'#fde047', file:'pharaohcats.html'},
-  {id:'secret',   title:"Secret Files",   sub:'243 линии · секреты',     icon:'🕵️', bg:'radial-gradient(140% 60% at 50% 0%,#1c2350,#070a18 70%)', border:'#ffb703', file:'secret-files-slot.html'},
-  {id:'jazz',     title:"Velvet Jazz",    sub:'25 линий · джаз',         icon:'🎷', bg:'radial-gradient(140% 60% at 50% 0%,#d81b7a,#1a0420 70%)', border:'#f2b01e', file:'velvet-jazz.html'},
-  {id:'viking',   title:"Viking Thunder", sub:'10 линий · бонус грома',  icon:'⚡', bg:'radial-gradient(140% 60% at 50% 0%,#34508f,#050b22 70%)', border:'#7fd1ff', file:'viking-thunder-slot.html'}
-];
-
- newSlots.forEach(s => {
-   const card = makeCard(
-     s.title, s.sub,
-     `<div style="font-size:46px; line-height:1; filter:drop-shadow(0 6px 8px rgba(0,0,0,.6));">${s.icon}</div>`,
-     s.bg, s.border, '#ffe9a0', () => openSlotFrame(s.id, s.file)
-   );
-   grid.appendChild(card);
- });
-
- L.appendChild(grid);
+ [['Слоты Velvet',own],['Ещё слоты',frames]].forEach(([name,list])=>{
+  const h=document.createElement('h3');h.className='sh';h.textContent=name;L.appendChild(h);
+  const g=document.createElement('div');g.className='sc-grid';
+  list.forEach(e=>g.appendChild(mk(e)));
+  L.appendChild(g)});
 }
+// обновить RTP на карточках при открытии вкладки «Слоты»
+(function(){const nb=document.querySelector('nav button[data-t="s"]');
+ if(nb)nb.addEventListener('click',()=>{const t='RTP '+(Number(window.S&&S.cfg&&S.cfg.slot)||85)+'%';
+  document.querySelectorAll('#slobby .sc-rtp').forEach(el=>{el.textContent=t})})})();
 // ==========================================================
 
 // ===== Gravedigger iframe =====
