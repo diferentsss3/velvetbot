@@ -117,7 +117,8 @@ function hud(){const G=SL.G,e=$('#sfs'),F=SL.fctx;let t='';
 function ovShow(t,v,pHTML,btn){
  $('#ovt').textContent=t;$('#ovv').textContent=v;$('#ovv').style.display=v?'block':'none';$('#ovp').innerHTML=pHTML;$('#ovb').textContent=btn;$('#sov').classList.add('on');
  return new Promise(res=>{$('#ovb').onclick=()=>{$('#sov').classList.remove('on');res()}})}
- async function slotSpin(free){
+
+async function slotSpin(free){
  if(SL.busy)return;
  SL.busy = true;
  slotLock(true);
@@ -216,137 +217,84 @@ function openSlot(id){const G=SLOTS[id];SL.G=G;SL.ctx={streak:0,tm:1};SL.fctx=nu
  for(let c=0;c<5;c++)for(let r=0;r<3;r++)setCell(c,r,mkS(drawSym(G,c,false)));
  $('#sov').classList.remove('on');hl([]);$('#swn').textContent='0';$('#smsg').textContent='Удачи!';hud()}
 
-// ================== АДАПТИВНЫЙ ЛОББИ СЛОТОВ ==================
+// ================== ЛОББИ (стили .sc-* лежат в index.html) ==================
 function buildLobby(){
-  const L = $('#slobby');
-  if(!L) return;
+ const L=$('#slobby'); if(!L) return;
+ L.innerHTML='';
 
-  // Стили изолированы префиксом .slot-lobby, чтобы не ломать остальной интерфейс.
-  if(!document.getElementById('slot-lobby-style')){
-    const style = document.createElement('style');
-    style.id = 'slot-lobby-style';
-    style.textContent = `
-      #slobby.slot-lobby{width:100%;box-sizing:border-box;padding:clamp(12px,3vw,22px);color:#f8f5ff}
-      #slobby .slot-lobby-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:0 0 16px}
-      #slobby .slot-lobby-title{margin:0;font:800 clamp(20px,4vw,27px)/1.1 var(--hd,system-ui);letter-spacing:.02em;color:#fff}
-      #slobby .slot-lobby-caption{margin:6px 0 0;color:#a9a1bc;font:500 12px/1.4 system-ui}
-      #slobby .slot-lobby-count{flex:none;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);border-radius:999px;padding:6px 10px;color:#cfc5e5;font:700 11px system-ui}
-      #slobby .slot-lobby-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-      #slobby .slot-card{--accent:#a78bfa;position:relative;display:flex;min-width:0;min-height:174px;flex-direction:column;align-items:stretch;justify-content:space-between;overflow:hidden;isolation:isolate;padding:13px;border:1px solid color-mix(in srgb,var(--accent) 52%,transparent);border-radius:17px;background:var(--card-bg,linear-gradient(145deg,#24163b,#100c1d));box-shadow:0 8px 22px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.09);text-align:left;cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;box-sizing:border-box}
-      #slobby .slot-card:before{content:"";position:absolute;z-index:-1;width:145px;height:110px;right:-45px;top:-48px;border-radius:50%;background:var(--accent);opacity:.14;filter:blur(24px)}
-      #slobby .slot-card:after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.07),transparent 42%);pointer-events:none}
-      #slobby .slot-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 12px 28px rgba(0,0,0,.34),0 0 0 1px color-mix(in srgb,var(--accent) 20%,transparent)}
-      #slobby .slot-card:active{transform:scale(.985)}
-      #slobby .slot-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-      #slobby .slot-card-art{height:76px;display:grid;place-items:center;margin:-2px 0 9px}
-      #slobby .slot-card-art .ic{width:64px;height:64px;max-width:100%;filter:drop-shadow(0 7px 9px rgba(0,0,0,.42))}
-      #slobby .slot-card-emoji{font-size:48px;line-height:1;filter:drop-shadow(0 7px 9px rgba(0,0,0,.42))}
-      #slobby .slot-card-title{display:block;min-height:30px;color:#fff;font:800 13px/1.2 var(--hd,system-ui);overflow-wrap:anywhere;text-shadow:0 2px 8px rgba(0,0,0,.35)}
-      #slobby .slot-card-sub{display:block;min-height:28px;margin-top:4px;color:rgba(242,237,255,.68);font:500 10px/1.35 system-ui}
-      #slobby .slot-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
-      #slobby .slot-card-tag{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:5px 8px;border:1px solid color-mix(in srgb,var(--accent) 38%,transparent);border-radius:7px;background:rgba(0,0,0,.2);color:var(--accent);font:800 9px/1 system-ui;white-space:nowrap}
-      #slobby .slot-card-arrow{color:rgba(255,255,255,.48);font:700 15px/1 system-ui}
-      @media(min-width:560px){#slobby .slot-lobby-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}#slobby .slot-card{min-height:190px;padding:15px}#slobby .slot-card-art{height:86px}}
-      @media(min-width:900px){#slobby .slot-lobby-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}}
-      @media(max-width:350px){#slobby .slot-lobby-grid{gap:8px}#slobby .slot-card{padding:10px;min-height:164px}#slobby .slot-card-title{font-size:12px}#slobby .slot-card-art .ic{width:54px;height:54px}}
-      @media(prefers-reduced-motion:reduce){#slobby .slot-card{transition:none}}
-    `;
-    document.head.appendChild(style);
-  }
+ const rtpText=()=>'RTP '+(Number(window.S&&S.cfg&&S.cfg.slot)||85)+'%';
+ const em=c=>'<span>'+c+'</span>';
 
-  L.classList.add('slot-lobby');
-  L.innerHTML = `
-    <div class="slot-lobby-head">
-      <div>
-        <h3 class="slot-lobby-title">Слоты</h3>
-        <p class="slot-lobby-caption">Выбери игру и испытай удачу</p>
-      </div>
-      <span class="slot-lobby-count">${Object.keys(SLOTS).length + 1 + 13} ИГР</span>
-    </div>
-    <div class="slot-lobby-grid" id="slot-lobby-grid"></div>
-  `;
+ const mk=e=>{
+  const d=document.createElement('div');
+  d.className='sc';
+  d.setAttribute('role','button');
+  d.tabIndex=0;
+  d.style.setProperty('--ac',e.ac);
+  d.style.setProperty('--ag',e.ac+'55');
+  d.style.setProperty('--bg',e.bg);
+  d.innerHTML=
+   '<div class="sc-in">'+
+    '<div class="sc-art">'+
+     (e.tag?'<span class="sc-tag">'+e.tag+'</span>':'')+
+     '<div class="sc-ico">'+e.icon+'</div>'+
+    '</div>'+
+    '<div class="sc-info">'+
+     '<div class="sc-t"></div><div class="sc-s"></div>'+
+     '<div class="sc-row"><span class="sc-rtp">'+rtpText()+'</span><span class="sc-go">Играть</span></div>'+
+    '</div>'+
+   '</div>';
+  d.querySelector('.sc-t').textContent=e.title;
+  d.querySelector('.sc-s').textContent=e.sub;
+  d.onclick=e.go;
+  d.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();e.go()}};
+  return d};
 
-  const grid = $('#slot-lobby-grid');
-  const rtp = Math.round(Number(S.cfg && S.cfg.slot) || 85);
+ // --- фирменные слоты ---
+ const look={
+  cat:{ac:'#6fe05a',bg:'linear-gradient(180deg,#7ec8f5 0,#c9ecff 42%,#6fcf5a 43%,#3b9a3a)',tag:'Хит'},
+  gold:{ac:'#f59e0b',bg:'linear-gradient(180deg,#ffd9a0 0,#f4a259 28%,#c0662b 29%,#7a3d1c 62%,#4a2310)'},
+  pha:{ac:'#fbbf24',bg:'linear-gradient(180deg,#1c5b8c 0,#52b6dc 26%,#f3d98f 27%,#dcae5c 60%,#a8742e)'},
+  neon:{ac:'#22e3ff',bg:'linear-gradient(180deg,#0a0420,#1a0638 50%,#0c0324)'},
+  dra:{ac:'#ff3b30',bg:'linear-gradient(180deg,#4a0c18 0,#9a1624 30%,#2e0a12 31%,#14050b)'},
+  cos:{ac:'#a855f7',bg:'radial-gradient(70% 40% at 20% 20%,rgba(160,80,255,.5),transparent),radial-gradient(60% 40% at 90% 70%,rgba(34,211,238,.35),transparent),linear-gradient(180deg,#070720,#0c0c3a 60%,#05051a)'},
+  pot:{ac:'#c084fc',bg:'linear-gradient(180deg,#1a0a2e 0,#3a1466 40%,#12062c)'}
+ };
+ const own=Object.keys(SLOTS).map(id=>{
+  const G=SLOTS[id],l=look[id]||{ac:'#c19bff',bg:'linear-gradient(180deg,#3a1d6e,#1d0f3a)'};
+  return{title:G.name,sub:G.sub,ac:l.ac,bg:l.bg,tag:l.tag,
+   icon:'<svg class="ic"><use href="#i-'+G.ico(G.hero)+'"/></svg>',go:()=>openSlot(id)}});
+ own.push({title:"Gravedigger's Tip",sub:'1024 ways · сбор гробов',ac:'#9dff4a',tag:'Хит',
+  bg:'radial-gradient(140% 70% at 50% 0%,#4b1f9e,#1a0d36 72%)',icon:em('⚰️'),go:openGravedigger});
 
-  const makeCard = ({title, sub, art, bg, accent, onclick}) => {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'slot-card';
-    card.style.setProperty('--card-bg', bg);
-    card.style.setProperty('--accent', accent);
-    card.setAttribute('aria-label', `Открыть слот ${title}`);
-    card.innerHTML = `
-      <span class="slot-card-art">${art}</span>
-      <span>
-        <b class="slot-card-title">${title}</b>
-        <small class="slot-card-sub">${sub}</small>
-      </span>
-      <span class="slot-card-foot">
-        <span class="slot-card-tag">RTP ${rtp}%</span>
-        <span class="slot-card-arrow" aria-hidden="true">↗</span>
-      </span>
-    `;
-    card.addEventListener('click', onclick);
-    return card;
-  };
+ // --- слоты в iframe ---
+ const frames=[
+  {id:'abyss',title:'Abyssal Tide',sub:'Сбор сундуков',icon:'🌊',bg:'radial-gradient(140% 70% at 50% 0%,#0c4a6e,#04121f 72%)',ac:'#22e5c8',file:'ABYSSALTIDE.html'},
+  {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Сбор урн',icon:'🏺',bg:'radial-gradient(140% 70% at 50% 0%,#4a2f16,#160c04 72%)',ac:'#f59e0b',file:'PHARAOHSTOMB.html'},
+  {id:'neonheist',title:'Neon Heist',sub:'Сбор хранилищ',icon:'💎',bg:'radial-gradient(140% 70% at 50% 0%,#2a1258,#0a0612 72%)',ac:'#ff2d95',file:'NEONHEIST.html'},
+  {id:'crazymix',title:'Crazy Mix',sub:'Смешивай',icon:'🎲',bg:'radial-gradient(140% 70% at 50% 0%,#41207a,#150a2b 72%)',ac:'#ff3d81',file:'crazy-mix.html'},
+  {id:'goldbandit',title:'Gold Bandit',sub:'Ветки ×24 · фриспины',icon:'💰',bg:'radial-gradient(140% 70% at 50% 0%,#8a3a14,#2a1608 72%)',ac:'#ffc61a',file:'gold-rush-bandit-slot.html',tag:'Новинка'},
+  {id:'kraken',title:'Kraken Deep',sub:'Кластеры · каскады',icon:'🐙',bg:'radial-gradient(140% 70% at 50% 0%,#0e2a5c,#050a1a 72%)',ac:'#22e5c8',file:'kraken-deep-slot.html',tag:'Новинка'},
+  {id:'cosmic',title:'Cosmic Candy',sub:'8+ символов · тамблы',icon:'🍬',bg:'radial-gradient(140% 70% at 50% 0%,#34177a,#1b0a3d 72%)',ac:'#ff8fd8',file:'cosmic-candy-slot.html',tag:'Новинка'},
+  {id:'luckypanda',title:'Lucky Panda Bao',sub:'Панда-респины',icon:'🐼',bg:'radial-gradient(140% 70% at 50% 0%,#b3122a,#5a0a18 72%)',ac:'#ffd24d',file:'luckypanda.html',tag:'Новинка'},
+  {id:'neonfruit',title:'Neon Fruit Wheel',sub:'Колесо ×500',icon:'🍒',bg:'radial-gradient(140% 70% at 50% 0%,#2a0b4d,#12001f 72%)',ac:'#ff2d95',file:'neonfruit.html',tag:'Новинка'},
+  {id:'pharaohcats',title:'Pharaoh Cats',sub:'WILD до x10',icon:'🐱',bg:'radial-gradient(140% 70% at 50% 0%,#2a0f4a,#0a0612 72%)',ac:'#fde047',file:'pharaohcats.html',tag:'Новинка'},
+  {id:'secret',title:'Secret Files',sub:'243 линии · секреты',icon:'🕵️',bg:'radial-gradient(140% 70% at 50% 0%,#1c2350,#070a18 72%)',ac:'#ffb703',file:'secret-files-slot.html'},
+  {id:'jazz',title:'Velvet Jazz',sub:'25 линий · джаз',icon:'🎷',bg:'radial-gradient(140% 70% at 50% 0%,#d81b7a,#1a0420 72%)',ac:'#f2b01e',file:'velvet-jazz.html'},
+  {id:'viking',title:'Viking Thunder',sub:'10 линий · бонус грома',icon:'⚡',bg:'radial-gradient(140% 70% at 50% 0%,#34508f,#050b22 72%)',ac:'#7fd1ff',file:'viking-thunder-slot.html'}
+ ].map(s=>({title:s.title,sub:s.sub,ac:s.ac,bg:s.bg,tag:s.tag,icon:em(s.icon),go:()=>openSlotFrame(s.id,s.file)}));
 
-  // Основные слоты
-  Object.keys(SLOTS).forEach(id => {
-    const G = SLOTS[id];
-    let bg = 'linear-gradient(145deg,#302052 0%,#171027 58%,#100b1b 100%)';
-    let accent = '#a78bfa';
-    if(id === 'cat'){bg='linear-gradient(145deg,#245a69,#173b43 55%,#10252d)';accent='#8ee8b1'}
-    if(id === 'gold'){bg='linear-gradient(145deg,#70451d,#3b2415 58%,#1b120c)';accent='#ffc66d'}
-    if(id === 'pha'){bg='linear-gradient(145deg,#28546a,#26354b 55%,#171d2d)';accent='#f2cf82'}
-    if(id === 'neon'){bg='linear-gradient(145deg,#34165a,#1a1037 58%,#100b20)';accent='#4ceaff'}
-    if(id === 'dra'){bg='linear-gradient(145deg,#70202b,#3b111d 58%,#190910)';accent='#ff7777'}
-    if(id === 'cos'){bg='linear-gradient(145deg,#39246f,#1d1948 58%,#100d29)';accent='#c39aff'}
-    if(id === 'pot'){bg='linear-gradient(145deg,#512b79,#2b1747 58%,#160d27)';accent='#d8a5ff'}
-
-    const art = `<svg class="ic" aria-hidden="true"><use href="#i-${G.ico(G.hero)}"/></svg>`;
-    grid.appendChild(makeCard({
-      title:G.name, sub:G.sub, art, bg, accent,
-      onclick:()=>openSlot(id)
-    }));
-  });
-    // Gravedigger
-  grid.appendChild(makeCard({
-    title:"Gravedigger's Tip",
-    sub:'1024 ways · сбор гробов',
-    art:'<span class="slot-card-emoji" aria-hidden="true">⚰️</span>',
-    bg:'linear-gradient(145deg,#492b75,#24163e 58%,#120d20)',
-    accent:'#b99aff',
-    onclick:openGravedigger
-  }));
-
-  // Слоты в отдельных HTML-файлах
-  const newSlots = [
-    {id:'abyss',title:'Abyssal Tide',sub:'Сбор сундуков',icon:'🌊',bg:'linear-gradient(145deg,#0d526b,#092a3a 60%,#071622)',accent:'#42dfd0',file:'ABYSSALTIDE.html'},
-    {id:'pharaoh',title:"Pharaoh's Tomb",sub:'Сбор урн',icon:'🏺',bg:'linear-gradient(145deg,#68451f,#392613 60%,#1a1109)',accent:'#f4c46d',file:'PHARAOHSTOMB.html'},
-    {id:'neonheist',title:'Neon Heist',sub:'Сбор хранилищ',icon:'💎',bg:'linear-gradient(145deg,#50216d,#28133f 60%,#12091e)',accent:'#ff65bd',file:'NEONHEIST.html'},
-    {id:'crazymix',title:'Crazy Mix',sub:'Смешивай символы',icon:'🎲',bg:'linear-gradient(145deg,#56318b,#2c194d 60%,#160d28)',accent:'#ff7eae',file:'crazy-mix.html'},
-    {id:'goldbandit',title:'Gold Bandit',sub:'Ветки ×24 · фриспины',icon:'💰',bg:'linear-gradient(145deg,#744016,#3e240f 60%,#1b1008)',accent:'#ffd05c',file:'gold-rush-bandit-slot.html'},
-    {id:'kraken',title:'Kraken Deep',sub:'Кластеры · каскады',icon:'🐙',bg:'linear-gradient(145deg,#153d76,#102344 60%,#080f20)',accent:'#4be2d0',file:'kraken-deep-slot.html'},
-    {id:'cosmic',title:'Cosmic Candy',sub:'8+ символов · тамблы',icon:'🍬',bg:'linear-gradient(145deg,#56318b,#301b58 60%,#170d2b)',accent:'#ff9bdc',file:'cosmic-candy-slot.html'},
-    {id:'luckypanda',title:'Lucky Panda Bao',sub:'Панда-респины',icon:'🐼',bg:'linear-gradient(145deg,#8a2438,#4c1424 60%,#210b13)',accent:'#ffd76d',file:'luckypanda.html'},
-    {id:'neonfruit',title:'Neon Fruit Wheel',sub:'Колесо ×500',icon:'🍒',bg:'linear-gradient(145deg,#61216d,#32133e 60%,#18091e)',accent:'#ff6ec7',file:'neonfruit.html'},
-    {id:'pharaohcats',title:'Pharaoh Cats',sub:'WILD до ×10',icon:'🐱',bg:'linear-gradient(145deg,#58316e,#2e1a46 60%,#160d24)',accent:'#f6df75',file:'pharaohcats.html'},
-    {id:'secret',title:'Secret Files',sub:'243 линии · секреты',icon:'🕵️',bg:'linear-gradient(145deg,#303d70,#1b2548 60%,#0c1124)',accent:'#ffca68',file:'secret-files-slot.html'},
-    {id:'jazz',title:'Velvet Jazz',sub:'25 линий · джаз',icon:'🎷',bg:'linear-gradient(145deg,#76265c,#401735 60%,#1d0b1c)',accent:'#f4bd68',file:'velvet-jazz.html'},
-    {id:'viking',title:'Viking Thunder',sub:'10 линий · бонус грома',icon:'⚡',bg:'linear-gradient(145deg,#354f83,#1e2d50 60%,#0c1427)',accent:'#8dcfff',file:'viking-thunder-slot.html'}
-  ];
-
-  newSlots.forEach(s => {
-    grid.appendChild(makeCard({
-      title:s.title, sub:s.sub,
-      art:`<span class="slot-card-emoji" aria-hidden="true">${s.icon}</span>`,
-      bg:s.bg, accent:s.accent,
-      onclick:()=>openSlotFrame(s.id,s.file)
-    }));
-  });
+ [['Слоты Velvet',own],['Ещё слоты',frames]].forEach(([name,list])=>{
+  const h=document.createElement('h3');h.className='sh';h.textContent=name;L.appendChild(h);
+  const g=document.createElement('div');g.className='sc-grid';
+  list.forEach(e=>g.appendChild(mk(e)));
+  L.appendChild(g)});
 }
-// ========================================================== 
+// обновить RTP на карточках при открытии вкладки «Слоты»
+(function(){const nb=document.querySelector('nav button[data-t="s"]');
+ if(nb)nb.addEventListener('click',()=>{const t='RTP '+(Number(window.S&&S.cfg&&S.cfg.slot)||85)+'%';
+  document.querySelectorAll('#slobby .sc-rtp').forEach(el=>{el.textContent=t})})})();
+// ==========================================================
 
 // ===== Gravedigger iframe =====
 let gdWrap=null;
