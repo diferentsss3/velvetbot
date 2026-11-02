@@ -12,7 +12,7 @@ const mm = (k, m) => {
   return r;
 };
 
-// добавить ячейку "Прибыль" в info-блок, если ещё нет
+// если в HTML ещё нет ячейки «Прибыль» — добавим
 (function injectProfitCell() {
   const w = $('#mw');
   const row = w && w.parentElement && w.parentElement.parentElement;
@@ -109,7 +109,7 @@ async function mCash() {
   if (!M || M.done || mBusy || !M.open.size) return;
   mBusy = true;
   try {
-    const picks = [...M.open];                     // ← фикс: передаём picks
+    const picks = [...M.open];                     // ← КЛЮЧЕВОЙ ФИКС
     const r = await api('/bet', { game: 'mines', bet: 0, params: { action: 'cashout', picks } });
 
     if (!r || !r.ok) {
