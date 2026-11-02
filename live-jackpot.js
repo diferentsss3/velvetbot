@@ -131,6 +131,7 @@
       const t0 = Date.now();
       const r = await api('/live/jp/state');
       if (r && r.ok) { off = r.now - (t0 + Date.now()) / 2; apply(r); }
+      else if (!st) { const s = $('#lj-status'); if (s) s.textContent = 'Нет ответа от сервера — перезапустите server.js'; }
     } catch (e) { }
     polling = false;
     if (!running) return;
@@ -322,15 +323,28 @@
     try { syncMe(); } catch (e) { }
   }
 
+  // Переход на вкладку игры (работает и со старой версией live.js)
+  function openTab() {
+    try {
+      if (window.LiveLobby && typeof LiveLobby.go === 'function') { LiveLobby.go('lj'); return; }
+    } catch (e) { console.error(e); }
+    if (typeof tab === 'function') tab('lj');
+    document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === 'h'));
+    try { window.scrollTo(0, 0); } catch (e) { }
+  }
+
   // ---------- Регистрация в лобби ----------
   function register() {
-    if (!window.LiveLobby) return;
+    if (!window.LiveLobby) { console.error('[jackpot] LiveLobby не найден: подключите live.js ДО live-jackpot.js'); return; }
     mountTab();
     LiveLobby.add({
       id: 'ljackpot', title: 'Jackpot', sub: 'Один забирает весь банк',
       icon: 'gem', color: '#f0c865', rtp: 90, tag: 'Новинка', ready: true,
       onlineKey: 'jackpot',
-      open: () => { LiveLobby.go('lj'); start(); }
+      open: () => {
+        try { openTab(); start(); }
+        catch (e) { console.error('[jackpot]', e); try { toast('Ошибка: ' + e.message, 'e'); } catch (_) { } }
+      }
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', register);

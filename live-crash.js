@@ -107,6 +107,7 @@
       const t0 = Date.now();
       const r = await api('/live/crash/state');
       if (r && r.ok) { off = r.now - (t0 + Date.now()) / 2; apply(r); }
+      else if (!st) { const s = $('#lc-sub'); if (s) s.textContent = 'Нет ответа от сервера — перезапустите server.js'; }
     } catch (e) { }
     polling = false;
     if (!running) return;
@@ -285,15 +286,28 @@
     try { syncMe(); } catch (e) { }
   }
 
+  // Переход на вкладку игры (работает и со старой версией live.js)
+  function openTab() {
+    try {
+      if (window.LiveLobby && typeof LiveLobby.go === 'function') { LiveLobby.go('lc'); return; }
+    } catch (e) { console.error(e); }
+    if (typeof tab === 'function') tab('lc');
+    document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === 'h'));
+    try { window.scrollTo(0, 0); } catch (e) { }
+  }
+
   // ---------- Регистрация в лобби ----------
   function register() {
-    if (!window.LiveLobby) return;
+    if (!window.LiveLobby) { console.error('[live-crash] LiveLobby не найден: подключите live.js ДО live-crash.js'); return; }
     mountTab();
     LiveLobby.add({
       id: 'lcrash', title: 'Live Crash', sub: 'Общий раунд · ставки видны всем',
       icon: 'rocket', color: '#4cc9f0', rtp: null, tag: 'Новинка', ready: true,
       onlineKey: 'crash',
-      open: () => { LiveLobby.go('lc'); start(); }
+      open: () => {
+        try { openTab(); start(); }
+        catch (e) { console.error('[live-crash]', e); try { toast('Ошибка: ' + e.message, 'e'); } catch (_) { } }
+      }
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', register);
