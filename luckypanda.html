@@ -108,7 +108,7 @@ const BAG='BLLFFFCCCTTTGGGG',BETS=[10,20,50,100,200,500];
 const LINES=[[0,0,0],[1,1,1],[2,2,2],[0,1,2],[2,1,0]];
 
 // === ИНТЕГРАЦИЯ С VELVET APP ===
-let INIT_DATA='',API_URL='https://lonely-alerts-horse-receives.trycloudflare.com',ready=false;
+let INIT_DATA='',API_URL='https://photographic-finite-aside-dialog.trycloudflare.com',ready=false;
 async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return{ok:false}}}
 async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){bal=Number(r.user.balance)||0;ready=true;ui()}else setTimeout(initFromServer,1000)}
 async function syncServerBet(betAmount,winAmount){const r=await apiCall('/bet',{game:'slot',bet:betAmount,params:{win:winAmount,alreadyDeducted:true}});if(r.ok&&typeof r.balance==='number'){bal=r.balance;ui()}return r}

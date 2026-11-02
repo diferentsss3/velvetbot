@@ -17,7 +17,7 @@ const GAME_NAMES = {
 };
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://lonely-alerts-horse-receives.trycloudflare.com';
+const API_URL = 'https://photographic-finite-aside-dialog.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
