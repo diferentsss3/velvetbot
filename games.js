@@ -7,10 +7,20 @@ let mBusy = false;
 const cells = [];
 const mm = (k, m) => {
   if (k > 25 - m) return 0;
-  let r = S.cfg.mines / 100;
+  let r = (S.cfg.mines || 88) / 100;
   for (let i = 0; i < k; i++) r *= (25 - i) / (25 - m - i);
   return r;
 };
+
+// добавить ячейку "Прибыль" в info-блок, если ещё нет
+(function injectProfitCell() {
+  const w = $('#mw');
+  const row = w && w.parentElement && w.parentElement.parentElement;
+  if (!row || $('#mp')) return;
+  const span = document.createElement('span');
+  span.innerHTML = 'Прибыль<b id="mp">—</b>';
+  row.appendChild(span);
+})();
 
 if ($('#grid')) {
   for (let i = 0; i < 25; i++) {
@@ -25,6 +35,10 @@ if ($('#grid')) {
 function mUI() {
   const cur = M && M.open ? M.open.size : 0;
   const n = cur ? mm(cur, M.m) : 1;
+  const bet = M ? M.b : 0;
+  const win = bet ? Math.floor(bet * n * 100) / 100 : 0;
+  const profit = bet ? Math.round((win - bet) * 100) / 100 : 0;
+
   const b = $('#mbtn');
   if (!b) return;
 
@@ -32,10 +46,21 @@ function mUI() {
   const next = mm(cur + 1, mines);
   $('#mx').textContent = 'x' + n.toFixed(2);
   $('#mn').textContent = next ? 'x' + next.toFixed(2) : '—';
-  $('#mw').textContent = M && M.b ? fmt(Math.floor(M.b * n * 100) / 100) : '—';
+  $('#mw').textContent = bet ? fmt(win) : '—';
+  if ($('#mp')) {
+    $('#mp').textContent = bet ? (profit >= 0 ? '+' : '') + fmt(profit) : '—';
+    $('#mp').style.color = profit > 0 ? 'var(--ok)' : profit < 0 ? 'var(--bad)' : '';
+  }
 
   const active = M && !M.done;
-  b.textContent = cur && active ? 'Забрать ' + fmt(Math.floor(M.b * n * 100) / 100) : (active ? 'Выберите ячейку' : 'Играть');
+  if (cur && active) {
+    const sign = profit >= 0 ? '+' : '';
+    b.textContent = `Забрать ${fmt(win)} (${sign}${fmt(profit)})`;
+  } else if (active) {
+    b.textContent = 'Выберите ячейку';
+  } else {
+    b.textContent = 'Играть';
+  }
   b.disabled = active && !cur;
   b.classList.toggle('cash', !!(active && cur > 0));
 }
@@ -44,8 +69,12 @@ async function mClick(i) {
   if (!M || M.done || mBusy || M.open.has(i)) return;
   mBusy = true;
   try {
-    const r = await api('/bet', { game: 'mines', bet: 0, params: { action: 'check', picks: [...M.open, i] } });
-    if (!r.ok) return;
+    const picks = [...M.open, i];
+    const r = await api('/bet', { game: 'mines', bet: 0, params: { action: 'check', picks } });
+    if (!r || !r.ok) {
+      toast('Ошибка проверки — попробуйте ещё раз', 'e');
+      return;
+    }
 
     if (r.result.meta.hit != null) {
       const bombs = r.result.meta.bombs || [i];
@@ -80,22 +109,43 @@ async function mCash() {
   if (!M || M.done || mBusy || !M.open.size) return;
   mBusy = true;
   try {
-    const r = await api('/bet', { game: 'mines', bet: 0, params: { action: 'cashout' } });
-    if (!r.ok) return;
+    const picks = [...M.open];                     // ← фикс: передаём picks
+    const r = await api('/bet', { game: 'mines', bet: 0, params: { action: 'cashout', picks } });
+
+    if (!r || !r.ok) {
+      const err = r && r.error;
+      if (err === 'nogame') toast('Игра не найдена — начните заново', 'e');
+      else if (err === 'nopicks') toast('Откройте хотя бы одну ячейку', 'e');
+      else if (err === 'balance') toast('Ошибка баланса', 'e');
+      else toast('Не удалось забрать: ' + (err || 'unknown'), 'e');
+      return;
+    }
+
     M.done = true;
     if (r.balance !== undefined) S.bal = r.balance;
     render();
-    toast('+' + fmt(r.result.win) + ' (Прибыль: +' + fmt(r.result.win - M.b) + ')', 'w');
+
+    const win = r.result.win || 0;
+    const profit = Math.round((win - M.b) * 100) / 100;
+    const sign = profit >= 0 ? '+' : '';
+    toast(`Выигрыш ${fmt(win)} · Прибыль ${sign}${fmt(profit)}`, 'w');
     mEnd();
   } finally { mBusy = false; }
 }
 
 function mEnd() {
-  $('#mc').disabled = false;
-  $('#mb').disabled = false;
-  $('#mbtn').textContent = 'Играть';
-  $('#mbtn').disabled = false;
-  $('#mbtn').classList.remove('cash');
+  const mc = $('#mc');
+  const mb = $('#mb');
+  if (mc) mc.disabled = false;
+  if (mb) mb.querySelectorAll('input,button').forEach(el => el.disabled = false);
+  const btn = $('#mbtn');
+  if (btn) {
+    btn.textContent = 'Играть';
+    btn.disabled = false;
+    btn.classList.remove('cash');
+  }
+  if ($('#mw')) $('#mw').textContent = '—';
+  if ($('#mp')) { $('#mp').textContent = '—'; $('#mp').style.color = ''; }
 }
 
 if ($('#mbtn')) {
@@ -108,14 +158,20 @@ if ($('#mbtn')) {
     try {
       const mines = +$('#mc').value;
       const r = await api('/bet', { game: 'mines', bet: b, params: { action: 'start', mines } });
-      if (!r.ok) return;
+      if (!r || !r.ok) {
+        if (r && r.error === 'balance') toast('Недостаточно средств', 'e');
+        else toast('Не удалось начать игру', 'e');
+        return;
+      }
       if (r.balance !== undefined) S.bal = r.balance;
       render();
 
       M = { b, m: mines, open: new Set(), done: false };
       cells.forEach(c => { c.className = ''; c.textContent = '?'; });
-      $('#mc').disabled = true;
-      $('#mb').disabled = true;
+      const mcEl = $('#mc');
+      const mbEl = $('#mb');
+      if (mcEl) mcEl.disabled = true;
+      if (mbEl) mbEl.querySelectorAll('input,button').forEach(el => el.disabled = true);
       mUI();
     } finally { mBusy = false; }
   };
@@ -206,8 +262,6 @@ if ($('#wbtn')) {
 }
 
 // --- КРАШ ---
-// Точку краша знает только сервер. Клиент рисует рост множителя по таймеру
-// и раз в 250 мс спрашивает сервер (poll), не упал ли раунд.
 let C = null;
 const cv = $('#cv'), cx = cv?.getContext('2d');
 function cDraw(m, t, bad) {
@@ -402,7 +456,6 @@ if ($('#fbtn')) {
 // --- ЛЕСЕНКА ---
 const LD = { e: { p: .8, n: 10 }, n: { p: .6, n: 8 }, h: { p: .4, n: 6 } }, RH = 340, LH = 420;
 let L = null, ldp = 'e', ldBusy = false;
-// множитель берём из настроек сервера (RTP), как и сервер при выплате
 const lm = (k, d) => (S.cfg.ladder / 100) / Math.pow(LD[d].p, k);
 const man = $('#lman'), rock = $('#lrock'), dust = $('#ldust'), lad = $('#lad');
 const lBot = (k, d) => 12 + k * (RH / LD[d].n) - 3;
@@ -443,7 +496,6 @@ if ($('#lbtn')) {
       const b = getBet('#lb'); if (!b) return;
       const d = $('#ld').value; ldp = d;
       ldBusy = true;
-      // сложность обязательно передаём серверу
       const r = await api('/bet', { game: 'ladder', bet: b, params: { action: 'start', diff: d } });
       ldBusy = false;
       if (!r.ok) return;
@@ -461,7 +513,7 @@ if ($('#lbtn')) {
       L.k++;
       man.style.bottom = lBot(L.k, L.d) + 'px'; h();
       if (L.k >= LD[L.d].n) {
-        L.busy = false;   // иначе lCash сразу выходит и игра зависает
+        L.busy = false;
         lCash();
       } else {
         L.busy = false; lUI();
