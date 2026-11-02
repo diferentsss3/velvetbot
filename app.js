@@ -10,6 +10,12 @@ const fmt = n => {
 const h = (t = 'light') => { try { tg.HapticFeedback.impactOccurred(t) } catch (e) { } };
 const ic = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
 
+// Названия игр для ленты ставок и истории
+const GAME_NAMES = {
+  mines: 'Мины', wheel: 'Колесо', crash: 'Краш', flip: 'Монета', ladder: 'Лесенка',
+  slot: 'Слоты', blackjack: 'Блэкджек', livecrash: 'Live Crash', jackpot: 'Jackpot'
+};
+
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
 const API_URL = 'https://lonely-alerts-horse-receives.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
@@ -47,11 +53,10 @@ async function api(path, data = {}) {
 async function loadFeed() {
   const r = await api('/feed');
   if (!r.ok || !$('#feed')) return;
-  const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты', blackjack: 'Блэкджек' };
   if (!r.items || r.items.length === 0) { $('#feed').innerHTML = '<small style="color:var(--m); padding:10px; display:block; text-align:center;">Пока нет ставок</small>'; return; }
   $('#feed').innerHTML = r.items.map(x => {
     const pr = Math.round((x.win - x.bet) * 100) / 100; const mult = (x.win / x.bet).toFixed(2);
-    return `<div class="fr"><span>${gn[x.game] || x.game}</span><span>${x.name || 'Игрок'}</span><span>${fmt(x.bet)}</span><span>x${mult}</span><b style="color:var(${pr > 0 ? '--ok' : '--bad'})">${pr > 0 ? '+' : ''}${fmt(pr)}</b></div>`;
+    return `<div class="fr"><span>${GAME_NAMES[x.game] || x.game}</span><span>${x.name || 'Игрок'}</span><span>${fmt(x.bet)}</span><span>x${mult}</span><b style="color:var(${pr > 0 ? '--ok' : '--bad'})">${pr > 0 ? '+' : ''}${fmt(pr)}</b></div>`;
   }).join('');
 }
 setInterval(loadFeed, 10000);
@@ -670,7 +675,7 @@ async function playGame(game, bet, params) {
   if (!alreadyDeducted && (!params || (params.action !== 'climb' && params.action !== 'cashout'))) {
       S.bets++; if (win > bet) S.wins++;
       S.best = Math.max(S.best || 0, Math.round((win - bet) * 100) / 100);
-      const gn = { mines:'Мины', wheel:'Колесо', crash:'Краш', flip:'Монета', ladder:'Лесенка', slot: 'Слоты', blackjack: 'Блэкджек' }[game] || game;
+      const gn = GAME_NAMES[game] || game;
       S.hist.unshift([gn, Math.round((win - bet) * 100) / 100]); S.hist = S.hist.slice(0, 15);
   }
   render(); loadFeed();
