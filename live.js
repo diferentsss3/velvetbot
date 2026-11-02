@@ -1,27 +1,24 @@
 /* ============================================================
    VELVET — LIVE GAME LOBBY (отдельный модуль)
-   На главной в блоке «Игры» появляется ОДНА карточка «Live game».
-   По нажатию открывается отдельная вкладка с сеткой live-игр.
-   Зависит от app.js: $, ic, toast, tab
-   Подключать ПОСЛЕ slots.js:  <script src="live.js"></script>
+   На главной в блоке «Игры» — ОДНА карточка «Live game».
+   По нажатию открывается вкладка с сеткой live-игр.
+   Показывает онлайн игроков в реальном времени.
+   Зависит от app.js: $, api, ic, toast, tab
+   Подключать ПОСЛЕ slots.js, ДО live-crash.js
    ============================================================ */
 (function () {
   'use strict';
 
   // ---------- СПИСОК LIVE-ИГР ----------
-  //  id     — уникальный id
-  //  title  — название на карточке
-  //  sub    — подпись
-  //  icon   — символ из index.html (#i-wheel → 'wheel'): wheel, rocket, bomb, gem, coin, eagle, ladder, gift, paw, yarn...
-  //  color  — цвет рамки/свечения
-  //  rtp    — число для бейджа RTP (или null)
-  //  tag    — плашка слева сверху ('Хит', 'Новинка' или '')
-  //  ready  — true когда игра готова
-  //  tab    — id вкладки (section#t-<id>) ИЛИ open: () => {...}
+  //  id, title, sub, icon, color, rtp (число|null), tag, ready
+  //  onlineKey — ключ из ответа /live/online (например 'crash')
+  //  tab — id вкладки ИЛИ open: () => {...}
+  // Рабочие игры добавляют себя сами через LiveLobby.add(...) (см. live-crash.js)
   const GAMES = [
-    { id: 'live1', title: 'Скоро', sub: 'Live-игра в реальном времени', icon: 'wheel',  color: '#c19bff', rtp: null, tag: '', ready: false },
-    { id: 'live2', title: 'Скоро', sub: 'Live-игра в реальном времени', icon: 'rocket', color: '#4cc9f0', rtp: null, tag: '', ready: false },
+    { id: 'soon1', title: 'Скоро', sub: 'Новая live-игра', icon: 'wheel', color: '#c19bff', rtp: null, tag: '', ready: false },
   ];
+
+  const ONL = {}; // последние значения онлайна
 
   // ---------- СТИЛИ ----------
   const CSS = `
@@ -29,8 +26,12 @@
 .m8 .ic{width:1.45em;height:1.45em}
 .bd.live{background:linear-gradient(135deg,#ff3c64,#ff7a3c);color:#fff;display:inline-flex;align-items:center;gap:5px}
 .bd.live .pulse-dot{width:6px;height:6px;background:#fff;box-shadow:0 0 6px #fff}
+.lv-on{display:inline-flex;align-items:center;gap:5px;color:var(--ok);font-weight:700}
+.lv-on .pulse-dot{width:6px;height:6px}
 .sc-live{position:absolute;top:9px;right:9px;z-index:2;display:inline-flex;align-items:center;gap:5px;font:800 10px/1 Manrope,system-ui,sans-serif;color:#fff;padding:4px 8px;border-radius:8px;background:linear-gradient(135deg,#ff3c64,#ff7a3c);box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .sc-live .pulse-dot{width:6px;height:6px;background:#fff;box-shadow:0 0 6px #fff}
+.sc-on{display:flex;align-items:center;justify-content:center;gap:5px;font:700 11px Manrope,system-ui,sans-serif;color:var(--ok);margin-top:2px}
+.sc-on .pulse-dot{width:6px;height:6px}
 .sc.soon{filter:saturate(.7)}
 .sc.soon .sc-go{background:rgba(255,255,255,.1);color:var(--m);border-color:var(--ln);box-shadow:none}
 .lv-head{display:flex;align-items:center;gap:10px;margin:0 0 12px}
@@ -42,7 +43,7 @@
   st.textContent = CSS;
   document.head.appendChild(st);
 
-  // ---------- ИКОНКА (символ добавляем сами) ----------
+  // ---------- ИКОНКА ----------
   function injectIcon() {
     if (document.getElementById('i-livetv')) return;
     const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -65,7 +66,7 @@
     document.body.insertBefore(s, document.body.firstChild);
   }
 
-  // ---------- КАРТОЧКА «LIVE GAME» В БЛОКЕ ИГР НА ГЛАВНОЙ ----------
+  // ---------- КАРТОЧКА НА ГЛАВНОЙ ----------
   function mountHomeCard() {
     if (document.getElementById('live-entry')) return;
     const modes = document.querySelector('#t-h .modes');
@@ -78,14 +79,15 @@
     card.innerHTML =
       '<em class="bd live"><i class="pulse-dot"></i>LIVE</em>' +
       '<div class="pn m8"><span><svg class="ic"><use href="#i-livetv"/></svg></span></div>' +
-      '<div><b>Live game</b><small>Игры в реальном времени · вместе с другими</small></div>';
+      '<div><b>Live game</b><small>Игры в реальном времени · ' +
+      '<span class="lv-on"><i class="pulse-dot"></i><b id="live-entry-online">0</b> онлайн</span></small></div>';
     const go = () => openLobby();
     card.onclick = go;
     card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
     modes.appendChild(card);
   }
 
-  // ---------- ВКЛАДКА С СЕТКОЙ ИГР ----------
+  // ---------- ВКЛАДКА С СЕТКОЙ ----------
   function mountLobbyTab() {
     if (document.getElementById('t-lv')) return;
     const main = document.querySelector('main');
@@ -103,21 +105,44 @@
     document.getElementById('lv-back').onclick = () => { goTab('h'); };
   }
 
+  const CORE_TABS = ['h', 's', 'b', 'p', 'e', 'a'];
   function goTab(t) {
     if (typeof tab === 'function') tab(t);
-    // подсветка нижнего меню: для вкладки лобби активной остаётся «Главная»
-    const navT = (t === 'lv' || (typeof t === 'string' && t.indexOf('lv') === 0)) ? 'h' : null;
-    if (navT) document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === navT));
-    try { window.scrollTo(0, 0); } catch (e) {}
+    // для вкладок лобби/игр подсвечиваем «Главная»
+    if (CORE_TABS.indexOf(t) < 0) {
+      document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === 'h'));
+    }
+    try { window.scrollTo(0, 0); } catch (e) { }
   }
 
   function openLobby() {
-    try { if (typeof h === 'function') h('light'); } catch (e) {}
+    try { if (typeof h === 'function') h('light'); } catch (e) { }
     render();
     goTab('lv');
+    pollOnline();
   }
 
-  // ---------- РЕНДЕР СЕТКИ КАРТОЧЕК ----------
+  // ---------- ОНЛАЙН В РЕАЛЬНОМ ВРЕМЕНИ ----------
+  function applyOnline() {
+    document.querySelectorAll('[data-on]').forEach(el => { el.textContent = ONL[el.dataset.on] != null ? ONL[el.dataset.on] : 0; });
+    const t = document.getElementById('live-entry-online');
+    if (t) t.textContent = ONL.total != null ? ONL.total : 0;
+  }
+
+  async function pollOnline() {
+    const home = document.getElementById('t-h'), lob = document.getElementById('t-lv');
+    const visible = (home && home.classList.contains('on')) || (lob && lob.classList.contains('on'));
+    if (!visible || typeof api !== 'function') return;
+    try {
+      const r = await api('/live/online');
+      if (!r || !r.ok) return;
+      Object.keys(r).forEach(k => { if (k !== 'ok') ONL[k] = r[k]; });
+      applyOnline();
+    } catch (e) { }
+  }
+  setInterval(pollOnline, 5000);
+
+  // ---------- РЕНДЕР СЕТКИ ----------
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   function render() {
@@ -130,7 +155,10 @@
       return;
     }
 
-    el.innerHTML = GAMES.map(g => `
+    // рабочие игры — первыми
+    const list = GAMES.slice().sort((a, b) => (b.ready ? 1 : 0) - (a.ready ? 1 : 0));
+
+    el.innerHTML = list.map(g => `
       <div class="sc ${g.ready ? '' : 'soon'}" data-live="${esc(g.id)}" tabindex="0" role="button"
            style="--ac:${esc(g.color || '#c19bff')};--ag:${esc(g.color || '#c19bff')}55">
         <div class="sc-in">
@@ -142,6 +170,7 @@
           <div class="sc-info">
             <div class="sc-t">${esc(g.title)}</div>
             <div class="sc-s">${esc(g.sub)}</div>
+            ${g.onlineKey ? `<div class="sc-on"><i class="pulse-dot"></i><b data-on="${esc(g.onlineKey)}">0</b> онлайн</div>` : ''}
             <div class="sc-row">
               ${g.rtp != null ? `<span class="sc-rtp">RTP ${esc(g.rtp)}%</span>` : ''}
               <span class="sc-go">${g.ready ? 'Играть' : 'Скоро'}</span>
@@ -155,22 +184,20 @@
       card.onclick = go;
       card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
     });
+    applyOnline();
   }
 
-  // ---------- ОТКРЫТИЕ КОНКРЕТНОЙ ИГРЫ ----------
+  // ---------- ОТКРЫТИЕ ИГРЫ ----------
   function openGame(id) {
     const g = GAMES.find(x => x.id === id);
-    const say = (m, k) => { try { toast(m, k); } catch (e) {} };
+    const say = (m, k) => { try { toast(m, k); } catch (e) { } };
     if (!g || !g.ready) { say('Эта live-игра скоро появится', 'e'); return; }
-    try { if (typeof h === 'function') h('light'); } catch (e) {}
+    try { if (typeof h === 'function') h('light'); } catch (e) { }
     if (typeof g.open === 'function') return g.open(g);
     if (g.tab) return goTab(g.tab);
   }
 
   // ---------- ПУБЛИЧНЫЙ API ----------
-  // Из другого файла (например live-crash.js):
-  //   LiveLobby.add({ id:'lcrash', title:'Live Crash', sub:'Общий раунд', icon:'rocket',
-  //                   color:'#4cc9f0', rtp:97, tag:'Новинка', ready:true, tab:'lc' });
   window.LiveLobby = {
     games: GAMES,
     add(game) {
@@ -185,6 +212,7 @@
     },
     update(id, patch) { this.add({ id, ...patch }); },
     open: openLobby,
+    go: goTab,
     render
   };
 
@@ -194,6 +222,7 @@
     mountHomeCard();
     mountLobbyTab();
     render();
+    pollOnline();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
