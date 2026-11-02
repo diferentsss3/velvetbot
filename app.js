@@ -17,7 +17,7 @@ const GAME_NAMES = {
 };
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://photographic-finite-aside-dialog.trycloudflare.com';
+const API_URL = 'https://alike-earrings-laptops-conditions.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
@@ -848,8 +848,14 @@ if ($('#npc-btn')) {
 
 // ================= BLACKJACK =================
 let bjWrap = null;
+let bjInitTimer = null;
+let bjInitAttempts = 0;
 
-function openBlackjack() {
+async function openBlackjack() {
+  syncMe().then(() => {
+    if (bjWrap && bjWrap.style.display === 'block') sendBjInit();
+  }).catch(() => {});
+
   if (!bjWrap) {
     bjWrap = document.createElement('div');
     bjWrap.id = 'bj-wrap';
@@ -860,25 +866,42 @@ function openBlackjack() {
     `;
     document.body.appendChild(bjWrap);
 
-    const close = () => {
-      bjWrap.style.display = 'none';
-      syncMe();
-    };
-
-    document.getElementById('bj-close').onclick = close;
+    document.getElementById('bj-close').onclick = closeBlackjack;
 
     window.addEventListener('message', (e) => {
-      if (e.data && e.data.type === 'bj-close') close();
+      const d = e.data;
+      if (!d || typeof d !== 'object') return;
+
+      if (d.type === 'bj-ready' || d.type === 'bj-request-init' || d.type === 'bj-resync') {
+        bjInitAttempts = 0;
+        sendBjInit();
+      }
+      if (d.type === 'bj-balance' && typeof d.balance === 'number') {
+        S.bal = d.balance;
+        render();
+      }
+      if (d.type === 'bj-close') closeBlackjack();
     });
 
     const frame = document.getElementById('bj-frame');
-    frame.addEventListener('load', () => sendBjInit());
-    setTimeout(() => sendBjInit(), 500);
-    setTimeout(() => sendBjInit(), 1500);
+    frame.addEventListener('load', () => { bjInitAttempts = 0; sendBjInit(); });
   } else {
     bjWrap.style.display = 'block';
-    sendBjInit();
   }
+
+  bjInitAttempts = 0;
+  if (bjInitTimer) clearInterval(bjInitTimer);
+  bjInitTimer = setInterval(() => {
+    if (bjInitAttempts++ > 16) { clearInterval(bjInitTimer); bjInitTimer = null; return; }
+    sendBjInit();
+  }, 300);
+  sendBjInit();
+}
+
+function closeBlackjack() {
+  if (bjInitTimer) { clearInterval(bjInitTimer); bjInitTimer = null; }
+  if (bjWrap) bjWrap.style.display = 'none';
+  syncMe();
 }
 
 function sendBjInit() {
@@ -888,11 +911,13 @@ function sendBjInit() {
   const msg = {
     type: 'bj-init',
     initData: (tg && tg.initData) || '',
-    apiUrl: API_URL
+    apiUrl: API_URL,
+    balance: Number(S.bal) || 0,
+    user: (S.user && S.user.id)
+      ? { id: S.user.id, name: S.user.name, role: S.user.role }
+      : null
   };
   try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {}
-  setTimeout(() => { try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {} }, 200);
-  setTimeout(() => { try { frame.contentWindow.postMessage(msg, '*'); } catch (e) {} }, 1000);
 }
 // ==============================================
 
