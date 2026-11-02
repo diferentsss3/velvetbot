@@ -105,7 +105,7 @@ let bal=0,bi=1,fs=0,fsWin=0,inFS=false,mult=1,busy=false,uid=0,g=[],shown=[];
 const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),fmt=n=>Math.round(n).toLocaleString('ru-RU'),wait=ms=>new Promise(r=>setTimeout(r,ms));
 
 /* ================== ИНТЕГРАЦИЯ С VELVET ================== */
-let INIT_DATA='',API_URL='https://photographic-finite-aside-dialog.trycloudflare.com',ready=false;
+let INIT_DATA='',API_URL='https://alike-earrings-laptops-conditions.trycloudflare.com',ready=false;
 async function apiCall(path,data={}){try{const r=await fetch(API_URL+path,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...data,initData:INIT_DATA})});return await r.json()}catch(e){return{ok:false}}}
 async function initFromServer(){if(!INIT_DATA)return;const r=await apiCall('/me');if(r.ok&&r.user){bal=Number(r.user.balance)||0;ready=true;ui()}else setTimeout(initFromServer,1000)}
 async function syncServerBet(betAmount,winAmount){const r=await apiCall('/bet',{game:'slot',bet:betAmount,params:{win:winAmount,alreadyDeducted:true}});if(r.ok&&typeof r.balance==='number'){bal=r.balance;ui()}return r}
