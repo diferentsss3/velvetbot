@@ -155,7 +155,6 @@ input,select{-webkit-user-select:text;user-select:text}
 .pr button{background:rgba(255,84,112,.18);color:var(--bad);border-radius:9px;padding:6px 10px;font-weight:700}
 #rl{font-size:12px}
 @media(max-width:380px){nav button{font-size:10.5px}}
-.modes{grid-template-columns:repeat(6,1fr)}.mc{grid-column:span 2}.mc:nth-child(n+4){grid-column:span 3}
 .m4{background:radial-gradient(120% 90% at 50% 130%,#ffe08a,transparent 62%),linear-gradient(145deg,#b8620a,#f59e0b)}
 .m5{background:radial-gradient(120% 90% at 50% 130%,#7bf0c0,transparent 62%),linear-gradient(145deg,#0f766e,#22c55e)}
 #fp{gap:10px}
@@ -187,10 +186,17 @@ input,select{-webkit-user-select:text;user-select:text}
 @keyframes dust{0%{opacity:.9;transform:scale(.3)}100%{opacity:0;transform:scale(2.4)}}
 #lad.shake{animation:sk .4s}
 @keyframes sk{20%{transform:translate(-6px,3px)}40%{transform:translate(6px,-3px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-2px)}}
-.mc.wide{grid-column:1/-1;display:flex;align-items:center;gap:14px;text-align:left;padding:8px 14px 8px 8px}
-.mc.wide .pn{width:96px;height:78px;flex:none}.mc.wide b{margin:0 0 2px}
+.mc.wide{display:block;text-align:center;padding:7px 7px 12px}
+.mc.wide .pn{width:auto;height:clamp(74px,22vw,96px);flex:none;margin:0}
+.mc.wide b{margin:9px 0 0}
+.mc.wide small{display:block;margin-top:2px}
 .m6{background:radial-gradient(120% 90% at 50% 130%,#ffd08a,transparent 62%),linear-gradient(145deg,#c2410c,#f59e0b)}
 nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{width:1.05em;height:1.05em}
+
+/* ===== 2 игры в ряд ===== */
+.modes{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
+.mc,.mc.wide{grid-column:auto!important}
+@media(max-width:360px){.mc .pn,.mc.wide .pn{height:72px}.mc b{font-size:13px}.mc small{font-size:10.5px}}
 
 /* СТИЛИ ДЛЯ СЛОТОВ */
 .slw{position:relative;border-radius:24px;overflow:hidden;padding:0 0 12px;background:linear-gradient(180deg,#7ec8f5 0,#c9ecff 30%,#7fd36b 31%,#3b9a3a 100%);border:1px solid rgba(255,255,255,.25);box-shadow:0 18px 44px rgba(0,0,0,.45)}
@@ -304,9 +310,7 @@ nav{gap:0;padding:5px}nav button{font-size:11px;min-width:0}nav button span .ic{
 #nav-e.on { display: flex; }
 #event-timer.on { display: flex !important; }
 
-/* ============================================================
-   VELVET CASINO — тема по концепту (золото + фиолетовый бархат)
-   ============================================================ */
+/* VELVET CASINO — золото + фиолетовый бархат */
 :root{
   --bg:#0a0612; --ln:rgba(168,120,255,.22); --t:#f7f3ff; --m:#a79bc9; --g:#e8c46e;
   --gold:linear-gradient(180deg,#fff0b8 0%,#f0c865 45%,#c8912f 100%);
@@ -409,9 +413,6 @@ nav .on::after{content:"";position:absolute;bottom:3px;width:26px;height:3px;bor
 .sbar{background:rgba(10,5,26,.88);border:1px solid rgba(168,120,255,.25)}
 .sctl .spin{background:radial-gradient(circle at 35% 30%,#fff7d0,#f0c865 45%,#b9852a);box-shadow:0 8px 22px rgba(240,200,101,.55)}
 
-/* ============================================================
-   КАРТОЧКИ СЛОТОВ (лобби) — разметку строит slots.js → buildLobby()
-   ============================================================ */
 .sc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}
 .sc{--ac:#c19bff;--ag:#c19bff55;position:relative;border-radius:22px;padding:2px;cursor:pointer;outline:0;
   background:linear-gradient(155deg,var(--ac) 0%,rgba(255,255,255,.14) 38%,var(--ac) 100%);
