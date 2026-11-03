@@ -17,7 +17,7 @@ const GAME_NAMES = {
 };
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://enlargement-hepatitis-undo-bicycle.trycloudflare.com';
+const API_URL = 'https://pace-usr-baskets-schedule.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
