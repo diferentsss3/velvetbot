@@ -848,6 +848,23 @@ nav .on::after{content:"";position:absolute;bottom:3px;width:26px;height:3px;bor
   <button class="btn" id="btn-event" style="min-height:44px; font-size:14px;">🚀 Запустить / Остановить</button>
 </div>
 
+<div class="card">
+  <div class="shead"><b>🤖 Активность ботов</b><em class="rtp" id="bot-status">—</em></div>
+  <p class="note" style="text-align:left;margin:0 0 10px">Боты имитируют игроков: их ставки автоматически попадают в ленту «Последние ставки» на главной и в историю. Суммы и интервалы рандомизированы.</p>
+  <div class="g2">
+    <div><label>Количество ботов</label><input id="bot-count" type="number" value="15" min="1" max="200"></div>
+    <div><label>Мин. ставка</label><input id="bot-min" type="number" value="1" min="1"></div>
+    <div><label>Макс. ставка</label><input id="bot-max" type="number" value="100" min="1"></div>
+    <div><label>Интервал, мс</label><input id="bot-interval" type="number" value="3000" min="500"></div>
+  </div>
+  <div class="g2" style="margin-top:10px">
+    <button class="btn" id="bot-start" style="min-height:42px;font-size:14px;">▶ Запустить</button>
+    <button class="opt" id="bot-stop" style="min-height:42px;">⏹ Остановить</button>
+  </div>
+  <button class="opt" id="bot-remove" style="width:100%;margin-top:8px;color:var(--bad);border-color:rgba(255,84,112,.3)">🗑 Удалить всех ботов и их историю</button>
+  <p class="note" id="bot-info" style="margin:8px 0 0;font-size:11px"></p>
+</div>
+
  <div class="card">
   <div class="shead"><b>Рассылка</b></div>
   <p class="note" style="text-align:left;margin:0 0 10px">Отправка сообщения всем пользователям бота. Поддерживается HTML разметка (например, <b>жирный</b>).</p>

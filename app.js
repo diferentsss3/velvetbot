@@ -17,7 +17,7 @@ const GAME_NAMES = {
 };
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://alike-earrings-laptops-conditions.trycloudflare.com';
+const API_URL = 'https://enlargement-hepatitis-undo-bicycle.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
@@ -1036,19 +1036,11 @@ async function openAdmin() {
     if ($('#yr3')) $('#yr3').value = S.cfg.yoo_max;
     if ($('#ysbp')) $('#ysbp').value = S.cfg.sbp_min;
   }
-  const u = await api('/admin/users');
-  if (u.ok && $('#ul')) {
-    $('#ul').innerHTML = u.users.map(x => `
-      <div class="ur" style="border-bottom:1px solid rgba(255,255,255,.1); padding:8px 0; cursor:pointer;" onclick="window.selectUser('${x.id}', '${(x.name||'').replace(/'/g, "\\'")}', ${x.balance})">
-        <b>${x.name || 'Игрок'}</b> (ID: ${x.id})<br>
-        Баланс: ${fmt(x.balance)} | Роль: ${x.role} ${x.banned ? '<b style="color:var(--bad)">· БАН</b>' : ''}
-        <div style="display:flex; gap:5px; margin-top:6px;">
-          <button class="opt" style="padding:2px 6px; height:28px; font-size:11px;" onclick="event.stopPropagation();window.setRole('${x.id}','blogger')">Блогер</button>
-          <button class="opt" style="padding:2px 6px; height:28px; font-size:11px;" onclick="event.stopPropagation();window.setRole('${x.id}','manager')">Менеджер</button>
-          <button class="opt" style="padding:2px 6px; height:28px; font-size:11px;" onclick="event.stopPropagation();window.setRole('${x.id}','player')">Игрок</button>
-        </div>
-      </div>
-    `).join('');
+  const searchVal = $('#admin-search')?.value.trim() || '';
+  const u = await api('/admin/users', { search: searchVal });
+  if (u.ok) {
+    renderUserList(u.users);
+    if ($('#asel')) $('#asel').textContent = `Пользователей: ${u.users.length} из ${u.total} (поиск по всей базе)`;
   }
   const L = $('#wal');
   if (L) {
@@ -1090,14 +1082,37 @@ async function openAdmin() {
 }
 
 // Поиск игрока по нику или ID
+function renderUserList(users) {
+  if (!$('#ul')) return;
+  if (!users.length) {
+    $('#ul').innerHTML = '<div style="color:var(--m);text-align:center;padding:14px">Пользователи не найдены</div>';
+    return;
+  }
+  $('#ul').innerHTML = users.map(x => `
+    <div class="ur" style="border-bottom:1px solid rgba(255,255,255,.1); padding:8px 0; cursor:pointer;" onclick="window.selectUser('${x.id}', '${(x.name||'').replace(/'/g,"\\'")}', ${x.balance})">
+      <b>${x.name || 'Игрок'}</b> (ID: ${x.id})<br>
+      Баланс: ${fmt(x.balance)} | Роль: ${x.role} ${x.banned ? '<b style="color:var(--bad)">· БАН</b>' : ''}
+      <div style="display:flex; gap:5px; margin-top:6px;">
+        <button class="opt" style="padding:2px 6px; height:28px; font-size:11px;" onclick="event.stopPropagation();window.setRole('${x.id}','blogger')">Блогер</button>
+        <button class="opt" style="padding:2px 6px; height:28px; font-size:11px;" onclick="event.stopPropagation();window.setRole('${x.id}','manager')">Менеджер</button>
+        <button class="opt" style="padding:2px 6px; height:28px; font-size:11px;" onclick="event.stopPropagation();window.setRole('${x.id}','player')">Игрок</button>
+      </div>
+    </div>
+  `).join('');
+}
+
 if ($('#admin-search')) {
+  let searchTimer;
   $('#admin-search').oninput = (e) => {
-    const q = e.target.value.toLowerCase().trim();
-    const items = $('#ul').querySelectorAll('.ur');
-    items.forEach(el => {
-      const text = el.textContent.toLowerCase();
-      el.style.display = text.includes(q) ? 'block' : 'none';
-    });
+    const q = e.target.value.trim();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(async () => {
+      const r = await api('/admin/users', { search: q });
+      if (r.ok) {
+        renderUserList(r.users);
+        if ($('#asel')) $('#asel').textContent = `Найдено: ${r.users.length} из ${r.total}`;
+      }
+    }, 300);
   };
 }
 
@@ -1128,6 +1143,53 @@ window.uRole = async (role) => {
   if (!selU) { toast('Выберите игрока', 'e'); return; }
   const r = await api('/admin/set-role', { target: selU, role });
   if (r.ok) { toast('Роль изменена', 'w'); openAdmin(); } else toast('Ошибка', 'e');
+};
+
+// ---------- БОТЫ ----------
+async function loadBotStatus() {
+  const r = await api('/admin/bots/status');
+  if (!r.ok) return;
+  const badge = $('#bot-status');
+  if (badge) {
+    badge.textContent = r.active ? '🟢 Активен' : '⚪ Остановлен';
+    badge.style.background = r.active ? 'rgba(74,222,128,.2)' : 'rgba(255,255,255,.1)';
+    badge.style.color = r.active ? 'var(--ok)' : 'var(--m)';
+    badge.style.borderColor = r.active ? 'rgba(74,222,128,.5)' : 'rgba(168,120,255,.25)';
+  }
+  if ($('#bot-info')) {
+    $('#bot-info').textContent = `Ботов в базе: ${r.botCount} · ставок в истории: ${r.feedCount}`;
+  }
+  if (!r.active) {
+    if ($('#bot-count')) $('#bot-count').value = r.botCount || 15;
+    if ($('#bot-min')) $('#bot-min').value = r.minBet || 1;
+    if ($('#bot-max')) $('#bot-max').value = r.maxBet || 100;
+    if ($('#bot-interval')) $('#bot-interval').value = r.intervalMs || 3000;
+  }
+}
+
+if ($('#bot-start')) $('#bot-start').onclick = async () => {
+  const body = {
+    count:      +$('#bot-count').value || 15,
+    minBet:     +$('#bot-min').value || 1,
+    maxBet:     +$('#bot-max').value || 100,
+    intervalMs: +$('#bot-interval').value || 3000
+  };
+  const r = await api('/admin/bots/start', body);
+  if (r.ok) { toast(`Боты запущены (${r.botCount})`, 'w'); loadBotStatus(); }
+  else toast('Ошибка запуска', 'e');
+};
+
+if ($('#bot-stop')) $('#bot-stop').onclick = async () => {
+  const r = await api('/admin/bots/stop');
+  if (r.ok) { toast('Боты остановлены', 'w'); loadBotStatus(); }
+  else toast('Ошибка', 'e');
+};
+
+if ($('#bot-remove')) $('#bot-remove').onclick = async () => {
+  if (!confirm('Удалить всех ботов и всю их историю ставок? Это необратимо.')) return;
+  const r = await api('/admin/bots/remove');
+  if (r.ok) { toast(`Удалено ботов: ${r.removed}`, 'w'); loadBotStatus(); loadFeed(); }
+  else toast('Ошибка', 'e');
 };
 
 if ($('#acs')) {
@@ -1287,6 +1349,6 @@ tab = function(t) {
   if (t == 'b') loadGiveaways();
 };
 const originalOpenAdmin = openAdmin;
-openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); };
+openAdmin = async function() { await originalOpenAdmin(); loadAdminSupport(); loadBotStatus(); };
 
 (async () => { render(); await syncMe(); })();
