@@ -17,7 +17,7 @@ const GAME_NAMES = {
 };
 
 // ▼▼▼ ВСТАВЬТЕ ВАШУ АКТУАЛЬНУЮ ССЫЛКУ ▼▼▼
-const API_URL = 'https://pace-usr-baskets-schedule.trycloudflare.com';
+const API_URL = 'https://par-decided-button-resolutions.trycloudflare.com';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 const CFG0 = {
@@ -39,12 +39,19 @@ let dMethod = 'usd';
 let wMethod = 'crypto';
 let evInterval = null;
 
+// Стартовый параметр (ref_123456) из Telegram: сначала initDataUnsafe, потом hash ссылки
+function getStartParam() {
+  const sp = tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param;
+  if (sp) return sp;
+  try { return new URLSearchParams(location.hash.slice(1)).get('tgWebAppStartParam') || ''; } catch (e) { return ''; }
+}
+
 async function api(path, data = {}) {
   try {
     const r = await fetch(API_URL + path, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ ...data, initData: (tg && tg.initData) || '', startParam: (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) || '' })
+      body: JSON.stringify({ ...data, initData: (tg && tg.initData) || '', startParam: getStartParam() })
     });
     return await r.json();
   } catch (e) { toast('Нет связи с сервером', 'e'); return { ok: false }; }

@@ -159,7 +159,8 @@ async function runFree(bet){const G=SL.G;
  if(tot>0){
    S.wins++;
    S.best=Math.max(S.best||0,tot);
-   const res = await playGame('slot', 0, { win: tot, alreadyDeducted: true });
+   // ставка 0 + флаг bonus: сервер зачисляет выплату за бонус (в пределах бюджета после оплаченного спина)
+   const res = await playGame('slot', 0, { win: tot, alreadyDeducted: true, bonus: true });
    if(res && res.newBalance !== undefined) {
       S.bal = res.newBalance;
       render();
