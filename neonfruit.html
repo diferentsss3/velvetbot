@@ -119,7 +119,7 @@ if(_tg&&_tg.initData){INIT_DATA=_tg.initData;initFromServer()}
 
 let bal=10000,bi=1,busy=false,g=[],lock=[false,false,false];
 const $=id=>document.getElementById(id),rnd=n=>Math.floor(Math.random()*n),fmt=n=>Math.round(n).toLocaleString('ru-RU'),wait=ms=>new Promise(r=>setTimeout(r,ms));
-const mk=()=>{const r=Math.random();if(r<.075)return{s:'W'};if(r<.115)return{s:'Q'};return{s:BAG[rnd(BAG.length)]}};
+const mk=()=>{const r=Math.random();if(r<.0125)return{s:'W'};if(r<.0525)return{s:'Q'};return{s:BAG[rnd(BAG.length)]}};
 const cells=[],colEls=[];
 for(let c=0;c<3;c++){const col=document.createElement('div');col.className='col';colEls[c]=col;cells[c]=[];for(let r=0;r<3;r++){const d=document.createElement('div');d.className='cell';col.appendChild(d);cells[c][r]=d}$('reels').appendChild(col)}
 function draw(c,r,o,cls){const d=cells[c][r];d.className='cell'+(cls?' '+cls:'');d.innerHTML=svg(o.s)}
